@@ -917,10 +917,10 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
-"@tenbou/test-shared-lib@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tenbou/test-shared-lib/-/test-shared-lib-1.0.1.tgz#051063097b8f9bbc48c1d6f6f760349cddecaa19"
-  integrity sha512-YcjR3aMB0WiUC0ephBgZf0+aNcTw0Z3mPbifSh7l9GP9t/kdJltfsPxwoW182p6zcIqXzl0j+QM0MjRAS0iKVA==
+"@tenbou/test-shared-lib@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@tenbou/test-shared-lib/-/test-shared-lib-1.0.3.tgz#ea8937b2d0bb6b7aeaf606ebe18ad4b4c1e92a4e"
+  integrity sha512-a5ln3btdKIno80ugOeXi6q5D1Oegn9jRg/nyVXeD2/kMTFFe7ahRvSmyZDBh9FDNIOlVBFWLl2+Z+SaDdXdccg==
   dependencies:
     "@faker-js/faker" "^8.4.1"
     "@keyv/redis" "^4.2.0"
