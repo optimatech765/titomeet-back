@@ -8,6 +8,7 @@ import { CacheModule, PrismaModule } from '@tenbou/test-shared-lib';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './users/users.module';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { UsersModule } from './users/users.module';
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     AuthModule,
-    UsersModule
+    UsersModule,
+    AssetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
