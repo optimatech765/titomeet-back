@@ -42,6 +42,6 @@ export class AuthController {
     type: AuthenticationResponseDto,
   })
   refreshToken(@Body() body: RefreshTokenDto) {
-    return this.authService.refreshToken(body.refreshToken);
+    return this.authService.refreshToken(body);
   }
 }

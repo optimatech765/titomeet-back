@@ -1,7 +1,8 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '@tenbou/test-shared-lib';
 import { IRequest } from 'src/types';
+import { UpdateUserDto } from 'src/dto/users.dto';
 
 @Controller('api/users')
 export class UsersController {
@@ -11,5 +12,11 @@ export class UsersController {
   @UseGuards(AuthGuard)
   getAuthUser(@Request() req: IRequest) {
     return this.usersService.getUserData(req.user);
+  }
+
+  @Put('me')
+  @UseGuards(AuthGuard)
+  updateUser(@Request() req: IRequest, @Body() body: UpdateUserDto) {
+    return this.usersService.updateUser(req.user, body);
   }
 }
