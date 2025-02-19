@@ -7,7 +7,7 @@ import {
   SignupDto,
 } from 'src/dto/auth.dto';
 
-@Controller('auth')
+@Controller('')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
