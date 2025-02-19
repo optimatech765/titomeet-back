@@ -1,4 +1,15 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { AssetsService } from './assets.service';
+import { GetPresignedUrlDto } from 'src/dto/assets.dto';
+import { AuthGuard } from '@tenbou/test-shared-lib';
 
-@Controller('assets')
-export class AssetsController {}
+@Controller('api/assets')
+export class AssetsController {
+  constructor(private readonly assetsService: AssetsService) {}
+
+  @Post('presigned-url')
+  @UseGuards(AuthGuard)
+  getPresignedUrl(@Body() payload: GetPresignedUrlDto) {
+    return this.assetsService.getPresignedUrl(payload);
+  }
+}
