@@ -4,6 +4,7 @@ import { ApiResponse } from '@nestjs/swagger';
 import {
   AuthenticationResponseDto,
   LoginDto,
+  RefreshTokenDto,
   SignupDto,
 } from 'src/dto/auth.dto';
 
@@ -31,5 +32,16 @@ export class AuthController {
   })
   signin(@Body() body: LoginDto) {
     return this.authService.login(body);
+  }
+
+  //refresh token
+  @Post('api/auth/refresh')
+  @ApiResponse({
+    status: 200,
+    description: 'Access token and user data',
+    type: AuthenticationResponseDto,
+  })
+  refreshToken(@Body() body: RefreshTokenDto) {
+    return this.authService.refreshToken(body.refreshToken);
   }
 }

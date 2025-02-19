@@ -3,6 +3,7 @@ import {
   SignupDto,
   LoginDto,
   AuthenticationResponseDto,
+  RefreshTokenDto,
 } from '../dto/auth.dto';
 import { JwtService, PrismaService, User } from '@tenbou/test-shared-lib';
 import { REFRESH_TOKEN_EXPIRES_IN } from 'src/utils/constants';
@@ -90,6 +91,32 @@ export class AuthService {
 
     if (!user) {
       throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+    }
+
+    const tokens = await this.generateTokens(user);
+
+    return { ...tokens, user };
+  }
+
+  async refreshToken(payload: RefreshTokenDto) {
+    const account = await this.prisma.account.findUnique({
+      where: { refreshToken: payload.refreshToken },
+    });
+
+    if (!account) {
+      throw new HttpException('Invalid refresh token', HttpStatus.BAD_REQUEST);
+    }
+
+    if (account.expiresAt < new Date()) {
+      throw new HttpException('Refresh token expired', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: account.userId },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
     }
 
     const tokens = await this.generateTokens(user);

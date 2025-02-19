@@ -10,6 +10,6 @@ export class UsersController {
   @Get('me')
   @UseGuards(AuthGuard)
   getAuthUser(@Request() req: IRequest) {
-    return req.user;
+    return this.usersService.getUserData(req.user);
   }
 }

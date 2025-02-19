@@ -52,3 +52,11 @@ export class AuthenticationResponseDto {
   @ApiProperty()
   user: User;
 }
+
+export class RefreshTokenDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  refreshToken: string;
+}
+
