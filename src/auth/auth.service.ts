@@ -67,7 +67,10 @@ export class AuthService {
 
     // Create user
     const newUser = await this.prisma.user.create({
-      data: signupDto,
+      data: {
+        ...signupDto,
+        password: createHash('sha256').update(signupDto.password).digest('hex'),
+      },
       include: {
         accounts: true,
       },
