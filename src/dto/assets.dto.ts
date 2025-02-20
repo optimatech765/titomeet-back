@@ -3,3 +3,6 @@ export class GetPresignedUrlDto {
   fileType: string;
 }
 
+export class DeleteAssetsDto {
+  fileNames: string[];
+}

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { S3, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectsCommand, S3, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import awsConfig from 'src/config/aws';
 import { randomUUID } from 'crypto';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
-import { GetPresignedUrlDto } from 'src/dto/assets.dto';
+import { GetPresignedUrlDto, DeleteAssetsDto } from 'src/dto/assets.dto';
 import { MAX_UPLOAD_SIZE } from 'src/utils/constants';
 
 @Injectable()
@@ -62,7 +62,19 @@ export class AssetsService {
       downloadUrl,
       uniqueName,
       filePath: finalName,
-      fields
+      fields,
     };
+  }
+
+  async deleteAssets(payload: DeleteAssetsDto) {
+    const { fileNames } = payload;
+
+    const command = new DeleteObjectsCommand({
+      Bucket: this.bucketName,
+      Delete: { Objects: fileNames.map((name) => ({ Key: name })) },
+    });
+    await this.s3Client.send(command);
+
+    return { success: true };
   }
 }
