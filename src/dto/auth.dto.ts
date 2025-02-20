@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
-import { User } from '@tenbou/test-shared-lib';
+import { User } from '@optimatech88/titomeet-shared-lib';
 
 export class SignupDto {
   @ApiProperty()

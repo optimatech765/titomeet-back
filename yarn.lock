@@ -1235,9 +1235,9 @@
     redis "^4.7.0"
 
 "@keyv/serialize@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@keyv/serialize/-/serialize-1.0.2.tgz#72507c4be94d8914434a4aa80661f8ac6131967f"
-  integrity sha512-+E/LyaAeuABniD/RvUezWVXKpeuvwLEA9//nE9952zBaOdBd2mQ3pPoM8cUe2X6IcMByfuSLzmYqnYshG60+HQ==
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@keyv/serialize/-/serialize-1.0.3.tgz#e0fe3710e2a379cb0490cd41e5a5ffa2bab58bf6"
+  integrity sha512-qnEovoOp5Np2JDGonIDL6Ayihw0RhnRh6vxPuHo4RDn1UOzwEo4AeIfpL6UGIrsceWrCMiVPgwRjbHu4vYFc3g==
   dependencies:
     buffer "^6.0.3"
 
@@ -1425,6 +1425,22 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
+"@optimatech88/titomeet-shared-lib@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.3.tgz#e16174abcf9519af5cb3e41fd6a6f875c86979bb"
+  integrity sha512-yY5Xuccg/2DSWilWW2JnBXQfOG6rPlPDfdeNRovOUDfkWjInHSCV7PNgrLxzVako9jeW27yB6sVfIQmnzDgiAg==
+  dependencies:
+    "@faker-js/faker" "^8.4.1"
+    "@keyv/redis" "^4.2.0"
+    "@nestjs/common" "^10.4.1"
+    "@nestjs/config" "^3.2.3"
+    "@nestjs/core" "^10.4.1"
+    "@nestjs/jwt" "^10.2.0"
+    "@prisma/client" "^6.3.1"
+    cacheable "^1.8.8"
+    express "^4.19.2"
+    nestjs-seeder "^0.3.2"
+
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
@@ -1436,9 +1452,9 @@
   integrity sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==
 
 "@prisma/client@^6.3.1":
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.3.1.tgz#4e4b05b27f4541ea541a601c57a8ada10b526848"
-  integrity sha512-ARAJaPs+eBkemdky/XU3cvGRl+mIPHCN2lCXsl5Vlb0E2gV+R6IN7aCI8CisRGszEZondwIsW9Iz8EJkTdykyA==
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.4.0.tgz#341f56b747ea7b70e4f1d2d362f0e7cdc2b1bdb4"
+  integrity sha512-48tLb+VL7iuuqJXjD4Xbqa622fuh8UtqmjTf39AKrQjlTUdNaMc9sC/c49eXQkcnrAdh9FoS1qVupmZSYiZ9TQ==
 
 "@prisma/debug@6.3.1":
   version "6.3.1"
@@ -2023,22 +2039,6 @@
     "@smithy/abort-controller" "^4.0.1"
     "@smithy/types" "^4.1.0"
     tslib "^2.6.2"
-
-"@tenbou/test-shared-lib@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tenbou/test-shared-lib/-/test-shared-lib-1.0.5.tgz#6ab4c2a9295c9d399e20bbdca8c552f58eebe2c4"
-  integrity sha512-Enr1cUDBrFtW9rRGqueFf9GiL2X+hThwbFALetaZKuGAJufO0+fywYwxUO2+WLuE+W8J2XczcsAWES3nHdlAuA==
-  dependencies:
-    "@faker-js/faker" "^8.4.1"
-    "@keyv/redis" "^4.2.0"
-    "@nestjs/common" "^10.4.1"
-    "@nestjs/config" "^3.2.3"
-    "@nestjs/core" "^10.4.1"
-    "@nestjs/jwt" "^10.2.0"
-    "@prisma/client" "^6.3.1"
-    cacheable "^1.8.8"
-    express "^4.19.2"
-    nestjs-seeder "^0.3.2"
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.11"

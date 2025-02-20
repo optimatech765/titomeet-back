@@ -5,7 +5,7 @@ import {
   AuthenticationResponseDto,
   RefreshTokenDto,
 } from '../dto/auth.dto';
-import { JwtService, PrismaService, User } from '@tenbou/test-shared-lib';
+import { JwtService, PrismaService, User } from '@optimatech88/titomeet-shared-lib';
 import { REFRESH_TOKEN_EXPIRES_IN } from 'src/utils/constants';
 import { createHash, randomUUID } from 'crypto';
 

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Put, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@tenbou/test-shared-lib';
+import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
 import { UpdateUserDto } from 'src/dto/users.dto';
 

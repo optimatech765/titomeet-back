@@ -33,7 +33,7 @@
     "@nestjs/schedule": "^5.0.1",
     "@nestjs/swagger": "^11.0.3",
     "@nestjs/throttler": "^6.4.0",
-    "@tenbou/test-shared-lib": "^1.0.5",
+    "@optimatech88/titomeet-shared-lib": "^1.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
@@ -83,6 +83,6 @@
     "testEnvironment": "node"
   },
   "prisma": {
-    "schema": "node_modules/@tenbou/test-shared-lib/prisma/schema.prisma"
+    "schema": "node_modules/@optimatech88/titomeet-shared-lib/prisma/schema.prisma"
   }
 }

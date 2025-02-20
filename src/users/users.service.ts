@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { PrismaService, User } from '@tenbou/test-shared-lib';
+import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
 import { UpdateUserDto } from '../dto/users.dto';
 
 @Injectable()

@@ -4,11 +4,12 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { CacheModule, PrismaModule } from '@tenbou/test-shared-lib';
+import { CacheModule, PrismaModule } from '@optimatech88/titomeet-shared-lib';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AssetsModule } from './assets/assets.module';
     AuthModule,
     UsersModule,
     AssetsModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
