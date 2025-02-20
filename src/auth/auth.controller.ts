@@ -16,7 +16,7 @@ export class AuthController {
   @Post('api/auth/signup')
   @ApiResponse({
     status: 200,
-    description: 'Access token and user data',
+    description: 'Signup user',
     type: AuthenticationResponseDto,
   })
   signup(@Body() createUseDto: SignupDto) {
@@ -27,7 +27,7 @@ export class AuthController {
   @Post('api/auth/signin')
   @ApiResponse({
     status: 200,
-    description: 'Access token and user data',
+    description: 'Login user',
     type: AuthenticationResponseDto,
   })
   signin(@Body() body: LoginDto) {
@@ -38,7 +38,7 @@ export class AuthController {
   @Post('api/auth/refresh')
   @ApiResponse({
     status: 200,
-    description: 'Access token and user data',
+    description: 'Get new access and refresh token',
     type: AuthenticationResponseDto,
   })
   refreshToken(@Body() body: RefreshTokenDto) {

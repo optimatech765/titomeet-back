@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DeleteObjectsCommand, S3, S3Client } from '@aws-sdk/client-s3';
-import { ConfigService } from '@nestjs/config';
+import { DeleteObjectsCommand, S3Client } from '@aws-sdk/client-s3';
 import awsConfig from 'src/config/aws';
 import { randomUUID } from 'crypto';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
@@ -13,7 +12,7 @@ export class AssetsService {
   private bucketName: string;
   private bucketPublicUrl: string;
 
-  constructor(private configService: ConfigService) {
+  constructor() {
     const {
       AWS_REGION,
       AWS_ACCESS_KEY_ID,
