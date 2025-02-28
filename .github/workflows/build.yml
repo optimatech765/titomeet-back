@@ -1,59 +1,42 @@
-name: Node.js CI/CD
+name: Deploy NestJS App
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main # Or your main branch
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    
-    env:
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
-      VPS_PRIVATE_KEY: ${{ secrets.VPS_PRIVATE_KEY }}
-
-    strategy:
-      matrix:
-        node-version: [22.x] # Uses Node.js 22
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'yarn' # Enable caching for Yarn
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      run: yarn install --frozen-lockfile
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
 
-    - name: Build Project
-      run: yarn build
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v0.1.1
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        key: ${{ secrets.VPS_PRIVATE_KEY }}
-        script: |
-          cd /var/www/titomeet/api
+      - name: Build NestJS app
+        run: npm run build
 
-          # Fix Git "dubious ownership" error
-          git config --global --add safe.directory /var/www/titomeet/api
-          git pull origin main
-
-          # Ensure correct permissions
-          export PATH=$(yarn global bin):$PATH
-
-          # Install dependencies and build
-          sudo yarn install --frozen-lockfile
-          sudo yarn build
-
-          # Restart application with PM2
-          pm2 restart titomeet-backend || pm2 start dist/main.js --name titomeet-backend
-          pm2 save
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          script: |
+            mkdir -p ${{ secrets.DEPLOY_PATH }}
+            rm -rf ${{ secrets.DEPLOY_PATH }}/*
+            cd ${{ secrets.DEPLOY_PATH }}
+            git clone --depth 1 ${{ github.event.repository.ssh_url }} .
+            npm ci
+            npm run build
+            pm2 stop your-app || true #Stop if it exists.
+            pm2 delete your-app || true #Delete if it exists.
+            pm2 start dist/main.js --name your-app
