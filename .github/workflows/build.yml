@@ -35,8 +35,11 @@ jobs:
             rm -rf ${{ secrets.DEPLOY_PATH }}/*
             cd ${{ secrets.DEPLOY_PATH }}
             git clone --depth 1 ${{ github.event.repository.ssh_url }} .
-            npm ci
-            npm run build
-            pm2 stop your-app || true #Stop if it exists.
-            pm2 delete your-app || true #Delete if it exists.
-            pm2 start dist/main.js --name your-app
+            # Install dependencies
+            yarn install --frozen-lockfile 
+            # Build the project
+            yarn build
+            # Stop the application
+            pm2 stop titomeet-api || true #Stop if it exists.
+            pm2 delete titomeet-api || true #Delete if it exists.
+            pm2 start dist/main.js --name titomeet-api
