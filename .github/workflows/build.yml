@@ -51,8 +51,8 @@ jobs:
           export PATH=$(yarn global bin):$PATH
 
           # Install dependencies and build
-          yarn install --frozen-lockfile
-          yarn build
+          sudo yarn install --frozen-lockfile
+          sudo yarn build
 
           # Restart application with PM2
           pm2 restart titomeet-backend || pm2 start dist/main.js --name titomeet-backend
