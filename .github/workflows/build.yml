@@ -47,8 +47,8 @@ jobs:
         script: |
           cd /var/www/titomeet/api
           git pull origin main
-          yarn install --frozen-lockfile
-          yarn build
+          sudo yarn install --frozen-lockfile
+          sudo yarn build
           pm2 restart titomeet-backend
           pm2 save
           
