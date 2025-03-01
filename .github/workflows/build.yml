@@ -31,15 +31,15 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           script: |
+            rm -rf ${{ secrets.DEPLOY_PATH }}
             mkdir -p ${{ secrets.DEPLOY_PATH }}
-            rm -rf ${{ secrets.DEPLOY_PATH }}/*
             cd ${{ secrets.DEPLOY_PATH }}
             git clone --depth 1 ${{ github.event.repository.ssh_url }} .
-            echo "${{ vars.ENV_FILE }}" > .env # Copy env file
+            sudo bash -c 'echo "${{ vars.ENV_FILE }}" > .env'# Copy env file
             # Install dependencies
-            yarn install --frozen-lockfile 
+            sudo yarn install --frozen-lockfile 
             # Build the project
-            yarn build
+            sudo yarn build
             # Stop the application
             pm2 stop titomeet-api || true #Stop if it exists.
             pm2 delete titomeet-api || true #Delete if it exists.
