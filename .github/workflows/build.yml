@@ -31,8 +31,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           script: |
-            rm -rf ${{ secrets.DEPLOY_PATH }}
-            mkdir -p ${{ secrets.DEPLOY_PATH }}
+            sudo rm -rf ${{ secrets.DEPLOY_PATH }}
+            sudo mkdir -p ${{ secrets.DEPLOY_PATH }}
             cd ${{ secrets.DEPLOY_PATH }}
             sudo git clone --depth 1 ${{ github.event.repository.ssh_url }} .
             sudo bash -c 'echo "${{ vars.ENV_FILE }}" > .env' # Copy env file
