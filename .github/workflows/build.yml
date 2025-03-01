@@ -35,6 +35,7 @@ jobs:
             rm -rf ${{ secrets.DEPLOY_PATH }}/*
             cd ${{ secrets.DEPLOY_PATH }}
             git clone --depth 1 ${{ github.event.repository.ssh_url }} .
+            echo "${{ vars.ENV_FILE }}" > .env # Copy env file
             # Install dependencies
             yarn install --frozen-lockfile 
             # Build the project
