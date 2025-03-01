@@ -34,7 +34,7 @@ jobs:
             rm -rf ${{ secrets.DEPLOY_PATH }}
             mkdir -p ${{ secrets.DEPLOY_PATH }}
             cd ${{ secrets.DEPLOY_PATH }}
-            git clone --depth 1 ${{ github.event.repository.ssh_url }} .
+            sudo git clone --depth 1 ${{ github.event.repository.ssh_url }} .
             sudo bash -c 'echo "${{ vars.ENV_FILE }}" > .env'# Copy env file
             # Install dependencies
             sudo yarn install --frozen-lockfile 
