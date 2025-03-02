@@ -6,6 +6,7 @@ import {
   PaginationQuery,
   PrismaService,
   User,
+  Participant,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -147,6 +148,7 @@ export class EventsService {
       filter.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
+        { tags: { hasSome: [search] } },
       ];
     }
 
@@ -178,6 +180,11 @@ export class EventsService {
         prices: true,
         address: true,
         postedBy: true,
+        participants: {
+          where: {
+            userId: user.id,
+          },
+        },
       },
       skip,
       take: limit,
@@ -192,6 +199,58 @@ export class EventsService {
 
     return {
       items: events,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  //get event by id
+  async getEventById(id: string, user: User): Promise<Event> {
+    const event = await this.prisma.event.findUnique({
+      where: { id },
+      include: {
+        prices: true,
+        address: true,
+        postedBy: true,
+        participants: {
+          where: {
+            userId: user.id,
+          },
+        },
+      },
+    });
+
+    if (!event) {
+      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+    }
+
+    return event;
+  }
+
+  //get event participants paginated
+  async getEventParticipants(
+    id: string,
+    query: PaginationQuery,
+  ): Promise<PaginatedData<Participant>> {
+    const { page, limit, skip } = getPaginationData(query);
+
+    const participants = await this.prisma.participant.findMany({
+      where: { eventId: id },
+      include: {
+        user: true,
+      },
+      skip,
+      take: limit,
+    });
+
+    const total = await this.prisma.participant.count({
+      where: { eventId: id },
+    });
+
+    return {
+      items: participants,
       total,
       page,
       limit,
