@@ -46,12 +46,6 @@ jobs:
           echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
         fi
 
-    - name: Debug Variables
-      run: |
-        echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
-        echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
-        echo "IMAGE_TAG=${{ env.IMAGE_TAG }}"
-
     - name: Build and Push Docker Image
       run: |
         docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG .
