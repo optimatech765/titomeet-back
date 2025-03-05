@@ -23,6 +23,7 @@ jobs:
       DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
       IMAGE_NAME: titomeet-backend
       ENV_FILE: ${{ vars.ENV_FILE }}
+      CONTAINER_NAME: titomeet-backend
 
     steps:
     - uses: actions/checkout@v4
@@ -45,6 +46,12 @@ jobs:
           echo "IMAGE_TAG=dev" >> $GITHUB_ENV
           echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
         fi
+
+    - name: Debug Variables
+      run: |
+        echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
+        echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
+        echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
 
     - name: Build and Push Docker Image
       run: |
