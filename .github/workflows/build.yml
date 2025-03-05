@@ -59,7 +59,7 @@ jobs:
         key: ${{ env.VPS_PRIVATE_KEY }}
         script: |
           # Save environment variables file on VPS
-          echo "${{ env.ENV_FILE }}" > ${{ env.DEPLOY_PATH }}/.env
+          sudo echo "${{ env.ENV_FILE }}" > ${{ env.DEPLOY_PATH }}/.env
           
           # Pull latest image from Docker Hub
           docker pull $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
