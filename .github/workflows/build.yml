@@ -52,8 +52,6 @@ jobs:
         echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
         echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
         echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
-        echo "ENV_FILE=${{ env.ENV_FILE }}"
-        echo "DEPLOY_PATH=${{ env.DEPLOY_PATH }}"
 
     - name: Build and Push Docker Image
       run: |
