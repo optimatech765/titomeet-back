@@ -66,8 +66,8 @@ jobs:
         key: ${{ env.VPS_PRIVATE_KEY }}
         script: |
           # Save environment variables file on VPS
-          sudo echo "${{ env.ENV_FILE }}" > ${{ env.DEPLOY_PATH }}/.env
-          
+          echo "${{ env.ENV_FILE }}" | sudo tee ${{ env.DEPLOY_PATH }}/.env > /dev/null
+
           # Pull latest image from Docker Hub
           docker pull $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
           
@@ -76,7 +76,7 @@ jobs:
           docker rm $CONTAINER_NAME || true
 
           # Run the new container with environment variables
-          docker run -d --name $CONTAINER_NAME --env-file ${{ env.DEPLOY_PATH }}/.env -p 3000:3000 $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+          docker run -d --name $CONTAINER_NAME --env-file ${{ env.DEPLOY_PATH }}/.env -p 5000:5000 $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
           
           # Clean up old Docker images
           docker image prune -f
