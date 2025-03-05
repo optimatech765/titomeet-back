@@ -25,5 +25,10 @@ RUN yarn build
 # Expose the port that the NestJS application will run on
 EXPOSE 5000
 
-# Command to run the NestJS application
-CMD ["yarn", "start:prod"]
+
+# Copy the entry script and give execution permissions
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Command to run the entry script
+CMD ["/entrypoint.sh"]
