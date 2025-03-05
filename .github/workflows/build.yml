@@ -67,7 +67,7 @@ jobs:
         username: ${{ env.VPS_USER }}
         key: ${{ env.VPS_PRIVATE_KEY }}
         script: |
-        
+
           # Pull latest image from Docker Hub
           docker pull ${{ env.DOCKERHUB_USERNAME }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           
@@ -75,8 +75,11 @@ jobs:
           docker stop ${{ env.CONTAINER_NAME }} || true
           docker rm ${{ env.CONTAINER_NAME }} || true
 
+          # Navigate to the deploy path
+          cd /var/www/titomeet/api
+
           # Run the new container with environment variables
-          docker run -d --name ${{env.CONTAINER_NAME}} --env-file ${{ env.DEPLOY_PATH }}/.env -p 5000:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+          docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p 5000:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           
           # Clean up old Docker images
           docker image prune -f
