@@ -20,7 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "postinstall": "prisma generate",
     "studio": "prisma studio",
-    "deploy-db:prod": "prisma migrate deploy && npm run seed"
+    "deploy-db:prod": "prisma migrate deploy"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",
