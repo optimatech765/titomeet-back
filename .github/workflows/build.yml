@@ -72,6 +72,8 @@ jobs:
           docker pull $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
           
           # Stop and remove old container if exists
+          echo "Stopping and removing old container... "
+          echo "CONTAINER_NAME: $CONTAINER_NAME"
           docker stop $CONTAINER_NAME || true
           docker rm $CONTAINER_NAME || true
 
