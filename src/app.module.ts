@@ -10,6 +10,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
 import { EventsModule } from './events/events.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { EventsModule } from './events/events.module';
     UsersModule,
     AssetsModule,
     EventsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

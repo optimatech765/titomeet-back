@@ -43,9 +43,11 @@ jobs:
         if [[ "${{ github.ref_name }}" == "main" ]]; then
           echo "IMAGE_TAG=latest" >> $GITHUB_ENV
           echo "CONTAINER_NAME=titomeet-backend" >> $GITHUB_ENV
+          echo "PORT=5000" >> $GITHUB_ENV
         elif [[ "${{ github.ref_name }}" == "dev" ]]; then
           echo "IMAGE_TAG=dev" >> $GITHUB_ENV
           echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
+          echo "PORT=5001" >> $GITHUB_ENV
         fi
 
     - name: Debug Variables
