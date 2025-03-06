@@ -24,7 +24,7 @@ jobs:
       IMAGE_NAME: titomeet-backend
       ENV_FILE: ${{ vars.ENV_FILE }}
       CONTAINER_NAME: titomeet-backend
-      PORT: ${{ vars.PORT }}
+      PORT: ${{ vars.APP_PORT }}
 
     steps:
     - uses: actions/checkout@v4
