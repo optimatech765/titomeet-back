@@ -53,6 +53,7 @@ jobs:
         echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
         echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
         echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
+        echo "PORT=${{ env.PORT }}"
 
     - name: Build and Push Docker Image
       run: |
@@ -78,7 +79,7 @@ jobs:
           cd ${{ env.DEPLOY_PATH }}
 
           # Run the new container with environment variables
-          docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p 5000:${{env.PORT}} ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+          docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p ${{env.PORT}}:${{env.PORT}} ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           
           # Clean up old Docker images
           docker image prune -f
