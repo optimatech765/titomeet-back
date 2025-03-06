@@ -24,7 +24,7 @@ jobs:
       IMAGE_NAME: titomeet-backend
       ENV_FILE: ${{ vars.ENV_FILE }}
       CONTAINER_NAME: titomeet-backend
-      PORT: ${{ vars.APP_PORT }}
+      APP_PORT: ${{ vars.APP_PORT }}
 
     steps:
     - uses: actions/checkout@v4
@@ -43,11 +43,9 @@ jobs:
         if [[ "${{ github.ref_name }}" == "main" ]]; then
           echo "IMAGE_TAG=latest" >> $GITHUB_ENV
           echo "CONTAINER_NAME=titomeet-backend" >> $GITHUB_ENV
-          echo "PORT=5000" >> $GITHUB_ENV
         elif [[ "${{ github.ref_name }}" == "dev" ]]; then
           echo "IMAGE_TAG=dev" >> $GITHUB_ENV
           echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
-          echo "PORT=5001" >> $GITHUB_ENV
         fi
 
     - name: Debug Variables
@@ -55,7 +53,7 @@ jobs:
         echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
         echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
         echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
-        echo "PORT=${{ env.PORT }}"
+        echo "APP_PORT=${{ env.APP_PORT }}"
 
     - name: Build and Push Docker Image
       run: |
@@ -81,6 +79,6 @@ jobs:
           cd ${{ env.DEPLOY_PATH }}
 
           # Run the new container with environment variables
-          docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p 5000:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+          docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p ${{env.APP_PORT}}:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           # Clean up old Docker images
           docker image prune -f
