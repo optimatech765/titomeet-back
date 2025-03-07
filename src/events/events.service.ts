@@ -136,7 +136,7 @@ export class EventsService {
   async getEvents(
     payload: GetEventsDto,
     query: PaginationQuery,
-    user: User,
+    user?: User,
   ): Promise<PaginatedData<Event>> {
     const { search, tags, startDate, endDate, createdById } = payload;
 
@@ -180,11 +180,13 @@ export class EventsService {
         prices: true,
         address: true,
         postedBy: true,
-        participants: {
-          where: {
-            userId: user.id,
+        ...(user && {
+          participants: {
+            where: {
+              userId: user.id,
+            },
           },
-        },
+        }),
       },
       skip,
       take: limit,

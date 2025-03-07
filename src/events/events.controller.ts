@@ -24,7 +24,7 @@ import {
 import { IRequest } from 'src/types';
 import { ApiResponse } from '@nestjs/swagger';
 
-@Controller('events')
+@Controller('api/events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
