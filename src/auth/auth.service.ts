@@ -53,6 +53,9 @@ export class AuthService {
     // Check if user already exists
     const user = await this.prisma.user.findUnique({
       where: { email: signupDto.email },
+      include: {
+        accounts: true,
+      },
     });
     if (user) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
@@ -93,6 +96,9 @@ export class AuthService {
       where: {
         email: payload.email,
         password: createHash('sha256').update(payload.password).digest('hex'),
+      },
+      include: {
+        accounts: true,
       },
     });
 

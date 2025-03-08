@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
-import { User } from '@optimatech88/titomeet-shared-lib';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { UserDto } from './users.dto';
 
 export class SignupDto {
   @ApiProperty()
@@ -28,7 +28,7 @@ export class SignupDto {
   @IsNotEmpty()
   @MinLength(8)
   password: string;
-  }
+}
 
 export class LoginDto {
   @ApiProperty()
@@ -50,7 +50,7 @@ export class AuthenticationResponseDto {
   refreshToken: string;
 
   @ApiProperty()
-  user: User;
+  user: UserDto;
 }
 
 export class RefreshTokenDto {
@@ -59,4 +59,3 @@ export class RefreshTokenDto {
   @IsNotEmpty()
   refreshToken: string;
 }
-
