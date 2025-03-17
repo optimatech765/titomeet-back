@@ -7,6 +7,7 @@ import helmet from 'helmet';
 config();
 
 async function bootstrap() {
+  //enable cors
   const app = await NestFactory.create(AppModule, { cors: true });
   app.use(helmet());
   app.useGlobalPipes(new ValidationPipe());
