@@ -3,13 +3,15 @@ import {
   EventAccess,
   EventVisibility,
 } from '@optimatech88/titomeet-shared-lib';
+import { Type } from 'class-transformer';
 import {
-    IsArray,
+  IsArray,
   IsEnum,
   IsNumber,
   IsOptional,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 
 import { IsString } from 'class-validator';
@@ -297,6 +299,8 @@ export class GetEventsDto {
 export class GetEventsResponseDto {
   @ApiProperty()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventDto)
   items: EventDto[];
 
   @ApiProperty()
@@ -313,5 +317,10 @@ export class GetEventsResponseDto {
   @IsNumber()
   @IsNotEmpty()
   limit: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPages: number;
 }
 

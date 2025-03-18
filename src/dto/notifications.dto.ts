@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { UserDto } from './users.dto';
 
 export class NotificationDto {
   @ApiProperty()
@@ -24,6 +25,11 @@ export class NotificationDto {
   @IsString()
   @IsOptional()
   userId: string;
+
+  @ApiProperty()
+  @IsObject()
+  @IsOptional()
+  user: UserDto;
 
   @ApiProperty()
   @IsEnum(NotificationType)
