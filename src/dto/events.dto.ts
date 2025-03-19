@@ -8,6 +8,7 @@ import {
   IsArray,
   IsEnum,
   IsNumber,
+  IsObject,
   IsOptional,
   MaxLength,
   MinLength,
@@ -17,20 +18,25 @@ import {
 import { IsString } from 'class-validator';
 
 import { IsNotEmpty } from 'class-validator';
+import { UserDto } from './users.dto';
 
 export class EventPriceDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   amount: number;
 
+  @ApiProperty()
   @IsString()
   @IsOptional()
   description: string;
 
+  @ApiProperty()
   @IsString()
   @IsOptional()
   eventId: string;
@@ -77,19 +83,21 @@ export class EventDto {
   @IsNotEmpty()
   tags: string[];
 
-  @ApiProperty()
+  @ApiProperty({ enum: EventAccess })
   @IsEnum(EventAccess)
   @IsNotEmpty()
   accessType: EventAccess;
 
-  @ApiProperty()
+  @ApiProperty({ enum: EventVisibility })
   @IsEnum(EventVisibility)
   @IsNotEmpty()
   visibility: EventVisibility;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ type: [EventPriceDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventPriceDto)
+  @IsOptional()
   prices: EventPriceDto[];
 
   @ApiProperty()
@@ -111,6 +119,16 @@ export class EventDto {
   @IsString()
   @IsNotEmpty()
   endTime: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  createdById: string;
+
+  @ApiProperty()
+  @IsObject()
+  @IsOptional()
+  createdBy: UserDto;
 }
 
 export class CreateEventDto {
@@ -153,18 +171,20 @@ export class CreateEventDto {
   @IsNotEmpty()
   tags: string[];
 
-  @ApiProperty()
+  @ApiProperty({ enum: EventAccess })
   @IsEnum(EventAccess)
   @IsNotEmpty()
   accessType: EventAccess;
 
+  @ApiProperty({ enum: EventVisibility })
   @IsEnum(EventVisibility)
   @IsNotEmpty()
   visibility: EventVisibility;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ type: [EventPriceDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventPriceDto)
   prices: EventPriceDto[];
 
   @ApiProperty()
@@ -229,19 +249,21 @@ export class UpdateEventDto {
   @IsNotEmpty()
   tags: string[];
 
-  @ApiProperty()
+  @ApiProperty({ enum: EventAccess })
   @IsEnum(EventAccess)
   @IsNotEmpty()
   accessType: EventAccess;
 
-  @ApiProperty()
+  @ApiProperty({ enum: EventVisibility })
   @IsEnum(EventVisibility)
   @IsNotEmpty()
   visibility: EventVisibility;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ type: [EventPriceDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventPriceDto)
+  @IsOptional()
   prices: EventPriceDto[];
 
   @ApiProperty()
@@ -297,7 +319,7 @@ export class GetEventsDto {
 }
 
 export class GetEventsResponseDto {
-  @ApiProperty()
+  @ApiProperty({ type: [EventDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => EventDto)
