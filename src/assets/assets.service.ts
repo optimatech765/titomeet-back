@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { DeleteObjectsCommand, S3Client } from '@aws-sdk/client-s3';
 import awsConfig from 'src/config/aws';
 import { randomUUID } from 'crypto';
@@ -11,7 +11,7 @@ export class AssetsService {
   private s3Client: S3Client;
   private bucketName: string;
   private bucketPublicUrl: string;
-
+  private logger = new Logger(AssetsService.name);
   constructor() {
     const {
       AWS_REGION,
@@ -33,47 +33,63 @@ export class AssetsService {
   }
 
   async getPresignedUrl(payload: GetPresignedUrlDto) {
-    const { fileName, fileType } = payload;
-    const extension = fileName.split('.').pop();
-    const uniqueName = `${randomUUID()}-${Date.now()}.${extension}`;
-    const finalName = `public/${uniqueName}`;
-    const expiresInSeconds = 600; //? 10 minutes
+    try {
+      const { fileName, fileType } = payload;
+      const extension = fileName.split('.').pop();
+      const uniqueName = `${randomUUID()}-${Date.now()}.${extension}`;
+      const finalName = `public/${uniqueName}`;
+      const expiresInSeconds = 600; //? 10 minutes
 
-    const { url, fields } = await createPresignedPost(this.s3Client, {
-      Bucket: this.bucketName,
-      Key: finalName,
-      Conditions: [
-        ['content-length-range', 0, MAX_UPLOAD_SIZE], // up to 10 MB
-        ['starts-with', '$Content-Type', fileType],
-      ],
-      Fields: {
-        acl: 'public-read',
-        'Content-Type': fileType,
-      },
-      Expires: expiresInSeconds, //? Seconds before the presigned post expires. 3600 by default.
-    });
+      const { url, fields } = await createPresignedPost(this.s3Client, {
+        Bucket: this.bucketName,
+        Key: finalName,
+        Conditions: [
+          ['content-length-range', 0, MAX_UPLOAD_SIZE], // up to 10 MB
+          ['starts-with', '$Content-Type', fileType],
+        ],
+        Fields: {
+          acl: 'public-read',
+          'Content-Type': fileType,
+        },
+        Expires: expiresInSeconds, //? Seconds before the presigned post expires. 3600 by default.
+      });
 
-    const downloadUrl = `${this.bucketPublicUrl}/${finalName}`;
+      const downloadUrl = `${this.bucketPublicUrl}/${finalName}`;
 
-    return {
-      success: true,
-      uploadUrl: url,
-      downloadUrl,
-      uniqueName,
-      filePath: finalName,
-      fields,
-    };
+      return {
+        success: true,
+        uploadUrl: url,
+        downloadUrl,
+        uniqueName,
+        filePath: finalName,
+        fields,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async deleteAssets(payload: DeleteAssetsDto) {
-    const { fileNames } = payload;
+    try {
+      const { fileNames } = payload;
 
-    const command = new DeleteObjectsCommand({
-      Bucket: this.bucketName,
-      Delete: { Objects: fileNames.map((name) => ({ Key: name })) },
-    });
-    await this.s3Client.send(command);
+      const command = new DeleteObjectsCommand({
+        Bucket: this.bucketName,
+        Delete: { Objects: fileNames.map((name) => ({ Key: name })) },
+      });
+      await this.s3Client.send(command);
 
-    return { success: true };
+      return { success: true };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import {
   Event,
   getPaginationData,
@@ -7,228 +7,397 @@ import {
   PrismaService,
   User,
   Participant,
+  EventCategory,
+  EventStatus,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
   CreateEventDto,
-  GetEventsDto,
+  GetEventsQueryDto,
   UpdateEventDto,
+  EventCategoryQueryDto,
 } from 'src/dto/events.dto';
 
 @Injectable()
 export class EventsService {
+  private readonly logger = new Logger(EventsService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly assetsService: AssetsService,
   ) {}
 
-  async createEvent(payload: CreateEventDto, user: User): Promise<Event> {
-    const prices = payload.prices.map((price) => ({
-      name: price.name,
-      amount: price.amount,
-      description: price.description,
-    }));
+  async getEventCategories(
+    query: EventCategoryQueryDto,
+  ): Promise<PaginatedData<EventCategory>> {
+    try {
+      const { page, limit, skip } = getPaginationData(query);
 
-    const event = await this.prisma.event.create({
-      data: {
-        ...payload,
-        prices: {
-          create: prices,
+      const filter: any = {};
+
+      if (query.search) {
+        filter.name = {
+          contains: query.search,
+        };
+      }
+
+      const categories = await this.prisma.eventCategory.findMany({
+        where: filter,
+        skip,
+        take: limit,
+        orderBy: {
+          name: 'asc',
         },
-        postedById: user.id,
-      },
-      include: {
-        prices: true,
-        address: true,
-        postedBy: true,
-      },
-    });
-    return event;
+      });
+
+      const total = await this.prisma.eventCategory.count({
+        where: filter,
+      });
+
+      return {
+        items: categories,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async createEvent(payload: CreateEventDto, user: User): Promise<Event> {
+    try {
+      const { isDraft, prices, providers, ...rest } = payload;
+
+      const _prices = prices ?? [];
+      const _providers = providers ?? [];
+
+      const status = isDraft ? EventStatus.DRAFT : EventStatus.PENDING;
+
+      const event = await this.prisma.event.create({
+        data: {
+          ...rest,
+          startDate: new Date(payload.startDate),
+          endDate: new Date(payload.endDate),
+          status,
+          ...(_prices.length > 0 && {
+            prices: {
+              create: prices,
+            },
+          }),
+          categories: {
+            connect: payload.categories.map((category) => ({
+              id: category,
+            })),
+          },
+          ...(_providers.length > 0 && {
+            providers: {
+              connect: _providers.map((provider) => ({
+                id: provider,
+              })),
+            },
+          }),
+          postedById: user.id,
+        },
+        include: {
+          prices: true,
+          address: true,
+          postedBy: true,
+        },
+      });
+      return event;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async updateEvent(payload: UpdateEventDto, user: User): Promise<Event> {
-    const event = await this.prisma.event.findUnique({
-      where: { id: payload.id },
-      include: {
-        prices: true,
-      },
-    });
-
-    if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
-    }
-
-    if (user.id !== event.postedById) {
-      throw new HttpException(
-        'You are not allowed to update this event',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    //handle one price usecase
-
-    if (payload.prices.length > 1) {
-      throw new HttpException(
-        'Multiprices not handle yet',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    const price = payload.prices[0];
-
-    const updatedEvent = await this.prisma.event.update({
-      where: { id: payload.id },
-      data: {
-        ...payload,
-        prices: {
-          update: {
-            where: { id: event.prices[0].id },
-            data: price,
-          },
+    try {
+      const { id, providers, prices, ...rest } = payload;
+      const event = await this.prisma.event.findUnique({
+        where: { id },
+        include: {
+          prices: true,
         },
-      },
-      include: {
-        prices: true,
-        address: true,
-        postedBy: true,
-      },
-    });
-    return updatedEvent;
+      });
+
+      if (!event) {
+        throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (user.id !== event.postedById) {
+        throw new HttpException(
+          'You are not allowed to update this event',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      const _providers = providers ?? [];
+      const _prices = prices ?? [];
+
+      //check if event has price and if its any price changed
+      if (_prices.length > 0) {
+        const pricesChanged = event.prices.filter((price) =>
+          _prices.find(
+            (p) =>
+              p.id === price.id &&
+              (p.amount !== price.amount ||
+                p.name !== price.name ||
+                p.description !== price.description),
+          ),
+        );
+        //handle price updates
+        if (pricesChanged.length > 0) {
+          const pricesUpdate = pricesChanged.map(async (price) => {
+            await this.prisma.eventPrice.update({
+              where: { id: price.id },
+              data: {
+                name: price.name,
+                amount: price.amount,
+                description: price.description,
+              },
+            });
+          });
+
+          this.logger.log(
+            `Updating ${pricesChanged.length} prices for event ${id}`,
+          );
+          await Promise.all(pricesUpdate);
+        }
+
+        //handle price creation
+        const pricesCreate = _prices
+          .filter((price) => !event.prices.find((p) => p.id === price.id))
+          .map((price) => ({
+            ...price,
+            eventId: id,
+          }));
+
+        if (pricesCreate.length > 0) {
+          await this.prisma.eventPrice.createMany({
+            data: pricesCreate,
+          });
+          this.logger.log(
+            `Creating ${pricesCreate.length} prices for event ${id}`,
+          );
+        }
+      }
+
+      const status =
+        event.status === EventStatus.CANCELLED
+          ? EventStatus.PENDING
+          : event.status;
+
+      const updatedEvent = await this.prisma.event.update({
+        where: { id },
+        data: {
+          ...rest,
+          startDate: new Date(payload.startDate),
+          endDate: new Date(payload.endDate),
+          status,
+          postedById: event.postedById,
+          /* ...(_prices.length > 0 && {
+            prices: {
+              connectOrCreate: _prices.map((price) => ({
+                where: { id: price.id },
+                create: price,
+              })),
+            },
+          }), */
+          categories: {
+            connect: payload.categories.map((category) => ({
+              id: category,
+            })),
+          },
+          ...(_providers.length > 0 && {
+            providers: {
+              connect: _providers.map((provider) => ({
+                id: provider,
+              })),
+            },
+          }),
+        },
+        include: {
+          prices: true,
+          address: true,
+          postedBy: true,
+        },
+      });
+
+      return updatedEvent;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async deleteEvent(id: string, user: User) {
-    const event = await this.prisma.event.findUnique({
-      where: { id },
-    });
+    try {
+      const event = await this.prisma.event.findUnique({
+        where: { id },
+      });
 
-    if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
-    }
+      if (!event) {
+        throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      }
 
-    if (user.id !== event.postedById) {
+      if (user.id !== event.postedById) {
+        throw new HttpException(
+          'You are not allowed to delete this event',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      await this.prisma.event.delete({
+        where: { id },
+      });
+
+      //delete assets
+      const eventAssets = [];
+      if (event.badge) {
+        eventAssets.push(event.badge);
+      }
+
+      if (event.coverPicture) {
+        eventAssets.push(event.coverPicture);
+      }
+
+      await this.assetsService.deleteAssets({
+        fileNames: eventAssets,
+      });
+
+      return event;
+    } catch (error) {
+      this.logger.error(error);
       throw new HttpException(
-        'You are not allowed to delete this event',
-        HttpStatus.FORBIDDEN,
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    await this.prisma.event.delete({
-      where: { id },
-    });
-
-    //delete assets
-    const eventAssets = [];
-    if (event.badge) {
-      eventAssets.push(event.badge);
-    }
-
-    if (event.coverPicture) {
-      eventAssets.push(event.coverPicture);
-    }
-
-    await this.assetsService.deleteAssets({
-      fileNames: eventAssets,
-    });
-
-    return event;
   }
 
   async getEvents(
-    payload: GetEventsDto,
-    query: PaginationQuery,
+    query: GetEventsQueryDto,
     user?: User,
   ): Promise<PaginatedData<Event>> {
-    const { search, tags, startDate, endDate, createdById } = payload;
+    try {
+      const { search, tags, startDate, endDate, createdById } = query;
 
-    const { page, limit, skip } = getPaginationData(query);
+      const { page, limit, skip } = getPaginationData(query);
 
-    const filter: any = {};
+      const filter: any = {};
 
-    if (search) {
-      filter.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { hasSome: [search] } },
-      ];
-    }
+      if (search) {
+        filter.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { tags: { hasSome: [search] } },
+        ];
+      }
 
-    if (tags?.length) {
-      filter.tags = {
-        hasSome: tags,
+      if (tags?.length) {
+        filter.tags = {
+          hasSome: tags,
+        };
+      }
+
+      if (startDate) {
+        filter.startDate = {
+          gte: startDate,
+        };
+      }
+
+      if (endDate) {
+        filter.endDate = {
+          lte: endDate,
+        };
+      }
+
+      if (createdById) {
+        filter.postedById = createdById;
+      }
+
+      const events = await this.prisma.event.findMany({
+        where: filter,
+        include: {
+          prices: true,
+          address: true,
+          postedBy: true,
+          ...(user && {
+            participants: {
+              where: {
+                userId: user.id,
+              },
+            },
+          }),
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      const total = await this.prisma.event.count({
+        where: filter,
+      });
+
+      return {
+        items: events,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
 
-    if (startDate) {
-      filter.startDate = {
-        gte: startDate,
-      };
-    }
-
-    if (endDate) {
-      filter.endDate = {
-        lte: endDate,
-      };
-    }
-
-    if (createdById) {
-      filter.postedById = createdById;
-    }
-
-    const events = await this.prisma.event.findMany({
-      where: filter,
-      include: {
-        prices: true,
-        address: true,
-        postedBy: true,
-        ...(user && {
+  //get event by id
+  async getEventById(id: string, user: User): Promise<Event> {
+    try {
+      const event = await this.prisma.event.findUnique({
+        where: { id },
+        include: {
+          prices: true,
+          address: true,
+          postedBy: true,
           participants: {
             where: {
               userId: user.id,
             },
           },
-        }),
-      },
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    const total = await this.prisma.event.count({
-      where: filter,
-    });
-
-    return {
-      items: events,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
-  }
-
-  //get event by id
-  async getEventById(id: string, user: User): Promise<Event> {
-    const event = await this.prisma.event.findUnique({
-      where: { id },
-      include: {
-        prices: true,
-        address: true,
-        postedBy: true,
-        participants: {
-          where: {
-            userId: user.id,
-          },
         },
-      },
-    });
+      });
 
-    if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      if (!event) {
+        throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      }
+
+      return event;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    return event;
   }
 
   //get event participants paginated

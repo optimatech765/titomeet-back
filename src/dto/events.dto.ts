@@ -1,17 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   EventAccess,
+  EventStatus,
   EventVisibility,
 } from '@optimatech88/titomeet-shared-lib';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsNumber,
   IsObject,
   IsOptional,
-  MaxLength,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
 
@@ -19,8 +19,33 @@ import { IsString } from 'class-validator';
 
 import { IsNotEmpty } from 'class-validator';
 import { UserDto } from './users.dto';
+import { PaginationQueryDto } from './users.dto';
+import { ProviderDto } from './users.dto';
+export class EventCategoryQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for event categories' })
+  @IsString()
+  @IsOptional()
+  search?: string;
+}
 
-export class EventPriceDto {
+export class EventCategoryDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description: string;
+}
+
+export class EventPriceDtoPayload {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -35,6 +60,20 @@ export class EventPriceDto {
   @IsString()
   @IsOptional()
   description: string;
+}
+
+export class EventPriceUpdateDtoPayload extends EventPriceDtoPayload {
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  id?: string;
+}
+
+export class EventPriceDto extends EventPriceDtoPayload {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
 
   @ApiProperty()
   @IsString()
@@ -42,11 +81,7 @@ export class EventPriceDto {
   eventId: string;
 }
 
-export class EventDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  id: string;
+export class EventBaseDto {
 
   @ApiProperty()
   @IsString()
@@ -79,7 +114,7 @@ export class EventDto {
   capacity: number;
 
   @ApiProperty()
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
   tags: string[];
 
@@ -92,13 +127,6 @@ export class EventDto {
   @IsEnum(EventVisibility)
   @IsNotEmpty()
   visibility: EventVisibility;
-
-  @ApiProperty({ type: [EventPriceDto] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => EventPriceDto)
-  @IsOptional()
-  prices: EventPriceDto[];
 
   @ApiProperty()
   @IsString()
@@ -119,6 +147,39 @@ export class EventDto {
   @IsString()
   @IsNotEmpty()
   endTime: string;
+}
+
+export class EventDto extends EventBaseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty({ type: [EventPriceDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventPriceDto)
+  @IsOptional()
+  prices: EventPriceDto[];
+
+  @ApiProperty({ type: [EventCategoryDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventCategoryDto)
+  @IsOptional()
+  categories: EventCategoryDto[];
+
+  @ApiProperty({ enum: EventStatus })
+  @IsEnum(EventStatus)
+  @IsNotEmpty()
+  status: EventStatus;
+
+  @ApiProperty({ type: [ProviderDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProviderDto)
+  @IsOptional()
+  providers: ProviderDto[];
 
   @ApiProperty()
   @IsString()
@@ -131,191 +192,91 @@ export class EventDto {
   createdBy: UserDto;
 }
 
-export class CreateEventDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(250)
-  name: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(1000)
-  description: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  badge: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  coverPicture: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  addressId: string;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  capacity: number;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  tags: string[];
-
-  @ApiProperty({ enum: EventAccess })
-  @IsEnum(EventAccess)
-  @IsNotEmpty()
-  accessType: EventAccess;
-
-  @ApiProperty({ enum: EventVisibility })
-  @IsEnum(EventVisibility)
-  @IsNotEmpty()
-  visibility: EventVisibility;
+export class CreateEventDto extends EventBaseDto {
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  categories: string[];
 
   @ApiProperty({ type: [EventPriceDto] })
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => EventPriceDto)
-  prices: EventPriceDto[];
+  @Type(() => EventPriceDtoPayload)
+  prices: EventPriceDtoPayload[];
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsOptional()
+  providers: string[];
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  startDate: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  endDate: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  startTime: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  endTime: string;
+  @IsBoolean()
+  @IsOptional()
+  isDraft?: boolean;
 }
 
-export class UpdateEventDto {
+export class UpdateEventDto extends EventBaseDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   id: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  description: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  badge: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  coverPicture: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  addressId: string;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  capacity: number;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  tags: string[];
-
-  @ApiProperty({ enum: EventAccess })
-  @IsEnum(EventAccess)
-  @IsNotEmpty()
-  accessType: EventAccess;
-
-  @ApiProperty({ enum: EventVisibility })
-  @IsEnum(EventVisibility)
-  @IsNotEmpty()
-  visibility: EventVisibility;
-
   @ApiProperty({ type: [EventPriceDto] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => EventPriceDto)
+  @Type(() => EventPriceUpdateDtoPayload)
   @IsOptional()
-  prices: EventPriceDto[];
+  prices: EventPriceUpdateDtoPayload[];
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  startDate: string;
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsOptional()
+  categories: string[];
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  endDate: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  startTime: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  endTime: string;
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsOptional()
+  providers: string[];
 }
 
-export class GetEventsDto {
-  @ApiProperty()
+export class GetEventsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for events' })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  search: string;
+  search?: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'List of tags to filter events',
+  })
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  tags: string[];
+  @Type(() => String)
+  tags?: string[];
 
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Start date for filtering events (YYYY-MM-DD)',
+  })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  startDate: string;
+  startDate?: string;
 
+  @ApiPropertyOptional({
+    description: 'End date for filtering events (YYYY-MM-DD)',
+  })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  endDate: string;
+  endDate?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional({ description: 'User ID of the event creator' })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  createdById: string;
+  createdById?: string;
 }
 
 export class GetEventsResponseDto {
@@ -345,4 +306,3 @@ export class GetEventsResponseDto {
   @IsNotEmpty()
   totalPages: number;
 }
-

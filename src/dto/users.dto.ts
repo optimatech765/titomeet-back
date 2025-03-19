@@ -1,6 +1,25 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '@optimatech88/titomeet-shared-lib';
-import { IsDate, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+
+export class PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Page number' })
+  @IsNumber()
+  @IsOptional()
+  page?: number;
+
+  @ApiPropertyOptional({ description: 'Items per page' })
+  @IsNumber()
+  @IsOptional()
+  limit?: number;
+}
 
 export class AccountDto {
   @ApiProperty()
@@ -52,7 +71,7 @@ export class UserDto {
 
   @ApiProperty({ type: [AccountDto] })
   accounts: AccountDto[];
-} 
+}
 
 export class UpdateUserDto {
   @ApiProperty()
@@ -69,4 +88,26 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   username: string;
-} 
+}
+
+export class ProviderDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+}

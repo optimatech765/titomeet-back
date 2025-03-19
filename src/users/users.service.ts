@@ -8,38 +8,54 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async getUserData(user: User) {
-    const userData = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      include: {
-        accounts: true,
-      },
-    });
-    return userData;
+    try {
+      const userData = await this.prisma.user.findUnique({
+        where: { id: user.id },
+        include: {
+          accounts: true,
+        },
+      });
+      return userData;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async updateUser(user: User, payload: UpdateUserDto) {
-    if (payload.username !== user.username) {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { username: payload.username },
-      });
-      if (existingUser) {
-        throw new HttpException(
-          'Username already exists',
-          HttpStatus.BAD_REQUEST,
-        );
+    try {
+      if (payload.username !== user.username) {
+        const existingUser = await this.prisma.user.findUnique({
+          where: { username: payload.username },
+        });
+        if (existingUser) {
+          throw new HttpException(
+            'Username already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
       }
+      const updatedUser = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...payload,
+          email: user.email,
+          password: user.password,
+        },
+        include: {
+          accounts: true,
+        },
+      });
+      return updatedUser;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    const updatedUser = await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        ...payload,
-        email: user.email,
-        password: user.password,
-      },
-      include: {
-        accounts: true,
-      },
-    });
-    return updatedUser;
   }
 }

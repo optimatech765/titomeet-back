@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
 import { EventsModule } from './events/events.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AddressesModule } from './addresses/addresses.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AssetsModule,
     EventsModule,
     NotificationsModule,
+    AddressesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

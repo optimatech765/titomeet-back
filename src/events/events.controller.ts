@@ -12,21 +12,34 @@ import {
 import { EventsService } from './events.service';
 import {
   CreateEventDto,
+  EventCategoryDto,
+  EventCategoryQueryDto,
   EventDto,
+  GetEventsQueryDto,
   GetEventsResponseDto,
   UpdateEventDto,
 } from 'src/dto/events.dto';
 import {
   AuthGuard,
   OptionalAuthGuard,
-  PaginationQuery,
 } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @Controller('api/events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
+
+  @Get('categories')
+  @UseGuards(OptionalAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event categories',
+    type: EventCategoryDto,
+  })
+  getEventCategories(@Query() query: EventCategoryQueryDto) {
+    return this.eventsService.getEventCategories(query);
+  }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -52,13 +65,18 @@ export class EventsController {
 
   @Get()
   @UseGuards(OptionalAuthGuard)
+  @ApiQuery({
+    name: 'categories',
+    type: [String],
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Get events',
     type: GetEventsResponseDto,
   })
-  getEvents(@Query() query: PaginationQuery, @Request() req: any) {
-    return this.eventsService.getEvents(req.query, query, req.user);
+  getEvents(@Query() query: GetEventsQueryDto, @Request() req: any) {
+    return this.eventsService.getEvents(query, req.user);
   }
 
   @Get(':id')

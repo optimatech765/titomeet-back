@@ -50,90 +50,122 @@ export class AuthService {
   }
 
   async signup(signupDto: SignupDto): Promise<AuthenticationResponseDto> {
-    // Check if user already exists
-    const user = await this.prisma.user.findUnique({
-      where: { email: signupDto.email },
-      include: {
-        accounts: true,
-      },
-    });
-    if (user) {
-      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
-    }
+    try {
+      // Check if user already exists
+      const user = await this.prisma.user.findUnique({
+        where: { email: signupDto.email },
+        include: {
+          accounts: true,
+        },
+      });
+      if (user) {
+        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      }
 
-    // Check if username already exists
-    const username = await this.prisma.user.findUnique({
-      where: { username: signupDto.username },
-    });
-    if (username) {
+      // Check if username already exists
+      const username = await this.prisma.user.findUnique({
+        where: { username: signupDto.username },
+      });
+      if (username) {
+        throw new HttpException(
+          'Username already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Create user
+      const newUser = await this.prisma.user.create({
+        data: {
+          ...signupDto,
+          password: createHash('sha256')
+            .update(signupDto.password)
+            .digest('hex'),
+        },
+        include: {
+          accounts: true,
+        },
+      });
+
+      const tokens = await this.generateTokens(newUser);
+
+      return {
+        ...tokens,
+        user: newUser,
+      };
+    } catch (error) {
+      this.logger.error(error);
       throw new HttpException(
-        'Username already exists',
-        HttpStatus.BAD_REQUEST,
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    // Create user
-    const newUser = await this.prisma.user.create({
-      data: {
-        ...signupDto,
-        password: createHash('sha256').update(signupDto.password).digest('hex'),
-      },
-      include: {
-        accounts: true,
-      },
-    });
-
-    const tokens = await this.generateTokens(newUser);
-
-    return {
-      ...tokens,
-      user: newUser,
-    };
   }
 
   async login(payload: LoginDto): Promise<AuthenticationResponseDto> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: payload.email,
-        password: createHash('sha256').update(payload.password).digest('hex'),
-      },
-      include: {
-        accounts: true,
-      },
-    });
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: payload.email,
+          password: createHash('sha256').update(payload.password).digest('hex'),
+        },
+        include: {
+          accounts: true,
+        },
+      });
 
-    if (!user) {
-      throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+      if (!user) {
+        throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
+      }
+
+      const tokens = await this.generateTokens(user);
+
+      return { ...tokens, user };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    const tokens = await this.generateTokens(user);
-
-    return { ...tokens, user };
   }
 
   async refreshToken(payload: RefreshTokenDto) {
-    const account = await this.prisma.account.findUnique({
-      where: { refreshToken: payload.refreshToken },
-    });
+    try {
+      const account = await this.prisma.account.findUnique({
+        where: { refreshToken: payload.refreshToken },
+      });
 
-    if (!account) {
-      throw new HttpException('Invalid refresh token', HttpStatus.BAD_REQUEST);
+      if (!account) {
+        throw new HttpException(
+          'Invalid refresh token',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (account.expiresAt < new Date()) {
+        throw new HttpException(
+          'Refresh token expired',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: account.userId },
+      });
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+      }
+
+      const tokens = await this.generateTokens(user);
+
+      return { ...tokens, user };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    if (account.expiresAt < new Date()) {
-      throw new HttpException('Refresh token expired', HttpStatus.BAD_REQUEST);
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: account.userId },
-    });
-
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
-    }
-
-    const tokens = await this.generateTokens(user);
-
-    return { ...tokens, user };
   }
 }
