@@ -17,26 +17,37 @@ export class SearchAddressDto {
 }
 
 export class AddressDto {
+  @ApiProperty({ description: 'Address ID' })
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty({ description: 'Address name' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @ApiPropertyOptional({ description: 'Address line 2' })
   @IsString()
   @IsOptional()
   line2?: string;
 
+  @ApiProperty({ description: 'City' })
   @IsString()
   @IsNotEmpty()
   city: string;
 
+  @ApiProperty({ description: 'State' })
   @IsString()
   @IsNotEmpty()
   state: string;
 
+  @ApiProperty({ description: 'Country' })
   @IsString()
   @IsNotEmpty()
   country: string;
 
+  @ApiProperty({ description: 'Postal code' })
   @IsString()
   @IsNotEmpty()
   postalCode: string;
