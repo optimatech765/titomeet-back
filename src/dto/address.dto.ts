@@ -34,12 +34,12 @@ export class AddressDto {
 
   @ApiProperty({ description: 'City' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   city: string;
 
   @ApiProperty({ description: 'State' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   state: string;
 
   @ApiProperty({ description: 'Country' })
@@ -47,10 +47,30 @@ export class AddressDto {
   @IsNotEmpty()
   country: string;
 
+  @ApiProperty({ description: 'Country code' })
+  @IsString()
+  @IsOptional()
+  countryCode: string;
+
   @ApiProperty({ description: 'Postal code' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   postalCode: string;
+
+  @ApiProperty({ description: 'Latitude' })
+  @IsNumber()
+  @IsOptional()
+  latitude: number;
+
+  @ApiProperty({ description: 'Longitude' })
+  @IsNumber()
+  @IsOptional()
+  longitude: number;
+
+  @ApiProperty({ description: 'Result type' })
+  @IsString()
+  @IsOptional()
+  resultType: string;
 }
 
 export class GetAddressesResponseDto {

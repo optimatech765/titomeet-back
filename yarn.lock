@@ -1550,10 +1550,10 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
-"@optimatech88/titomeet-shared-lib@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.9.tgz#2cad5fcad93b890b00f8327cb06b61256702747d"
-  integrity sha512-kkQR9rBiuIfSt/ZH9Q7+SFFKYqpNgcolQFaDxZluLRy6od4tYXW/GjtdvTtKdm4m1T4Mxd2VKu3kv0xxFRJMGg==
+"@optimatech88/titomeet-shared-lib@^1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.13.tgz#84fcf20a2492562d848aa0f461f33fc2c8a33349"
+  integrity sha512-GeLAivNAL8hB8Ch9KQDfNaQTsGuk1AjYG8DPkS8SCNiCPQ1mqahU0osOyD754mUorizmw6xKtv3NtabgCKrcLw==
   dependencies:
     "@faker-js/faker" "^8.4.1"
     "@keyv/redis" "^4.2.0"

@@ -8,6 +8,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsDate,
   IsEnum,
   IsNumber,
   IsObject,
@@ -259,15 +260,14 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     description: 'Start date for filtering events (YYYY-MM-DD)',
   })
-  @IsString()
+  @IsDate()
   @IsNotEmpty()
-  @IsOptional()
-  startDate?: string;
+  startDate?: Date;
 
   @ApiPropertyOptional({
     description: 'End date for filtering events (YYYY-MM-DD)',
   })
-  @IsString()
+  @IsDate()
   @IsNotEmpty()
   @IsOptional()
   endDate?: string;

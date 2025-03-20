@@ -38,10 +38,14 @@ export class AddressesService {
       const results = json.features.map((f) => ({
         city: f.properties.city,
         country: f.properties.country,
-        line1: f.properties.formatted,
+        line1: f.properties.address_line1,
         line2: f.properties.address_line2,
         state: f.properties.state,
         postalCode: f.properties.postcode || '',
+        countryCode: f.properties.country_code,
+        latitude: f.properties.lat,
+        longitude: f.properties.lon,
+        resultType: f.properties.result_type,
       }));
       //check address not already in db
       const addressLines = results.map((r) => r.line1);
@@ -63,6 +67,10 @@ export class AddressesService {
           country: r.country,
           state: r.state,
           postalCode: r.postalCode,
+          countryCode: r.countryCode,
+          latitude: r.latitude,
+          longitude: r.longitude,
+          type: r.resultType,
         }));
 
       this.logger.log(`Saving ${resultsToSave.length} addresses`);
@@ -94,10 +102,21 @@ export class AddressesService {
 
       const params = {
         ...(search && {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
+          OR: [
+            {
+              name: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              line2: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+
+          ],
         }),
       } as any;
 
