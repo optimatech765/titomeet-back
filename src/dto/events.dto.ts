@@ -259,14 +259,14 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     description: 'Start date for filtering events (YYYY-MM-DD)',
   })
-  @IsDate()
+  @IsString()
   @IsOptional()
   startDate?: Date;
 
   @ApiPropertyOptional({
     description: 'End date for filtering events (YYYY-MM-DD)',
   })
-  @IsDate()
+  @IsString()
   @IsOptional()
   endDate?: string;
 

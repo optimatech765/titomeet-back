@@ -4,21 +4,20 @@ import {
   IsDate,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 
 export class PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Page number' })
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  page?: number;
+  page?: string;
 
   @ApiPropertyOptional({ description: 'Items per page' })
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  limit?: number;
+  limit?: string;
 }
 
 export class AccountDto {

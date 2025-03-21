@@ -314,13 +314,13 @@ export class EventsService {
 
       if (startDate) {
         filter.startDate = {
-          gte: startDate,
+          gte: new Date(startDate),
         };
       }
 
       if (endDate) {
         filter.endDate = {
-          lte: endDate,
+          lte: new Date(endDate),
         };
       }
 
