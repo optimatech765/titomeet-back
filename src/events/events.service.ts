@@ -16,6 +16,7 @@ import {
   GetEventsQueryDto,
   UpdateEventDto,
   EventCategoryQueryDto,
+  EventQueryStatus,
 } from 'src/dto/events.dto';
 
 @Injectable()
@@ -292,7 +293,7 @@ export class EventsService {
     user?: User,
   ): Promise<PaginatedData<Event>> {
     try {
-      const { search, tags, startDate, endDate, createdById } = query;
+      const { search, tags, startDate, endDate, createdById, status } = query;
 
       const { page, limit, skip } = getPaginationData(query);
 
@@ -326,6 +327,33 @@ export class EventsService {
 
       if (createdById) {
         filter.postedById = createdById;
+      }
+
+      if (status) {
+        const validStatuses = [
+          EventStatus.DRAFT,
+          EventStatus.PENDING,
+          EventStatus.PUBLISHED,
+          EventStatus.CANCELLED,
+        ] as const;
+
+        if (validStatuses.includes(status as EventStatus)) {
+          filter.status = status as EventStatus;
+        } else {
+          if (status === EventQueryStatus.FINISHED) {
+            filter.endDate = {
+              lte: new Date(),
+            };
+          }
+
+          if (status === EventQueryStatus.FAVORITE && user) {
+            filter.participants = {
+              some: {
+                userId: user.id,
+              },
+            };
+          }
+        }
       }
 
       const events = await this.prisma.event.findMany({

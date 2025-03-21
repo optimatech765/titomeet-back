@@ -240,6 +240,15 @@ export class UpdateEventDto extends EventBaseDto {
   providers: string[];
 }
 
+export enum EventQueryStatus {
+  DRAFT = 'DRAFT',
+  PENDING = 'PENDING',
+  PUBLISHED = 'PUBLISHED',
+  CANCELLED = 'CANCELLED',
+  FINISHED = 'FINISHED',
+  FAVORITE = 'FAVORITE',
+}
+
 export class GetEventsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for events' })
   @IsString()
@@ -274,6 +283,11 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   createdById?: string;
+
+  @ApiPropertyOptional({ description: 'Status of the event' })
+  @IsEnum(EventQueryStatus)
+  @IsOptional()
+  status?: EventQueryStatus;
 }
 
 export class GetEventsResponseDto {
