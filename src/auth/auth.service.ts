@@ -122,10 +122,9 @@ export class AuthService {
       return { ...tokens, user };
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const errorMessage = error.message || 'Something went wrong';
+      const errorCode = error.code || HttpStatus.INTERNAL_SERVER_ERROR;
+      throw new HttpException(errorMessage, errorCode);
     }
   }
 

@@ -243,7 +243,6 @@ export class UpdateEventDto extends EventBaseDto {
 export class GetEventsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for events' })
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   search?: string;
 
@@ -261,20 +260,18 @@ export class GetEventsQueryDto extends PaginationQueryDto {
     description: 'Start date for filtering events (YYYY-MM-DD)',
   })
   @IsDate()
-  @IsNotEmpty()
+  @IsOptional()
   startDate?: Date;
 
   @ApiPropertyOptional({
     description: 'End date for filtering events (YYYY-MM-DD)',
   })
   @IsDate()
-  @IsNotEmpty()
   @IsOptional()
   endDate?: string;
 
   @ApiPropertyOptional({ description: 'User ID of the event creator' })
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   createdById?: string;
 }

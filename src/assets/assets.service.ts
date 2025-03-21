@@ -54,7 +54,9 @@ export class AssetsService {
         Expires: expiresInSeconds, //? Seconds before the presigned post expires. 3600 by default.
       });
 
-      const downloadUrl = `${this.bucketPublicUrl}/${finalName}`;
+      console.log(url, fields);
+
+      const downloadUrl = `https://${this.bucketName}.${this.bucketPublicUrl}/${finalName}`;
 
       return {
         success: true,
