@@ -18,6 +18,7 @@ import {
   EventCategoryQueryDto,
   EventQueryStatus,
 } from 'src/dto/events.dto';
+import { throwServerError } from 'src/utils';
 
 @Injectable()
 export class EventsService {
@@ -353,7 +354,7 @@ export class EventsService {
           }
 
           if (status === EventQueryStatus.FAVORITE && user) {
-            filter.participants = {
+            filter.favorites = {
               some: {
                 userId: user.id,
               },
@@ -374,6 +375,11 @@ export class EventsService {
                 userId: user.id,
               },
             },
+            favorites: {
+              where: {
+                userId: user.id,
+              },
+            },
           }),
         },
         skip,
@@ -383,12 +389,20 @@ export class EventsService {
         },
       });
 
+      const items = events.map((event) => {
+        return {
+          ...event,
+          isAttending: event.participants.length > 0,
+          isFavorite: event.favorites.length > 0,
+        };
+      });
+
       const total = await this.prisma.event.count({
         where: filter,
       });
 
       return {
-        items: events,
+        items,
         total,
         page,
         limit,
@@ -461,5 +475,45 @@ export class EventsService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  //add event to favorites
+  async toggleFavorite(id: string, user: User) {
+    try {
+      const event = await this.prisma.event.findUnique({
+        where: { id },
+      });
+
+      if (!event) {
+        throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      }
+
+      const favorite = await this.prisma.favorite.findFirst({
+        where: {
+          eventId: id,
+          userId: user.id,
+        },
+      });
+
+      if (favorite) {
+        await this.prisma.favorite.delete({
+          where: { id: favorite.id },
+        });
+
+        return {
+          message: 'Event removed from favorites',
+        };
+      }
+
+      await this.prisma.favorite.create({
+        data: { eventId: id, userId: user.id },
+      });
+
+      return {
+        message: 'Event added to favorites',
+      };
+    } catch (error) {
+      throwServerError(error);
+    }
   }
 }

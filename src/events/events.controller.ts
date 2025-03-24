@@ -89,4 +89,14 @@ export class EventsController {
   getEventById(@Param('id') id: string, @Request() req: any) {
     return this.eventsService.getEventById(id, req.user);
   }
+
+  @Post(':id/toggle-favorite')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Toggle favorite',
+  })
+  toggleFavorite(@Param('id') id: string, @Request() req: IRequest) {
+    return this.eventsService.toggleFavorite(id, req.user);
+  }
 }

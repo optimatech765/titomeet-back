@@ -290,12 +290,24 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   status?: EventQueryStatus;
 }
 
+export class PopulatedEventDto extends EventDto {
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @IsOptional()
+  isFavorite?: boolean;
+
+  @ApiProperty({ type: Boolean })
+  @IsBoolean()
+  @IsOptional()
+  isAttending?: boolean;
+}
+
 export class GetEventsResponseDto {
-  @ApiProperty({ type: [EventDto] })
+  @ApiProperty({ type: [PopulatedEventDto] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => EventDto)
-  items: EventDto[];
+  @Type(() => PopulatedEventDto)
+  items: PopulatedEventDto[];
 
   @ApiProperty()
   @IsNumber()
