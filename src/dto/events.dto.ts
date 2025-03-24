@@ -21,7 +21,7 @@ import { IsString } from 'class-validator';
 import { IsNotEmpty } from 'class-validator';
 import { UserDto } from './users.dto';
 import { PaginationQueryDto } from './users.dto';
-import { ProviderDto } from './users.dto';
+import { ProviderDto } from './providers.dto';
 export class EventCategoryQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for event categories' })
   @IsString()

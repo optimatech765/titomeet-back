@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
-import { PrismaService } from '@optimatech88/titomeet-shared-lib';
+import { getPaginationData, PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { CreateProviderDto, GetProvidersQueryDto } from 'src/dto/providers.dto';
 import { User } from '@prisma/client';
 import { throwServerError } from 'src/utils';
-import { getPaginationData } from 'src/utils/pagination';
 
 @Injectable()
 export class ProvidersService {
@@ -46,9 +45,9 @@ export class ProvidersService {
 
   async getProviders(query: GetProvidersQueryDto) {
     try {
-      const { search, page, limit } = query;
+      const { search } = query;
 
-      const { skip, take } = getPaginationData(query);
+      const { skip, limit, page } = getPaginationData(query);
 
       const filter: any = {};
 
@@ -62,7 +61,7 @@ export class ProvidersService {
       const providers = await this.prisma.provider.findMany({
         where: filter,
         skip,
-        take,
+        take: limit,
       });
 
       return {

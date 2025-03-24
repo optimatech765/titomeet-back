@@ -20,6 +20,18 @@ export class PaginationQueryDto {
   limit?: string;
 }
 
+export class TimeStampDto {
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  createdAt: Date;
+
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
+}
+
 export class AccountDto {
   @ApiProperty()
   @IsString()

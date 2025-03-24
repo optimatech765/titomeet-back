@@ -11,6 +11,7 @@ import { ProvidersService } from './providers.service';
 import {
   CreateProviderDto,
   GetProvidersQueryDto,
+  GetProvidersResponseDto,
   ProviderDto,
 } from 'src/dto/providers.dto';
 import {
@@ -42,7 +43,7 @@ export class ProvidersController {
   @ApiResponse({
     status: 200,
     description: 'Get providers',
-    type: ProviderDto,
+    type: GetProvidersResponseDto,
   })
   async getProviders(
     @Query() query: GetProvidersQueryDto,
