@@ -88,25 +88,3 @@ export class UpdateUserDto {
   @IsNotEmpty()
   username: string;
 }
-
-export class ProviderDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  description: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  image: string;
-}
