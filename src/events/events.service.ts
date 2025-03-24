@@ -77,7 +77,13 @@ export class EventsService {
       const _prices = prices ?? [];
       const _providers = providers ?? [];
 
-      const status = isDraft ? EventStatus.DRAFT : EventStatus.PENDING;
+      const allow = true;
+
+      const status = allow
+        ? EventStatus.PUBLISHED
+        : isDraft
+          ? EventStatus.DRAFT
+          : EventStatus.PENDING;
 
       const event = await this.prisma.event.create({
         data: {
