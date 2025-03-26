@@ -3,6 +3,23 @@ import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } f
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
 
+export class ProviderCategory {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description: string;
+}
+
 export class ProviderDto {
   @ApiProperty()
   @IsString()
@@ -40,6 +57,16 @@ export class CreateProviderDto {
   @IsString()
   @IsOptional()
   image: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  addressId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  categoryId: string;
 }
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
