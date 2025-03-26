@@ -392,8 +392,8 @@ export class EventsService {
       const items = events.map((event) => {
         return {
           ...event,
-          isAttending: event.participants.length > 0,
-          isFavorite: event.favorites.length > 0,
+          isAttending: event.participants?.length > 0,
+          isFavorite: event.favorites?.length > 0,
         };
       });
 
