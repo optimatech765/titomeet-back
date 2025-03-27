@@ -10,6 +10,7 @@ import {
 import { ProvidersService } from './providers.service';
 import {
   CreateProviderDto,
+  GetProviderCategoriesResponseDto,
   GetProvidersQueryDto,
   GetProvidersResponseDto,
   ProviderCategoryDto,
@@ -59,7 +60,7 @@ export class ProvidersController {
   @ApiResponse({
     status: 200,
     description: 'Get provider categories',
-    type: ProviderCategoryDto,
+    type: GetProviderCategoriesResponseDto,
   })
   async getProviderCategories(@Query() query: ProviderCategoryQueryDto) {
     return this.providersService.getProviderCategories(query);

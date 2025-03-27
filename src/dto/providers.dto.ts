@@ -161,3 +161,32 @@ export class ProviderCategoryQueryDto extends PaginationQueryDto {
   @IsOptional()
   search?: string;
 }
+
+
+export class GetProviderCategoriesResponseDto {
+  @ApiProperty({ type: [ProviderCategoryDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProviderCategoryDto)
+  items: ProviderCategoryDto[];
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  total: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  page: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  limit: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPages: number;
+}
