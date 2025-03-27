@@ -12,7 +12,7 @@ import {
 } from '@optimatech88/titomeet-shared-lib';
 import { REFRESH_TOKEN_EXPIRES_IN } from 'src/utils/constants';
 import { createHash, randomUUID } from 'crypto';
-
+import { throwServerError } from 'src/utils';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -94,10 +94,7 @@ export class AuthService {
       };
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      return throwServerError(error);
     }
   }
 
@@ -122,9 +119,7 @@ export class AuthService {
       return { ...tokens, user };
     } catch (error) {
       this.logger.error(error);
-      const errorMessage = error.message || 'Something went wrong';
-      const errorCode = error.code || HttpStatus.INTERNAL_SERVER_ERROR;
-      throw new HttpException(errorMessage, errorCode);
+      return throwServerError(error); 
     }
   }
 
@@ -161,10 +156,7 @@ export class AuthService {
       return { ...tokens, user };
     } catch (error) {
       this.logger.error(error);
-      throw new HttpException(
-        'Something went wrong',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      return throwServerError(error);
     }
   }
 }

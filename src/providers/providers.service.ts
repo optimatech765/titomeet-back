@@ -1,7 +1,16 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
-import { getPaginationData, PrismaService } from '@optimatech88/titomeet-shared-lib';
-import { CreateProviderDto, GetProvidersQueryDto } from 'src/dto/providers.dto';
+import {
+  getPaginationData,
+  PaginatedData,
+  PrismaService,
+  ProviderCategory,
+} from '@optimatech88/titomeet-shared-lib';
+import {
+  CreateProviderDto,
+  GetProvidersQueryDto,
+  ProviderCategoryQueryDto,
+} from 'src/dto/providers.dto';
 import { User } from '@prisma/client';
 import { throwServerError } from 'src/utils';
 
@@ -9,6 +18,46 @@ import { throwServerError } from 'src/utils';
 export class ProvidersService {
   private readonly logger = new Logger(ProvidersService.name);
   constructor(private readonly prisma: PrismaService) {}
+
+  async getProviderCategories(
+    query: ProviderCategoryQueryDto,
+  ): Promise<PaginatedData<ProviderCategory>> {
+    try {
+      const { page, limit, skip } = getPaginationData(query);
+
+      const filter: any = {};
+
+      if (query.search) {
+        filter.name = {
+          contains: query.search,
+        };
+      }
+
+      const categories = await this.prisma.providerCategory.findMany({
+        where: filter,
+        skip,
+        take: limit,
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      const total = await this.prisma.providerCategory.count({
+        where: filter,
+      });
+
+      return {
+        items: categories,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
 
   async createProvider(payload: CreateProviderDto, user: User) {
     try {

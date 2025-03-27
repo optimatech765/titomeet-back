@@ -12,6 +12,8 @@ import {
   CreateProviderDto,
   GetProvidersQueryDto,
   GetProvidersResponseDto,
+  ProviderCategoryDto,
+  ProviderCategoryQueryDto,
   ProviderDto,
 } from 'src/dto/providers.dto';
 import {
@@ -50,5 +52,16 @@ export class ProvidersController {
     //@Request() req: any,
   ) {
     return this.providersService.getProviders(query);
+  }
+
+  @Get('categories')
+  @UseGuards(OptionalAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get provider categories',
+    type: ProviderCategoryDto,
+  })
+  async getProviderCategories(@Query() query: ProviderCategoryQueryDto) {
+    return this.providersService.getProviderCategories(query);
   }
 }

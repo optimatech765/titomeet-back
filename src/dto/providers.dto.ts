@@ -1,9 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
+import { AddressDto } from './address.dto';
 
-export class ProviderCategory {
+export class ProviderCategoryDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -40,6 +49,30 @@ export class ProviderDto {
   @IsString()
   @IsNotEmpty()
   image: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  addressId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  categoryId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+
+  @ApiProperty({ type: ProviderCategoryDto })
+  @IsObject()
+  category: ProviderCategoryDto;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  address: AddressDto;
 }
 
 export class CreateProviderDto {
@@ -102,4 +135,29 @@ export class GetProvidersResponseDto {
   @IsNumber()
   @IsNotEmpty()
   totalPages: number;
+}
+
+
+export class UpdateProviderCategoryDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description: string;
+}
+
+export class ProviderCategoryQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for provider categories' })
+  @IsString()
+  @IsOptional()
+  search?: string;
 }

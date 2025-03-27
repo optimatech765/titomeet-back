@@ -13,6 +13,7 @@ import { EventsModule } from './events/events.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { ProvidersModule } from './providers/providers.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ProvidersModule } from './providers/providers.module';
     NotificationsModule,
     AddressesModule,
     ProvidersModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
