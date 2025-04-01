@@ -1,10 +1,16 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  OrderStatus,
+  PaymentStatus,
+  PrismaService,
+} from '@optimatech88/titomeet-shared-lib';
 import { FedaPay, Transaction } from 'fedapay';
 import paymentConfig from 'src/config/payment';
-
 @Injectable()
 export class FedapayService implements OnModuleInit {
   private readonly logger = new Logger(FedapayService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
     const { fedapay } = paymentConfig();
@@ -52,6 +58,36 @@ export class FedapayService implements OnModuleInit {
   async webhook(payload: any) {
     try {
       this.logger.log('Webhook received:', payload);
+      if (payload.object === 'transaction') {
+        const txn = await this.verifyTxn(payload.id);
+        this.logger.log({ txn });
+        const order = await this.prisma.order.findUnique({
+          where: { paymentIntentId: String(txn.id) },
+        });
+        if (!order) {
+          this.logger.error('Order not found');
+          throw new Error('Order not found');
+        }
+        if (txn.status === 'approved') {
+          await this.prisma.order.update({
+            where: { id: order.id },
+            data: {
+              status: OrderStatus.CONFIRMED,
+              paymentStatus: PaymentStatus.COMPLETED,
+            },
+          });
+          //send email to user
+        } else {
+          await this.prisma.order.update({
+            where: { id: order.id },
+            data: {
+              status: OrderStatus.CANCELLED,
+              paymentStatus: PaymentStatus.FAILED,
+            },
+          });
+        }
+      }
+      return true;
     } catch (error) {
       this.logger.error('Error processing webhook:', error.message);
       throw error;

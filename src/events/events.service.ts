@@ -18,8 +18,8 @@ import {
   UpdateEventDto,
   EventCategoryQueryDto,
   EventQueryStatus,
-  CreateOrderDto,
 } from 'src/dto/events.dto';
+import { CreateOrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
 import { FedapayService } from 'src/fedapay/fedapay.service';
 
@@ -533,6 +533,13 @@ export class EventsService {
         throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
       }
 
+      if (event.status !== EventStatus.PUBLISHED) {
+        throw new HttpException(
+          'Event is not published',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const eventPrices = await this.prisma.eventPrice.findMany({
         where: {
           id: {
@@ -546,7 +553,6 @@ export class EventsService {
       }
 
       const orderItems = items.map((item) => ({
-        priceId: item.priceId,
         quantity: item.quantity,
         unitPrice:
           eventPrices.find((price) => price.id === item.priceId)?.amount ?? 0,
@@ -582,10 +588,12 @@ export class EventsService {
           description: `Payment for order #${order.id}`,
         });
 
+        this.logger.log({ txn });
+
         await this.prisma.order.update({
           where: { id: order.id },
           data: {
-            paymentIntentId: txn.id,
+            paymentIntentId: String(txn.id),
           },
         });
 
@@ -596,6 +604,7 @@ export class EventsService {
         message: 'Event added to favorites',
       };
     } catch (error) {
+      this.logger.error(error);
       throwServerError(error);
     }
   }

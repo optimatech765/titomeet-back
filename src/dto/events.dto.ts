@@ -8,7 +8,6 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsDate,
   IsEnum,
   IsNumber,
   IsObject,
@@ -345,34 +344,4 @@ export class UpdateEventCategoryDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
-}
-
-export class OrderItemPayloadDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  priceId: string;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  quantity: number;
-}
-
-export class CreateOrderDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  eventId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  email: string;
-
-  @ApiProperty({ type: [OrderItemPayloadDto] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => OrderItemPayloadDto)
-  items: OrderItemPayloadDto[];
 }
