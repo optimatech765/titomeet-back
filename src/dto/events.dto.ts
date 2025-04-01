@@ -329,3 +329,50 @@ export class GetEventsResponseDto {
   @IsNotEmpty()
   totalPages: number;
 }
+
+export class UpdateEventCategoryDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  description: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  active?: boolean;
+}
+
+export class OrderItemPayloadDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  priceId: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number;
+}
+
+export class CreateOrderDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  eventId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({ type: [OrderItemPayloadDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemPayloadDto)
+  items: OrderItemPayloadDto[];
+}

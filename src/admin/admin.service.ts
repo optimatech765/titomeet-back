@@ -21,6 +21,7 @@ import {
   CreateProviderCategoryDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
+import { UpdateEventCategoryDto } from 'src/dto/events.dto';
 import {
   CreateProviderDto,
   UpdateProviderCategoryDto,
@@ -39,6 +40,22 @@ export class AdminService {
     try {
       const eventCategory = await this.prisma.eventCategory.create({
         data: createEventCategoryDto,
+      });
+      return eventCategory;
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  async updateEventCategory(
+    id: string,
+    payload: UpdateEventCategoryDto,
+  ): Promise<EventCategory> {
+    try {
+      const eventCategory = await this.prisma.eventCategory.update({
+        where: { id },
+        data: payload,
       });
       return eventCategory;
     } catch (error) {

@@ -9,6 +9,7 @@ import {
   Participant,
   EventCategory,
   EventStatus,
+  EventAccess,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -17,8 +18,10 @@ import {
   UpdateEventDto,
   EventCategoryQueryDto,
   EventQueryStatus,
+  CreateOrderDto,
 } from 'src/dto/events.dto';
 import { throwServerError } from 'src/utils';
+import { FedapayService } from 'src/fedapay/fedapay.service';
 
 @Injectable()
 export class EventsService {
@@ -26,6 +29,7 @@ export class EventsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly assetsService: AssetsService,
+    private readonly fedapayService: FedapayService,
   ) {}
 
   async getEventCategories(
@@ -508,6 +512,85 @@ export class EventsService {
       await this.prisma.favorite.create({
         data: { eventId: id, userId: user.id },
       });
+
+      return {
+        message: 'Event added to favorites',
+      };
+    } catch (error) {
+      throwServerError(error);
+    }
+  }
+
+  async createOrder(payload: CreateOrderDto, user: User) {
+    try {
+      const { eventId, email, items } = payload;
+
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+      if (!event) {
+        throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      }
+
+      const eventPrices = await this.prisma.eventPrice.findMany({
+        where: {
+          id: {
+            in: items.map((item) => item.priceId),
+          },
+        },
+      });
+
+      if (eventPrices.length !== items.length) {
+        throw new HttpException('Invalid price ids', HttpStatus.BAD_REQUEST);
+      }
+
+      const orderItems = items.map((item) => ({
+        priceId: item.priceId,
+        quantity: item.quantity,
+        unitPrice:
+          eventPrices.find((price) => price.id === item.priceId)?.amount ?? 0,
+        eventPriceId: item.priceId,
+      }));
+
+      const totalAmount = orderItems.reduce(
+        (acc, item) => acc + item.unitPrice * item.quantity,
+        0,
+      );
+
+      const isPaidEvent = event.accessType === EventAccess.PAID;
+
+      if (isPaidEvent) {
+        if (totalAmount === 0) {
+          throw new HttpException('Invalid amount', HttpStatus.BAD_REQUEST);
+        }
+
+        const order = await this.prisma.order.create({
+          data: {
+            eventId,
+            userId: user.id,
+            email,
+            totalAmount,
+            items: {
+              create: orderItems,
+            },
+          },
+        });
+
+        const txn = await this.fedapayService.createTransaction({
+          amount: totalAmount,
+          description: `Payment for order #${order.id}`,
+        });
+
+        await this.prisma.order.update({
+          where: { id: order.id },
+          data: {
+            paymentIntentId: txn.id,
+          },
+        });
+
+        return txn;
+      }
 
       return {
         message: 'Event added to favorites',

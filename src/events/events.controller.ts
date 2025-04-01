@@ -12,6 +12,7 @@ import {
 import { EventsService } from './events.service';
 import {
   CreateEventDto,
+  CreateOrderDto,
   EventCategoryDto,
   EventCategoryQueryDto,
   EventDto,
@@ -98,5 +99,15 @@ export class EventsController {
   })
   toggleFavorite(@Param('id') id: string, @Request() req: IRequest) {
     return this.eventsService.toggleFavorite(id, req.user);
+  }
+
+  @Post(':id/order')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Order event',
+  })
+  orderEvent(@Body() payload: CreateOrderDto, @Request() req: IRequest) {
+    return this.eventsService.createOrder(payload, req.user);
   }
 }
