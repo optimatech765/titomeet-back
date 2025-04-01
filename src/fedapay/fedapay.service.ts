@@ -5,6 +5,7 @@ import {
   PrismaService,
 } from '@optimatech88/titomeet-shared-lib';
 import { FedaPay, Transaction } from 'fedapay';
+import appConfig from 'src/config';
 import paymentConfig from 'src/config/payment';
 @Injectable()
 export class FedapayService implements OnModuleInit {
@@ -40,11 +41,12 @@ export class FedapayService implements OnModuleInit {
     description: string;
   }): Promise<Transaction> {
     try {
+      const { frontendUrl } = appConfig();
       const txn = await Transaction.create({
         description: payload.description,
         amount: payload.amount,
         currency: { iso: 'XOF' },
-        callback_url: 'https://example.com/callback',
+        callback_url: `${frontendUrl}/payment/callback`,
         mode: 'mtn_open',
       });
       return txn;
