@@ -64,7 +64,7 @@ export class FedapayService implements OnModuleInit {
     try {
       const { fedapay } = paymentConfig();
       const { data } = await axios.post(
-        `${fedapay.apiUrl}/transactions/${transactionId}/payment-link`,
+        `${fedapay.apiUrl}/v1/transactions/${transactionId}/token`,
         {},
         {
           headers: {

@@ -5,6 +5,7 @@ import {
   IsArray,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -44,7 +45,7 @@ export class CreateOrderDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   callbackUrl: string;
 }
 
