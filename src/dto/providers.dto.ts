@@ -7,10 +7,12 @@ import {
   IsOptional,
   IsString,
   ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
 import { AddressDto } from './address.dto';
+import { ProviderStatus } from '@optimatech88/titomeet-shared-lib';
 
 export class ProviderCategoryDto {
   @ApiProperty()
@@ -100,6 +102,26 @@ export class CreateProviderDto {
   @IsString()
   @IsNotEmpty()
   categoryId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  phoneNumber: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  website: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  pricingDetails: string;
 }
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
@@ -190,3 +212,13 @@ export class GetProviderCategoriesResponseDto {
   @IsNotEmpty()
   totalPages: number;
 }
+
+
+export class ValidateProviderDto {
+  @ApiProperty({ enum: ProviderStatus })
+  @IsEnum(ProviderStatus)
+  @IsNotEmpty()
+  status: ProviderStatus;
+
+}
+

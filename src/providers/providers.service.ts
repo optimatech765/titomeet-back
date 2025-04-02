@@ -61,7 +61,17 @@ export class ProvidersService {
 
   async createProvider(payload: CreateProviderDto, user: User) {
     try {
-      const { name, description, image, categoryId, addressId } = payload;
+      const {
+        name,
+        description,
+        image,
+        categoryId,
+        addressId,
+        email,
+        phoneNumber,
+        website,
+        pricingDetails,
+      } = payload;
 
       //? Check if provider already exists
       const provider = await this.prisma.provider.findFirst({
@@ -78,6 +88,10 @@ export class ProvidersService {
           name,
           description,
           image,
+          email,
+          phoneNumber,
+          website,
+          pricingDetails,
           user: {
             connect: {
               id: user.id,

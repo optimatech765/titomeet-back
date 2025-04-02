@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { EventCategoryDto, UpdateEventCategoryDto } from 'src/dto/events.dto';
@@ -15,11 +16,15 @@ import {
   AdminStatsDto,
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
+  GetUsersQueryDto,
 } from 'src/dto/admin.dto';
 import {
   ProviderCategoryDto,
   UpdateProviderCategoryDto,
+  ProviderDto,
+  ValidateProviderDto,
 } from 'src/dto/providers.dto';
+import { UserDto } from 'src/dto/users.dto';
 
 @Controller('api/admin')
 export class AdminController {
@@ -81,5 +86,30 @@ export class AdminController {
   })
   updateProviderCategory(@Body() payload: UpdateProviderCategoryDto) {
     return this.adminService.updateProviderCategory(payload);
+  }
+
+  @Put('providers/:id/status')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Update provider status',
+    type: ProviderDto,
+  })
+  updateProviderStatus(
+    @Param('id') id: string,
+    @Body() payload: ValidateProviderDto,
+  ) {
+    return this.adminService.updateProviderStatus(id, payload);
+  }
+
+  @Get('users')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get users',
+    type: UserDto,
+  })
+  getUsers(@Query() query: GetUsersQueryDto) {
+    return this.adminService.getUsers(query);
   }
 }

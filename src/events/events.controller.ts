@@ -19,7 +19,10 @@ import {
   GetEventsResponseDto,
   UpdateEventDto,
 } from 'src/dto/events.dto';
-import { CreateOrderDto, TransactionDto } from 'src/dto/orders.dto';
+import {
+  CreateOrderDto,
+  CreateTransactionPaymentLinkDto,
+} from 'src/dto/orders.dto';
 import {
   AuthGuard,
   OptionalAuthGuard,
@@ -106,7 +109,7 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     description: 'Buy event tickets',
-    type: TransactionDto,
+    type: CreateTransactionPaymentLinkDto,
   })
   orderEvent(@Body() payload: CreateOrderDto, @Request() req: IRequest) {
     return this.eventsService.createOrder(payload, req.user);

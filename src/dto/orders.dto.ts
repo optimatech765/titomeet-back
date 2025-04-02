@@ -111,6 +111,11 @@ export class OrderItemDto {
   @IsNumber()
   @IsNotEmpty()
   unitPrice: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  callbackUrl: string;
 }
 
 
@@ -135,3 +140,16 @@ export class TransactionDto {
   @IsNotEmpty()
   description: string;
 }
+
+export class CreateTransactionPaymentLinkDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  transactionId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  url: string;
+}
+

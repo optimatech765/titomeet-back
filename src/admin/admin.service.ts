@@ -1,32 +1,30 @@
 import {
-  HttpException,
-  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
-  Provider,
 } from '@nestjs/common';
 import {
   Event,
   EventCategory,
   EventStatus,
+  getPaginationData,
   PrismaService,
   ProviderCategory,
   ProviderStatus,
   UserRole,
+  Provider
 } from '@optimatech88/titomeet-shared-lib';
 import {
   AdminStatsDto,
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
+  GetUsersQueryDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import { UpdateEventCategoryDto } from 'src/dto/events.dto';
-import {
-  CreateProviderDto,
-  UpdateProviderCategoryDto,
-} from 'src/dto/providers.dto';
+import { UpdateProviderCategoryDto, ValidateProviderDto } from 'src/dto/providers.dto';
 import { throwServerError } from 'src/utils';
+
 
 @Injectable()
 export class AdminService {
@@ -131,6 +129,23 @@ export class AdminService {
     }
   }
 
+  //providers
+  async updateProviderStatus(
+    id: string,
+    payload: ValidateProviderDto,
+  ): Promise<Provider> {
+    try {
+      const provider = await this.prisma.provider.update({
+        where: { id },
+        data: payload,
+      });
+      return provider;
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
   async getAdminStats(): Promise<AdminStatsDto> {
     try {
       const totalUsers = await this.prisma.user.count({
@@ -163,6 +178,55 @@ export class AdminService {
         totalProviders,
         totalEvents,
         totalBookings,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //users
+  async getUsers(query: GetUsersQueryDto) {
+    try {
+      const { search, role } = query;
+      const { skip, page, limit } = getPaginationData(query);
+
+      const where = {} as any;
+
+      if (search) {
+        where.OR = [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      if (role) {
+        where.role = role;
+      }
+
+      const users = await this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        omit: {
+          password: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      const total = await this.prisma.user.count({
+        where,
+      });
+
+      return {
+        items: users,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
       this.logger.error(error);

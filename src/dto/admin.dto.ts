@@ -1,6 +1,18 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { EventStatus } from '@optimatech88/titomeet-shared-lib';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { PaginationQueryDto } from './users.dto';
+
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { EventStatus, UserRole } from '@optimatech88/titomeet-shared-lib';
+import { UserDto } from './users.dto';
+import { Type } from 'class-transformer';
 
 export class CreateEventCategoryDto {
   @ApiProperty({
@@ -33,7 +45,7 @@ export class UpdateEventStatusDto {
   @IsNotEmpty()
   @IsString()
   eventId: string;
-} 
+}
 
 export class CreateProviderCategoryDto {
   @ApiProperty({
@@ -50,7 +62,6 @@ export class CreateProviderCategoryDto {
   @IsString()
   description: string;
 }
-
 
 export class AdminStatsDto {
   @ApiProperty({
@@ -80,4 +91,52 @@ export class AdminStatsDto {
   @IsNotEmpty()
   @IsNumber()
   totalBookings: number;
+}
+
+export class GetUsersQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for users' })
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @ApiPropertyOptional({ description: 'Role of the user' })
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
+}
+
+export class GetUsersResponseDto {
+  @ApiProperty({ type: [UserDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDto)
+  items: UserDto[];
+
+  @ApiProperty({
+    description: 'Total number of users',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  total: number;
+
+  @ApiProperty({
+    description: 'Page number',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  page: number;
+
+  @ApiProperty({
+    description: 'Limit number',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({
+    description: 'Total number of pages',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalPages: number;
 }

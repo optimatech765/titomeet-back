@@ -4,6 +4,7 @@ import {
   PaymentStatus,
   PrismaService,
 } from '@optimatech88/titomeet-shared-lib';
+import axios from 'axios';
 import { FedaPay, Transaction } from 'fedapay';
 import appConfig from 'src/config';
 import paymentConfig from 'src/config/payment';
@@ -39,19 +40,48 @@ export class FedapayService implements OnModuleInit {
   async createTransaction(payload: {
     amount: number;
     description: string;
+    callbackUrl?: string;
   }): Promise<Transaction> {
     try {
       const { frontendUrl } = appConfig();
+      const callbackUrl =
+        payload.callbackUrl ?? `${frontendUrl}/payment/callback`;
       const txn = await Transaction.create({
         description: payload.description,
         amount: payload.amount,
         currency: { iso: 'XOF' },
-        callback_url: `${frontendUrl}/payment/callback`,
+        callback_url: callbackUrl,
         mode: 'mtn_open',
       });
       return txn;
     } catch (error) {
       this.logger.error('Error creating transaction:', error.message);
+      throw error;
+    }
+  }
+
+  async createTransactionPaymentLink(transactionId: string) {
+    try {
+      const { fedapay } = paymentConfig();
+      const { data } = await axios.post(
+        `${fedapay.apiUrl}/transactions/${transactionId}/payment-link`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${fedapay.secretKey}`,
+          },
+        },
+      );
+      this.logger.log('Transaction payment link created:', data);
+      return {
+        url: data.url,
+        transactionId: data.id,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Error creating transaction payment link:',
+        error.message,
+      );
       throw error;
     }
   }
