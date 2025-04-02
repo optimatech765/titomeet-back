@@ -8,6 +8,7 @@ import {
   IsString,
   ValidateNested,
   IsEnum,
+  IsUrl,
 } from 'class-validator';
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
@@ -31,53 +32,24 @@ export class ProviderCategoryDto {
   description: string;
 }
 
-export class ProviderDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  description: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  image: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  addressId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  categoryId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  userId: string;
-
-  @ApiProperty({ type: ProviderCategoryDto })
-  @IsObject()
-  category: ProviderCategoryDto;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  address: AddressDto;
+export enum ProviderDocType {
+  IMAGE = 'image',
+  PDF = 'pdf',
 }
 
-export class CreateProviderDto {
+export class ProviderDoc {
+  @ApiProperty({ enum: ProviderDocType })
+  @IsEnum(ProviderDocType)
+  @IsNotEmpty()
+  type: ProviderDocType;
+
+  @ApiProperty()
+  @IsUrl()
+  @IsNotEmpty()
+  url: string;
+}
+
+export class ProviderBaseDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -90,8 +62,9 @@ export class CreateProviderDto {
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   image: string;
+
 
   @ApiProperty()
   @IsString()
@@ -122,6 +95,39 @@ export class CreateProviderDto {
   @IsString()
   @IsOptional()
   pricingDetails: string;
+
+  @ApiProperty({ type: [ProviderDoc] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProviderDoc)
+  docs: ProviderDoc[];
+
+}
+
+export class ProviderDto extends ProviderBaseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+
+  @ApiProperty({ type: ProviderCategoryDto })
+  @IsObject()
+  category: ProviderCategoryDto;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  address: AddressDto;
+}
+
+export class CreateProviderDto extends ProviderBaseDto {
+
+
 }
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
