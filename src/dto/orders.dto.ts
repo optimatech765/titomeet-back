@@ -41,6 +41,11 @@ export class CreateOrderDto {
   @ValidateNested({ each: true })
   @Type(() => OrderItemPayloadDto)
   items: OrderItemPayloadDto[];
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  callbackUrl: string;
 }
 
 export class OrderDto {
@@ -111,11 +116,6 @@ export class OrderItemDto {
   @IsNumber()
   @IsNotEmpty()
   unitPrice: number;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  callbackUrl: string;
 }
 
 
