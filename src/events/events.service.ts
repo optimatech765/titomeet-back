@@ -586,6 +586,7 @@ export class EventsService {
         const txn = await this.fedapayService.createTransaction({
           amount: totalAmount,
           description: `Payment for order #${order.id}`,
+          callbackUrl: payload.callbackUrl,
         });
 
         this.logger.log({ txn });
