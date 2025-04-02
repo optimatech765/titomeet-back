@@ -32,7 +32,7 @@ export class FedapayService implements OnModuleInit {
       const txn = await Transaction.retrieve(txnId);
       return txn;
     } catch (error) {
-      this.logger.error('Error retrieving customer:', error.message);
+      this.logger.error('Error retrieving transaction:', error.message);
       throw error;
     }
   }
@@ -91,7 +91,7 @@ export class FedapayService implements OnModuleInit {
     try {
       this.logger.log('Webhook received:', payload);
       if (payload.object === 'transaction') {
-        const txn = await this.verifyTxn(payload.id);
+        const txn = await this.verifyTxn(payload.object_id);
         this.logger.log({ txn });
         const order = await this.prisma.order.findUnique({
           where: { paymentIntentId: String(txn.id) },

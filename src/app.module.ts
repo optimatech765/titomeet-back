@@ -15,6 +15,7 @@ import { AddressesModule } from './addresses/addresses.module';
 import { ProvidersModule } from './providers/providers.module';
 import { AdminModule } from './admin/admin.module';
 import { FedapayModule } from './fedapay/fedapay.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { FedapayModule } from './fedapay/fedapay.module';
     ProvidersModule,
     AdminModule,
     FedapayModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
