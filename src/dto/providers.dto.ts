@@ -47,6 +47,11 @@ export class ProviderDoc {
   @IsUrl()
   @IsNotEmpty()
   url: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string
 }
 
 export class ProviderBaseDto {
