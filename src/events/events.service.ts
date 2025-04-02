@@ -597,7 +597,9 @@ export class EventsService {
           },
         });
 
-        return txn;
+        const paymentLink = await this.fedapayService.createTransactionPaymentLink(txn.id);
+
+        return paymentLink;
       }
 
       return {

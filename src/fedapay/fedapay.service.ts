@@ -60,7 +60,7 @@ export class FedapayService implements OnModuleInit {
     }
   }
 
-  async createTransactionPaymentLink(transactionId: string) {
+  async createTransactionPaymentLink(transactionId: number) {
     try {
       const { fedapay } = paymentConfig();
       const { data } = await axios.post(
