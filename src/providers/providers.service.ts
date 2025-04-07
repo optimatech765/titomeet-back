@@ -11,7 +11,7 @@ import {
   GetProvidersQueryDto,
   ProviderCategoryQueryDto,
 } from 'src/dto/providers.dto';
-import { User } from '@prisma/client';
+import { ProviderStatus, User, UserRole } from '@prisma/client';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
@@ -71,7 +71,14 @@ export class ProvidersService {
         phoneNumber,
         website,
         pricingDetails,
+        docs
       } = payload;
+
+      const docsArray = docs.map((doc) => ({
+        type: doc.type,
+        url: doc.url,
+        name: doc.name,
+      }));
 
       //? Check if provider already exists
       const provider = await this.prisma.provider.findFirst({
@@ -92,6 +99,7 @@ export class ProvidersService {
           phoneNumber,
           website,
           pricingDetails,
+          docs: docsArray,
           user: {
             connect: {
               id: user.id,
@@ -116,13 +124,18 @@ export class ProvidersService {
     }
   }
 
-  async getProviders(query: GetProvidersQueryDto) {
+  async getProviders(query: GetProvidersQueryDto, user?: User) {
     try {
       const { search } = query;
 
       const { skip, limit, page } = getPaginationData(query);
 
-      const filter: any = {};
+      const filter: any = {
+        ...(user &&
+          user.role !== UserRole.ADMIN && {
+            status: ProviderStatus.APPROVED,
+          }),
+      };
 
       if (search) {
         filter.name = {
@@ -133,6 +146,10 @@ export class ProvidersService {
 
       const providers = await this.prisma.provider.findMany({
         where: filter,
+        include: {
+          category: true,
+          address: true,
+        },
         skip,
         take: limit,
       });

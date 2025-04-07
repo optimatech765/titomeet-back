@@ -373,6 +373,8 @@ export class EventsService {
           prices: true,
           address: true,
           postedBy: true,
+          categories: true,
+          providers: true,
           ...(user && {
             participants: {
               where: {
@@ -430,6 +432,8 @@ export class EventsService {
           prices: true,
           address: true,
           postedBy: true,
+          categories: true,
+          providers: true,
           participants: {
             where: {
               userId: user.id,
