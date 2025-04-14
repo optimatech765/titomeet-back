@@ -81,7 +81,8 @@ export class UserDto {
   role: UserRole;
 
   @ApiProperty({ type: [AccountDto] })
-  accounts: AccountDto[];
+  @IsOptional()
+  accounts?: AccountDto[] | null;
 }
 
 export class UpdateUserDto {

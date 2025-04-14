@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 
 import {
   getPaginationData,
@@ -71,7 +76,7 @@ export class ProvidersService {
         phoneNumber,
         website,
         pricingDetails,
-        docs
+        docs,
       } = payload;
 
       const docsArray = docs.map((doc) => ({
@@ -160,6 +165,26 @@ export class ProvidersService {
         page,
         limit,
       };
+    } catch (error) {
+      throwServerError(error);
+    }
+  }
+
+  async getProviderById(id: string) {
+    try {
+      const provider = await this.prisma.provider.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          address: true,
+        },
+      });
+
+      if (!provider) {
+        throw new NotFoundException('Provider not found');
+      }
+
+      return provider;
     } catch (error) {
       throwServerError(error);
     }

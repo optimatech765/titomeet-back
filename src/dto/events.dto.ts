@@ -82,7 +82,6 @@ export class EventPriceDto extends EventPriceDtoPayload {
 }
 
 export class EventBaseDto {
-
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -345,3 +344,5 @@ export class UpdateEventCategoryDto {
   @IsOptional()
   active?: boolean;
 }
+
+export class GetEventOrdersQueryDto extends PaginationQueryDto {}

@@ -18,10 +18,12 @@ import {
   GetEventsQueryDto,
   GetEventsResponseDto,
   UpdateEventDto,
+  GetEventOrdersQueryDto,
 } from 'src/dto/events.dto';
 import {
   CreateOrderDto,
   CreateTransactionPaymentLinkDto,
+  GetEventOrdersResponseDto,
 } from 'src/dto/orders.dto';
 import {
   AuthGuard,
@@ -113,5 +115,19 @@ export class EventsController {
   })
   orderEvent(@Body() payload: CreateOrderDto, @Request() req: IRequest) {
     return this.eventsService.createOrder(payload, req.user);
+  }
+
+  @Get(':id/orders')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event orders',
+    type: GetEventOrdersResponseDto,
+  })
+  getEventOrders(
+    @Param('id') id: string,
+    @Query() query: GetEventOrdersQueryDto,
+  ) {
+    return this.eventsService.getEventParticipants(id, query);
   }
 }

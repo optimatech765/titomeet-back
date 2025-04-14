@@ -6,13 +6,12 @@ import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
+  IsObject,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  OrderStatus,
-  PaymentStatus,
-} from '@optimatech88/titomeet-shared-lib';
+import { OrderStatus, PaymentStatus } from '@optimatech88/titomeet-shared-lib';
+import { UserDto } from './users.dto';
 
 export class OrderItemPayloadDto {
   @ApiProperty()
@@ -87,10 +86,14 @@ export class OrderDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  paymentIntentId: string;
-}
+  @IsOptional()
+  paymentIntentId?: string | null;
 
+  @ApiProperty({ type: UserDto })
+  @IsObject()
+  @IsOptional()
+  user: UserDto | null;
+}
 
 export class OrderItemDto {
   @ApiProperty()
@@ -118,7 +121,6 @@ export class OrderItemDto {
   @IsNotEmpty()
   unitPrice: number;
 }
-
 
 export class TransactionDto {
   @ApiProperty()
@@ -154,3 +156,30 @@ export class CreateTransactionPaymentLinkDto {
   url: string;
 }
 
+export class GetEventOrdersResponseDto {
+  @ApiProperty({ type: [OrderDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderDto)
+  items: OrderDto[];
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  total: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  page: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  limit: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPages: number;
+}

@@ -10,6 +10,7 @@ import {
   EventCategory,
   EventStatus,
   EventAccess,
+  OrderStatus.CONFIRMED,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -19,7 +20,7 @@ import {
   EventCategoryQueryDto,
   EventQueryStatus,
 } from 'src/dto/events.dto';
-import { CreateOrderDto } from 'src/dto/orders.dto';
+import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
 import { FedapayService } from 'src/fedapay/fedapay.service';
 
@@ -460,19 +461,24 @@ export class EventsService {
   async getEventParticipants(
     id: string,
     query: PaginationQuery,
-  ): Promise<PaginatedData<Participant>> {
+  ): Promise<PaginatedData<OrderDto>> {
     const { page, limit, skip } = getPaginationData(query);
 
-    const participants = await this.prisma.participant.findMany({
-      where: { eventId: id },
+    const participants = await this.prisma.order.findMany({
+      where: { eventId: id, status: OrderStatus.CONFIRMED },
       include: {
         user: true,
+        items: {
+          include: {
+            eventPrice: true,
+          },
+        },
       },
       skip,
       take: limit,
     });
 
-    const total = await this.prisma.participant.count({
+    const total = await this.prisma.order.count({
       where: { eventId: id },
     });
 
@@ -602,7 +608,8 @@ export class EventsService {
           },
         });
 
-        const paymentLink = await this.fedapayService.createTransactionPaymentLink(txn.id);
+        const paymentLink =
+          await this.fedapayService.createTransactionPaymentLink(txn.id);
 
         return paymentLink;
       }

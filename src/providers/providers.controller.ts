@@ -6,6 +6,7 @@ import {
   Get,
   Query,
   UseGuards,
+  Param,
 } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
 import {
@@ -13,7 +14,6 @@ import {
   GetProviderCategoriesResponseDto,
   GetProvidersQueryDto,
   GetProvidersResponseDto,
-  ProviderCategoryDto,
   ProviderCategoryQueryDto,
   ProviderDto,
 } from 'src/dto/providers.dto';
@@ -64,5 +64,16 @@ export class ProvidersController {
   })
   async getProviderCategories(@Query() query: ProviderCategoryQueryDto) {
     return this.providersService.getProviderCategories(query);
+  }
+
+  @Get(':id')
+  @UseGuards(OptionalAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get provider by id',
+    type: ProviderDto,
+  })
+  async getProviderById(@Param('id') id: string) {
+    return this.providersService.getProviderById(id);
   }
 }
