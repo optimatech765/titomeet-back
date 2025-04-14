@@ -10,7 +10,7 @@ import {
   EventCategory,
   EventStatus,
   EventAccess,
-  OrderStatus.CONFIRMED,
+  OrderStatus,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
