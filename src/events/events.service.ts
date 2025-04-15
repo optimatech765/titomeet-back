@@ -6,7 +6,6 @@ import {
   PaginationQuery,
   PrismaService,
   User,
-  Participant,
   EventCategory,
   EventStatus,
   EventAccess,
@@ -83,7 +82,7 @@ export class EventsService {
       const _prices = prices ?? [];
       const _providers = providers ?? [];
 
-      const allow = true;
+      const allow = false;
 
       const status = allow
         ? EventStatus.PUBLISHED
@@ -425,7 +424,7 @@ export class EventsService {
   }
 
   //get event by id
-  async getEventById(id: string, user: User): Promise<Event> {
+  async getEventById(id: string, user?: User): Promise<Event> {
     try {
       const event = await this.prisma.event.findUnique({
         where: { id },
@@ -435,11 +434,18 @@ export class EventsService {
           postedBy: true,
           categories: true,
           providers: true,
-          participants: {
-            where: {
-              userId: user.id,
+          ...(user && {
+            participants: {
+              where: {
+                userId: user.id,
+              },
             },
-          },
+            favorites: {
+              where: {
+                userId: user.id,
+              },
+            },
+          }),
         },
       });
 
