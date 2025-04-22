@@ -3,8 +3,11 @@ import { AuthService } from './auth.service';
 import { ApiResponse } from '@nestjs/swagger';
 import {
   AuthenticationResponseDto,
+  ForgotPasswordDto,
   LoginDto,
   RefreshTokenDto,
+  ResetPasswordDto,
+  ResetPasswordResponseDto,
   SignupDto,
 } from 'src/dto/auth.dto';
 
@@ -43,5 +46,27 @@ export class AuthController {
   })
   refreshToken(@Body() body: RefreshTokenDto) {
     return this.authService.refreshToken(body);
+  }
+
+  //forgot password
+  @Post('api/auth/forgot-password')
+  @ApiResponse({
+    status: 200,
+    description: 'Forgot password',
+    type: ResetPasswordResponseDto,
+  })
+  forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.forgotPassword(body);
+  }
+
+  //reset password
+  @Post('api/auth/reset-password')
+  @ApiResponse({
+    status: 200,
+    description: 'Reset password',
+    type: ResetPasswordResponseDto,
+  })
+  resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body);
   }
 }

@@ -4,6 +4,8 @@ import {
   LoginDto,
   AuthenticationResponseDto,
   RefreshTokenDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
 } from '../dto/auth.dto';
 import {
   JwtService,
@@ -13,12 +15,16 @@ import {
 import { REFRESH_TOKEN_EXPIRES_IN } from 'src/utils/constants';
 import { createHash, randomUUID } from 'crypto';
 import { throwServerError } from 'src/utils';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MAIL_EVENTS } from 'src/utils/events';
+import { ForgotPasswordEvent } from 'src/mail/events';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   private async generateTokens(user: User) {
@@ -119,7 +125,7 @@ export class AuthService {
       return { ...tokens, user };
     } catch (error) {
       this.logger.error(error);
-      return throwServerError(error); 
+      return throwServerError(error);
     }
   }
 
@@ -154,6 +160,66 @@ export class AuthService {
       const tokens = await this.generateTokens(user);
 
       return { ...tokens, user };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //integrate password forgot and reset
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: forgotPasswordDto.email },
+      });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+      }
+
+      const token = this.jwtService.sign(
+        { userId: user.id, email: user.email, type: 'forgot_password' },
+        {
+          expiresIn: '1d',
+          secret: process.env.JWT_SECRET,
+        },
+      );
+      //send welcome message
+      const forgotPasswordEvent = new ForgotPasswordEvent();
+      forgotPasswordEvent.email = user.email;
+      forgotPasswordEvent.username = user.username;
+      forgotPasswordEvent.token = token;
+      this.eventEmitter.emit(MAIL_EVENTS.FORGOT_PASSWORD, forgotPasswordEvent);
+      return { message: 'Email envoyé avec succès' };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      const { token, password } = resetPasswordDto;
+      const decoded = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      if (!decoded) {
+        throw new HttpException('Invalid token', HttpStatus.BAD_REQUEST);
+      }
+      const user = await this.prisma.user.findUnique({
+        where: { id: decoded.userId },
+      });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+      }
+
+      if (decoded.type !== 'forgot_password') {
+        throw new HttpException('Invalid token', HttpStatus.BAD_REQUEST);
+      }
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { password: createHash('sha256').update(password).digest('hex') },
+      });
+      return { message: 'Mot de passe réinitialisé avec succès' };
     } catch (error) {
       this.logger.error(error);
       return throwServerError(error);

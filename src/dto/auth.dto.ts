@@ -71,3 +71,29 @@ export class RefreshTokenDto {
   @IsNotEmpty()
   refreshToken: string;
 }
+
+export class ForgotPasswordDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  token: string;
+}
+
+export class ResetPasswordResponseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}

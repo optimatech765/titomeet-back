@@ -1,0 +1,3 @@
+export const MAIL_EVENTS = {
+  FORGOT_PASSWORD: 'FORGOT_PASSWORD',
+};
