@@ -434,8 +434,13 @@ export class EventsService {
           postedBy: true,
           categories: true,
           providers: true,
+          _count: {
+            select: {
+              orders: true,
+            },
+          },
           ...(user && {
-            participants: {
+            orders: {
               where: {
                 userId: user.id,
               },
