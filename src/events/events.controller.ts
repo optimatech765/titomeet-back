@@ -107,13 +107,13 @@ export class EventsController {
   }
 
   @Post(':id/orders')
-  @UseGuards(AuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Buy event tickets',
     type: CreateTransactionPaymentLinkDto,
   })
-  orderEvent(@Body() payload: CreateOrderDto, @Request() req: IRequest) {
+  orderEvent(@Body() payload: CreateOrderDto, @Request() req: any) {
     return this.eventsService.createOrder(payload, req.user);
   }
 

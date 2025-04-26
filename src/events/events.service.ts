@@ -542,10 +542,9 @@ export class EventsService {
     }
   }
 
-  async createOrder(payload: CreateOrderDto, user: User) {
+  async createOrder(payload: CreateOrderDto, authUser?: User) {
     try {
-      const { eventId, email, items } = payload;
-
+      const { eventId, email, items, firstName, lastName } = payload;
       const event = await this.prisma.event.findUnique({
         where: { id: eventId },
       });
@@ -560,6 +559,27 @@ export class EventsService {
           HttpStatus.BAD_REQUEST,
         );
       }
+
+      if (!authUser && (!email || !firstName || !lastName)) {
+        throw new HttpException(
+          'Le nom, prénom et email sont requis',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      const user =
+        authUser ??
+        (await this.prisma.user.findUnique({
+          where: { email },
+        })) ??
+        (await this.prisma.user.create({
+          data: {
+            email,
+            firstName,
+            lastName,
+            username: email,
+          },
+        }));
 
       const eventPrices = await this.prisma.eventPrice.findMany({
         where: {

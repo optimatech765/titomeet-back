@@ -51,7 +51,7 @@ export class ProviderDoc {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  name: string
+  name: string;
 }
 
 export class ProviderBaseDto {
@@ -69,7 +69,6 @@ export class ProviderBaseDto {
   @IsString()
   @IsNotEmpty()
   image: string;
-
 
   @ApiProperty()
   @IsString()
@@ -106,7 +105,6 @@ export class ProviderBaseDto {
   @ValidateNested({ each: true })
   @Type(() => ProviderDoc)
   docs: ProviderDoc[];
-
 }
 
 export class ProviderDto extends ProviderBaseDto {
@@ -124,16 +122,12 @@ export class ProviderDto extends ProviderBaseDto {
   @IsObject()
   category: ProviderCategoryDto;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ type: AddressDto })
+  @IsObject()
   address: AddressDto;
 }
 
-export class CreateProviderDto extends ProviderBaseDto {
-
-
-}
+export class CreateProviderDto extends ProviderBaseDto {}
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for providers' })
@@ -170,7 +164,6 @@ export class GetProvidersResponseDto {
   totalPages: number;
 }
 
-
 export class UpdateProviderCategoryDto {
   @ApiProperty()
   @IsString()
@@ -194,7 +187,6 @@ export class ProviderCategoryQueryDto extends PaginationQueryDto {
   @IsOptional()
   search?: string;
 }
-
 
 export class GetProviderCategoriesResponseDto {
   @ApiProperty({ type: [ProviderCategoryDto] })
@@ -224,12 +216,9 @@ export class GetProviderCategoriesResponseDto {
   totalPages: number;
 }
 
-
 export class ValidateProviderDto {
   @ApiProperty({ enum: ProviderStatus })
   @IsEnum(ProviderStatus)
   @IsNotEmpty()
   status: ProviderStatus;
-
 }
-

@@ -8,11 +8,17 @@ import axios from 'axios';
 import { FedaPay, Transaction } from 'fedapay';
 import appConfig from 'src/config';
 import paymentConfig from 'src/config/payment';
+import { OrderConfirmationEvent } from 'src/mail/events';
+import { MAIL_EVENTS } from 'src/utils/events';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class FedapayService implements OnModuleInit {
   private readonly logger = new Logger(FedapayService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async onModuleInit() {
     const { fedapay } = paymentConfig();
@@ -109,6 +115,12 @@ export class FedapayService implements OnModuleInit {
             },
           });
           //send email to user
+          const confirmationEvent = new OrderConfirmationEvent();
+          confirmationEvent.orderId = order.id;
+          this.eventEmitter.emit(
+            MAIL_EVENTS.ORDER_CONFIRMATION,
+            confirmationEvent,
+          );
         } else {
           await this.prisma.order.update({
             where: { id: order.id },

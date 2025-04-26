@@ -21,6 +21,7 @@ import { IsNotEmpty } from 'class-validator';
 import { UserDto } from './users.dto';
 import { PaginationQueryDto } from './users.dto';
 import { ProviderDto } from './providers.dto';
+import { AddressDto } from './address.dto';
 export class EventCategoryQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for event categories' })
   @IsString()
@@ -189,6 +190,10 @@ export class EventDto extends EventBaseDto {
   @IsObject()
   @IsOptional()
   createdBy: UserDto;
+
+  @ApiProperty({ type: AddressDto })
+  @IsObject()
+  address: AddressDto;
 }
 
 export class CreateEventDto extends EventBaseDto {

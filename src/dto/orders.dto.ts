@@ -12,6 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { OrderStatus, PaymentStatus } from '@optimatech88/titomeet-shared-lib';
 import { UserDto } from './users.dto';
+import { EventDto } from './events.dto';
 
 export class OrderItemPayloadDto {
   @ApiProperty()
@@ -35,6 +36,16 @@ export class CreateOrderDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  firstName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  lastName: string;
 
   @ApiProperty({ type: [OrderItemPayloadDto] })
   @IsArray()
