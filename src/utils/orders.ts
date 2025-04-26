@@ -16,6 +16,8 @@ interface TicketInfo {
   location: string;
   startDate: Date;
   endDate: Date;
+  startTime: string;
+  endTime: string;
   ticketCode: string;
   ticketType: string;
   userEmail: string;
@@ -88,8 +90,8 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     color: rgb(0.5, 0.5, 0.5),
   });
 
-  const startDateStr = `${ticket.startDate.toLocaleString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })} AT ${ticket.startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-  const endDateStr = `${ticket.endDate.toLocaleString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })} AT ${ticket.endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+  const startDateStr = `${ticket.startDate.toLocaleString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })} à ${ticket.startTime}`;
+  const endDateStr = `${ticket.endDate.toLocaleString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })} à ${ticket.endTime}`;
 
   page.drawText(startDateStr, {
     x: 40,
@@ -98,20 +100,23 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     font,
     color: rgb(0, 0, 0),
   });
-  page.drawText('TO', {
-    x: 40,
-    y: height - 165,
-    size: 10,
-    font: smallFont,
-    color: rgb(0.5, 0.5, 0.5),
-  });
-  page.drawText(endDateStr, {
-    x: 40,
-    y: height - 180,
-    size: 12,
-    font,
-    color: rgb(0, 0, 0),
-  });
+
+  if (ticket.startDate !== ticket.endDate) {
+    page.drawText('AU', {
+      x: 40,
+      y: height - 165,
+      size: 10,
+      font: smallFont,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+    page.drawText(endDateStr, {
+      x: 40,
+      y: height - 180,
+      size: 12,
+      font,
+      color: rgb(0, 0, 0),
+    });
+  }
 
   // Draw QR Code
   page.drawImage(qrImage, {
