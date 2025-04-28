@@ -198,7 +198,7 @@ export class EventDto extends EventBaseDto {
   @ApiProperty()
   @IsNumber()
   @IsOptional()
-  ticketsSold: number;
+  ticketsSold?: number;
 }
 
 export class CreateEventDto extends EventBaseDto {
