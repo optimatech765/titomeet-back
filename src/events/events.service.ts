@@ -457,6 +457,9 @@ export class EventsService {
           eventPrice: {
             eventId: id,
           },
+          order: {
+            status: OrderStatus.CONFIRMED,
+          },
         },
       });
 
