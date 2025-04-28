@@ -68,18 +68,43 @@ export class MailListener {
       }
       const { event, user, items } = order;
       const attachments = [] as Attachment[];
-      const ticketsBufferPromises = items.map(async (item) => {
-        const pdfBytes = await generateTicketPDF({
-          eventName: event.name,
-          location: event.address.name,
-          startDate: new Date(event.startDate),
-          endDate: new Date(event.endDate),
-          ticketCode: item.id,
-          ticketType: item.eventPrice.name,
-          userEmail: user.email,
-        });
-        return { filename: `Ticket-${item.id}.pdf`, content: pdfBytes };
+      const tickets = [] as any;
+      items.forEach((item) => {
+        const itemTickets = Array.from({ length: item.quantity }).map(
+          (_, i) => ({
+            ...item,
+            quantity: 1,
+            ticketCode: `${item.eventPrice.name}-${i + 1}`,
+          }),
+        );
+        tickets.push(...itemTickets);
       });
+
+      //this.logger.log({ tickets });
+
+      const ticketsBufferPromises = tickets.map(
+        async (item: {
+          id: any;
+          eventPrice: { name: any };
+          ticketCode: string;
+        }) => {
+          const pdfBytes = await generateTicketPDF({
+            eventName: event.name,
+            location: event.address.name,
+            startDate: new Date(event.startDate),
+            endDate: new Date(event.endDate),
+            startTime: event.startTime,
+            endTime: event.endTime,
+            ticketCode: item.ticketCode,
+            ticketType: item.eventPrice.name,
+            userEmail: user.email,
+          });
+          return {
+            filename: `Ticket-${item.ticketCode}.pdf`,
+            content: pdfBytes,
+          };
+        },
+      );
       const ticketsBuffers = await Promise.all(ticketsBufferPromises);
       attachments.push(...ticketsBuffers);
 

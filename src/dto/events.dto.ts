@@ -194,6 +194,11 @@ export class EventDto extends EventBaseDto {
   @ApiProperty({ type: AddressDto })
   @IsObject()
   address: AddressDto;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
+  ticketsSold: number;
 }
 
 export class CreateEventDto extends EventBaseDto {

@@ -47,6 +47,11 @@ export class FedapayService implements OnModuleInit {
     amount: number;
     description: string;
     callbackUrl?: string;
+    customer: {
+      firstname: string;
+      lastname: string;
+      email: string;
+    };
   }): Promise<Transaction> {
     try {
       const { frontendUrl } = appConfig();
@@ -58,6 +63,7 @@ export class FedapayService implements OnModuleInit {
         currency: { iso: 'XOF' },
         callback_url: callbackUrl,
         mode: 'mtn_open',
+        customer: payload.customer,
       });
       return txn;
     } catch (error) {
@@ -78,7 +84,7 @@ export class FedapayService implements OnModuleInit {
           },
         },
       );
-      this.logger.log('Transaction payment link created:', data);
+      //this.logger.log('Transaction payment link created:', data);
       return {
         url: data.url,
         transactionId: data.id,
@@ -97,8 +103,9 @@ export class FedapayService implements OnModuleInit {
     try {
       this.logger.log('Webhook received:', payload);
       if (payload.object === 'transaction') {
-        const txn = await this.verifyTxn(payload.object_id);
-        this.logger.log({ txn });
+        const txnId = payload.entity.id;
+        const txn = await this.verifyTxn(txnId);
+        //this.logger.log({ txn });
         const order = await this.prisma.order.findUnique({
           where: { paymentIntentId: String(txn.id) },
         });

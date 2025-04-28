@@ -424,7 +424,10 @@ export class EventsService {
   }
 
   //get event by id
-  async getEventById(id: string, user?: User): Promise<Event> {
+  async getEventById(
+    id: string,
+    user?: User,
+  ): Promise<Event & { ticketsSold: number }> {
     try {
       const event = await this.prisma.event.findUnique({
         where: { id },
@@ -434,11 +437,6 @@ export class EventsService {
           postedBy: true,
           categories: true,
           providers: true,
-          _count: {
-            select: {
-              orders: true,
-            },
-          },
           ...(user && {
             orders: {
               where: {
@@ -454,11 +452,22 @@ export class EventsService {
         },
       });
 
+      const ticketsSold = await this.prisma.orderItem.count({
+        where: {
+          eventPrice: {
+            eventId: id,
+          },
+        },
+      });
+
       if (!event) {
         throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
       }
 
-      return event;
+      return {
+        ...event,
+        ticketsSold,
+      };
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(
@@ -628,9 +637,14 @@ export class EventsService {
           amount: totalAmount,
           description: `Payment for order #${order.id}`,
           callbackUrl: payload.callbackUrl,
+          customer: {
+            email: user.email,
+            firstname: user.firstName,
+            lastname: user.lastName,
+          },
         });
 
-        this.logger.log({ txn });
+        //this.logger.log({ txn });
 
         await this.prisma.order.update({
           where: { id: order.id },
