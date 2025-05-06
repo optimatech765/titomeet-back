@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ForgotPasswordEvent, OrderConfirmationEvent } from '../events';
+import { ForgotPasswordEvent } from '../events';
 
 import { MailService } from '../mail.service';
 import { MAIL_EVENTS } from 'src/utils/events';
@@ -8,6 +8,7 @@ import appConfig from 'src/config';
 import { PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { generateTicketPDF } from 'src/utils/orders';
 import { Attachment } from 'nodemailer/lib/mailer';
+import { OrderConfirmationEvent } from 'src/orders/events';
 
 @Injectable()
 export class MailListener {
@@ -45,23 +46,7 @@ export class MailListener {
   async sendOrderConfirmationMail(confirmationEvent: OrderConfirmationEvent) {
     try {
       this.logger.log('Sending order confirmation mail');
-      const { orderId } = confirmationEvent;
-      const order = await this.prisma.order.findUnique({
-        where: { id: orderId },
-        include: {
-          event: {
-            include: {
-              address: true,
-            },
-          },
-          user: true,
-          items: {
-            include: {
-              eventPrice: true,
-            },
-          },
-        },
-      });
+      const { order } = confirmationEvent;
       if (!order) {
         this.logger.error('Order not found');
         throw new Error('Order not found');

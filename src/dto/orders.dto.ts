@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsObject,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { OrderStatus, PaymentStatus } from '@optimatech88/titomeet-shared-lib';
 import { UserDto } from './users.dto';
@@ -165,6 +165,25 @@ export class CreateTransactionPaymentLinkDto {
   @IsString()
   @IsNotEmpty()
   url: string;
+}
+
+export class FreeEventOrderResponseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}
+
+export class OrderEventResponseDto {
+  @ApiProperty({
+    oneOf: [
+      { type: 'object', $ref: getSchemaPath(CreateTransactionPaymentLinkDto) },
+      { type: 'object', $ref: getSchemaPath(FreeEventOrderResponseDto) },
+    ],
+  })
+  @IsObject()
+  @IsNotEmpty()
+  data: CreateTransactionPaymentLinkDto | FreeEventOrderResponseDto;
 }
 
 export class GetEventOrdersResponseDto {

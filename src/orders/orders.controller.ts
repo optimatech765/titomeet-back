@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { IRequest } from 'src/types';
-import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
+import { OptionalAuthGuard } from 'src/guards/optional-auth.guard';
 import { ApiResponse } from '@nestjs/swagger';
 import { OrderDto } from 'src/dto/orders.dto';
 
@@ -10,7 +10,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get(':reference')
-  @UseGuards(AuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Get order by id or transaction id',
@@ -20,6 +20,6 @@ export class OrdersController {
     @Param('reference') reference: string,
     @Request() req: IRequest,
   ) {
-    return this.ordersService.getOrderByReference(reference, req.user);
+    return this.ordersService.getOrderByReference(reference);
   }
 }

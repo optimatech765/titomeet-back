@@ -13,9 +13,8 @@ import {
   IsObject,
   IsOptional,
   ValidateNested,
+  IsString,
 } from 'class-validator';
-
-import { IsString } from 'class-validator';
 
 import { IsNotEmpty } from 'class-validator';
 import { UserDto } from './users.dto';
@@ -211,7 +210,7 @@ export class CreateEventDto extends EventBaseDto {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => EventPriceDtoPayload)
-  prices: EventPriceDtoPayload[];
+  prices?: EventPriceDtoPayload[];
 
   @ApiProperty({ type: [String] })
   @IsArray()

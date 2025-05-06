@@ -3,7 +3,3 @@ export class ForgotPasswordEvent {
   username: string;
   token: string;
 }
-
-export class OrderConfirmationEvent {
-  orderId: string;
-}

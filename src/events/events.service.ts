@@ -22,7 +22,9 @@ import {
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
 import { FedapayService } from 'src/fedapay/fedapay.service';
-
+import { OrderConfirmationEvent } from 'src/orders/events';
+import { ORDER_EVENTS } from 'src/utils/events';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
@@ -30,6 +32,7 @@ export class EventsService {
     private readonly prisma: PrismaService,
     private readonly assetsService: AssetsService,
     private readonly fedapayService: FedapayService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async getEventCategories(
@@ -79,9 +82,23 @@ export class EventsService {
     try {
       const { isDraft, prices, providers, ...rest } = payload;
 
-      const _prices = prices ?? [];
-      const _providers = providers ?? [];
+      const _prices =
+        prices ??
+        (rest.accessType === EventAccess.FREE
+          ? [
+              {
+                name: 'Ticket',
+                amount: 0,
+                description: '',
+              },
+            ]
+          : []);
 
+      if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
+        throw new HttpException('Prices are required', HttpStatus.BAD_REQUEST);
+      }
+
+      const _providers = providers ?? [];
       const allow = false;
 
       const status = allow
@@ -121,6 +138,7 @@ export class EventsService {
           postedBy: true,
         },
       });
+
       return event;
     } catch (error) {
       this.logger.error(error);
@@ -153,7 +171,21 @@ export class EventsService {
       }
 
       const _providers = providers ?? [];
-      const _prices = prices ?? [];
+      const _prices =
+        prices ??
+        (rest.accessType === EventAccess.FREE
+          ? [
+              {
+                name: 'Ticket',
+                amount: 0,
+                description: '',
+              },
+            ]
+          : []);
+
+      if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
+        throw new HttpException('Prices are required', HttpStatus.BAD_REQUEST);
+      }
 
       //check if event has price and if its any price changed
       if (_prices.length > 0) {
@@ -376,7 +408,7 @@ export class EventsService {
           categories: true,
           providers: true,
           ...(user && {
-            participants: {
+            orders: {
               where: {
                 userId: user.id,
               },
@@ -398,7 +430,7 @@ export class EventsService {
       const items = events.map((event) => {
         return {
           ...event,
-          isAttending: event.participants?.length > 0,
+          isAttending: event.orders?.length > 0,
           isFavorite: event.favorites?.length > 0,
         };
       });
@@ -619,23 +651,41 @@ export class EventsService {
 
       const isPaidEvent = event.accessType === EventAccess.PAID;
 
-      if (isPaidEvent) {
-        if (totalAmount === 0) {
-          throw new HttpException('Invalid amount', HttpStatus.BAD_REQUEST);
-        }
+      if (isPaidEvent && totalAmount === 0) {
+        throw new HttpException('Invalid amount', HttpStatus.BAD_REQUEST);
+      }
 
-        const order = await this.prisma.order.create({
-          data: {
-            eventId,
-            userId: user.id,
-            email,
-            totalAmount,
-            items: {
-              create: orderItems,
+      if (isPaidEvent && orderItems.length === 0) {
+        throw new HttpException('Invalid items', HttpStatus.BAD_REQUEST);
+      }
+
+      const order = await this.prisma.order.create({
+        data: {
+          eventId,
+          userId: user.id,
+          email,
+          totalAmount,
+          items: {
+            create: orderItems,
+          },
+          status: !isPaidEvent ? OrderStatus.CONFIRMED : OrderStatus.PENDING,
+        },
+        include: {
+          event: {
+            include: {
+              address: true,
             },
           },
-        });
+          user: true,
+          items: {
+            include: {
+              eventPrice: true,
+            },
+          },
+        },
+      });
 
+      if (isPaidEvent) {
         const txn = await this.fedapayService.createTransaction({
           amount: totalAmount,
           description: `Payment for order #${order.id}`,
@@ -660,10 +710,15 @@ export class EventsService {
           await this.fedapayService.createTransactionPaymentLink(txn.id);
 
         return paymentLink;
+      } else {
+        //send email to user
+        const confirmationEvent = new OrderConfirmationEvent();
+        confirmationEvent.order = order;
+        this.eventEmitter.emit(ORDER_EVENTS.ORDER_CONFIRMED, confirmationEvent);
       }
 
       return {
-        message: 'Event added to favorites',
+        message: 'Order created successfully',
       };
     } catch (error) {
       this.logger.error(error);

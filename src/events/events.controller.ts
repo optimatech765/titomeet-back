@@ -22,7 +22,7 @@ import {
 } from 'src/dto/events.dto';
 import {
   CreateOrderDto,
-  CreateTransactionPaymentLinkDto,
+  OrderEventResponseDto,
   GetEventOrdersResponseDto,
 } from 'src/dto/orders.dto';
 import {
@@ -111,7 +111,7 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     description: 'Buy event tickets',
-    type: CreateTransactionPaymentLinkDto,
+    type: OrderEventResponseDto,
   })
   orderEvent(@Body() payload: CreateOrderDto, @Request() req: any) {
     return this.eventsService.createOrder(payload, req.user);

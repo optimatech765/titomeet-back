@@ -10,7 +10,7 @@ import { throwServerError } from 'src/utils';
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getOrderByReference(reference: string, user: User) {
+  async getOrderByReference(reference: string /* , user?: User */) {
     try {
       const order = await this.prisma.order.findFirst({
         where: {
@@ -28,11 +28,11 @@ export class OrdersService {
         throw new NotFoundException('Order not found');
       }
 
-      if (order.userId !== user.id) {
+      /* if (order.userId !== user.id) {
         throw new ForbiddenException(
           'You are not allowed to access this order',
         );
-      }
+      } */
       return order;
     } catch (error) {
       return throwServerError(error);

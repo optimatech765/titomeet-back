@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   Event,
   EventCategory,
@@ -12,7 +8,8 @@ import {
   ProviderCategory,
   ProviderStatus,
   UserRole,
-  Provider
+  Provider,
+  OrderStatus,
 } from '@optimatech88/titomeet-shared-lib';
 import {
   AdminStatsDto,
@@ -22,9 +19,11 @@ import {
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import { UpdateEventCategoryDto } from 'src/dto/events.dto';
-import { UpdateProviderCategoryDto, ValidateProviderDto } from 'src/dto/providers.dto';
+import {
+  UpdateProviderCategoryDto,
+  ValidateProviderDto,
+} from 'src/dto/providers.dto';
 import { throwServerError } from 'src/utils';
-
 
 @Injectable()
 export class AdminService {
@@ -79,6 +78,28 @@ export class AdminService {
           status: updateEventStatusDto.status,
         },
       });
+
+      if (updateEventStatusDto.status === EventStatus.PUBLISHED) {
+        const chatExists = await this.prisma.chat.findUnique({
+          where: { eventId: id },
+        });
+
+        if (!chatExists) {
+          //create event chat
+          await this.prisma.chat.create({
+            data: {
+              id: event.id,
+              name: event.name,
+              eventId: event.id,
+              users: {
+                create: {
+                  userId: event.postedById,
+                },
+              },
+            },
+          });
+        }
+      }
 
       return updatedEvent;
     } catch (error) {
@@ -165,10 +186,10 @@ export class AdminService {
           status: EventStatus.PUBLISHED,
         },
       });
-      const totalBookings = await this.prisma.participant.count({
+      const totalBookings = await this.prisma.orderItem.count({
         where: {
-          event: {
-            status: EventStatus.PUBLISHED,
+          order: {
+            status: OrderStatus.CONFIRMED,
           },
         },
       });

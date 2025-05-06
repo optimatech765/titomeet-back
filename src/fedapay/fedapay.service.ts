@@ -8,8 +8,8 @@ import axios from 'axios';
 import { FedaPay, Transaction } from 'fedapay';
 import appConfig from 'src/config';
 import paymentConfig from 'src/config/payment';
-import { OrderConfirmationEvent } from 'src/mail/events';
-import { MAIL_EVENTS } from 'src/utils/events';
+import { OrderConfirmationEvent } from 'src/orders/events';
+import { ORDER_EVENTS } from 'src/utils/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class FedapayService implements OnModuleInit {
@@ -114,18 +114,31 @@ export class FedapayService implements OnModuleInit {
           throw new Error('Order not found');
         }
         if (txn.status === 'approved') {
-          await this.prisma.order.update({
+          const updatedOrder = await this.prisma.order.update({
             where: { id: order.id },
             data: {
               status: OrderStatus.CONFIRMED,
               paymentStatus: PaymentStatus.COMPLETED,
             },
+            include: {
+              event: {
+                include: {
+                  address: true,
+                },
+              },
+              user: true,
+              items: {
+                include: {
+                  eventPrice: true,
+                },
+              },
+            },
           });
           //send email to user
           const confirmationEvent = new OrderConfirmationEvent();
-          confirmationEvent.orderId = order.id;
+          confirmationEvent.order = updatedOrder;
           this.eventEmitter.emit(
-            MAIL_EVENTS.ORDER_CONFIRMATION,
+            ORDER_EVENTS.ORDER_CONFIRMED,
             confirmationEvent,
           );
         } else {
