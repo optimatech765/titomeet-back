@@ -12,7 +12,6 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { OrderStatus, PaymentStatus } from '@optimatech88/titomeet-shared-lib';
 import { UserDto } from './users.dto';
-import { EventDto } from './events.dto';
 
 export class OrderItemPayloadDto {
   @ApiProperty()

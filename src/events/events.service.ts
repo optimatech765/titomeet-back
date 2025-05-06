@@ -619,13 +619,27 @@ export class EventsService {
         );
       }
 
-      const totalTicketsSold = await this.prisma.orderItem.count({
+      const totalTicketsSold = (await this.prisma.orderItem.groupBy({
+        by: ['eventPriceId'],
+        _count: true,
         where: {
-          eventPrice: {
-            eventId: eventId,
-          },
+          eventPrice: { eventId: eventId },
         },
-      });
+      })) as any as { eventPriceId: string; _count: number }[];
+
+      const soldOutTicket = items.find((item) =>
+        totalTicketsSold.find(
+          (price) =>
+            price.eventPriceId === item.priceId && item.quantity > price._count,
+        ),
+      );
+
+      if (soldOutTicket) {
+        throw new HttpException(
+          `Le ticket ${soldOutTicket.priceId} est n'est plus disponible!`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (!authUser && (!email || !firstName || !lastName)) {
         throw new HttpException(
