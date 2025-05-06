@@ -627,8 +627,6 @@ export class EventsService {
         },
       });
 
-      const isTicketRemaining = totalTicketsSold - event.capacity;
-
       if (!authUser && (!email || !firstName || !lastName)) {
         throw new HttpException(
           'Le nom, prénom et email sont requis',
