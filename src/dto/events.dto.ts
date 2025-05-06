@@ -148,6 +148,18 @@ export class EventBaseDto {
   endTime: string;
 }
 
+export class EventPriceSoldDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  eventPriceId: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  _count: number;
+}
+
 export class EventDto extends EventBaseDto {
   @ApiProperty()
   @IsString()
@@ -198,6 +210,13 @@ export class EventDto extends EventBaseDto {
   @IsNumber()
   @IsOptional()
   ticketsSold?: number;
+
+  @ApiProperty({ type: [EventPriceSoldDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EventPriceSoldDto)
+  @IsOptional()
+  ticketsSoldByEventPrice: EventPriceSoldDto[];
 }
 
 export class CreateEventDto extends EventBaseDto {

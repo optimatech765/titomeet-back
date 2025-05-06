@@ -459,7 +459,7 @@ export class EventsService {
   async getEventById(
     id: string,
     user?: User,
-  ): Promise<Event & { ticketsSold: number }> {
+  ): Promise<Event & { ticketsSold: number; ticketsSoldByEventPrice: any }> {
     try {
       const event = await this.prisma.event.findUnique({
         where: { id },
@@ -495,6 +495,17 @@ export class EventsService {
         },
       });
 
+      //count tickets sold by eventPrice
+      const ticketsSoldByEventPrice = await this.prisma.orderItem.groupBy({
+        by: ['eventPriceId'],
+        _count: true,
+        where: {
+          eventPrice: {
+            eventId: id,
+          },
+        },
+      });
+
       if (!event) {
         throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
       }
@@ -502,6 +513,7 @@ export class EventsService {
       return {
         ...event,
         ticketsSold,
+        ticketsSoldByEventPrice,
       };
     } catch (error) {
       this.logger.error(error);
@@ -531,6 +543,9 @@ export class EventsService {
       },
       skip,
       take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     const total = await this.prisma.order.count({
@@ -603,6 +618,16 @@ export class EventsService {
           HttpStatus.BAD_REQUEST,
         );
       }
+
+      const totalTicketsSold = await this.prisma.orderItem.count({
+        where: {
+          eventPrice: {
+            eventId: eventId,
+          },
+        },
+      });
+
+      const isTicketRemaining = totalTicketsSold - event.capacity;
 
       if (!authUser && (!email || !firstName || !lastName)) {
         throw new HttpException(
