@@ -314,6 +314,11 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsEnum(EventQueryStatus)
   @IsOptional()
   status?: EventQueryStatus;
+
+  @ApiPropertyOptional({ description: 'User ID of the attendee' })
+  @IsString()
+  @IsOptional()
+  attendeeId?: string;
 }
 
 export class PopulatedEventDto extends EventDto {

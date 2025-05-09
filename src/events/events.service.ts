@@ -336,7 +336,15 @@ export class EventsService {
     user?: User,
   ): Promise<PaginatedData<Event>> {
     try {
-      const { search, tags, startDate, endDate, createdById, status } = query;
+      const {
+        search,
+        tags,
+        startDate,
+        endDate,
+        createdById,
+        status,
+        attendeeId,
+      } = query;
 
       const { page, limit, skip } = getPaginationData(query);
 
@@ -397,6 +405,14 @@ export class EventsService {
             };
           }
         }
+      }
+
+      if (attendeeId) {
+        filter.orders = {
+          some: {
+            userId: attendeeId,
+          },
+        };
       }
 
       const events = await this.prisma.event.findMany({
