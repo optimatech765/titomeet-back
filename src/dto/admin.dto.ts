@@ -86,6 +86,36 @@ export class AdminStatsDto {
   totalBookings: number;
 }
 
+export class EventStatsDto {
+  @ApiProperty({
+    description: 'Total number of pending events',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalPendingEvents: number;
+
+  @ApiProperty({
+    description: 'Total number of published events',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalPublishedEvents: number;
+
+  @ApiProperty({
+    description: 'Total number of draft events',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalDraftEvents: number;
+
+  @ApiProperty({
+    description: 'Total number of rejected events',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalRejectedEvents: number;
+}
+
 export class GetUsersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for users' })
   @IsString()

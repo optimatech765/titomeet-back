@@ -20,6 +20,7 @@ import {
   AdminStatsDto,
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
+  EventStatsDto,
   GetUsersQueryDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
@@ -44,6 +45,17 @@ export class AdminController {
   })
   getAdminStats() {
     return this.adminService.getAdminStats();
+  }
+
+  @Get('events/stats')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event stats',
+    type: EventStatsDto,
+  })
+  getEventStats() {
+    return this.adminService.getEventStats();
   }
 
   @Post('events/categories')

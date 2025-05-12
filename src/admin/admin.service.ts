@@ -15,6 +15,7 @@ import {
   AdminStatsDto,
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
+  EventStatsDto,
   GetUsersQueryDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
@@ -248,6 +249,45 @@ export class AdminService {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //events by status
+  async getEventStats(): Promise<EventStatsDto> {
+    try {
+      const totalPendingEvents = await this.prisma.event.count({
+        where: {
+          status: EventStatus.PENDING,
+        },
+      });
+
+      const totalPublishedEvents = await this.prisma.event.count({
+        where: {
+          status: EventStatus.PUBLISHED,
+        },
+      });
+
+      const totalDraftEvents = await this.prisma.event.count({
+        where: {
+          status: EventStatus.DRAFT,
+        },
+      });
+
+      const totalRejectedEvents = await this.prisma.event.count({
+        where: {
+          status: EventStatus.CANCELLED,
+        },
+      });
+
+      return {
+        totalPendingEvents,
+        totalPublishedEvents,
+        totalDraftEvents,
+        totalRejectedEvents,
       };
     } catch (error) {
       this.logger.error(error);
