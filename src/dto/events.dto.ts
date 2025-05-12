@@ -319,6 +319,12 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   attendeeId?: string;
+
+  @ApiPropertyOptional({ type: String, description: 'Id of categories' })
+  @IsString()
+  @IsOptional()
+  @Type(() => String)
+  categories?: string;
 }
 
 export class PopulatedEventDto extends EventDto {

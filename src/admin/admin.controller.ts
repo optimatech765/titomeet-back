@@ -8,7 +8,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { EventCategoryDto, UpdateEventCategoryDto } from 'src/dto/events.dto';
+import {
+  EventCategoryDto,
+  EventDto,
+  UpdateEventCategoryDto,
+} from 'src/dto/events.dto';
 import { AdminAuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { ApiResponse } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -17,6 +21,7 @@ import {
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
   GetUsersQueryDto,
+  UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import {
   ProviderCategoryDto,
@@ -64,6 +69,20 @@ export class AdminController {
     @Body() payload: UpdateEventCategoryDto,
   ) {
     return this.adminService.updateEventCategory(id, payload);
+  }
+
+  @Put('events/:id/status')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Update event status',
+    type: EventDto,
+  })
+  updateEventStatus(
+    @Param('id') id: string,
+    @Body() payload: UpdateEventStatusDto,
+  ) {
+    return this.adminService.updateEventStatus(id, payload);
   }
 
   @Post('providers/categories')

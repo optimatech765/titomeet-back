@@ -38,13 +38,6 @@ export class UpdateEventStatusDto {
   @IsEnum(EventStatus)
   @IsNotEmpty()
   status: EventStatus;
-
-  @ApiProperty({
-    description: 'Event ID',
-  })
-  @IsNotEmpty()
-  @IsString()
-  eventId: string;
 }
 
 export class CreateProviderCategoryDto {

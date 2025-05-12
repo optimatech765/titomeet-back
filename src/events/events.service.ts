@@ -344,6 +344,7 @@ export class EventsService {
         createdById,
         status,
         attendeeId,
+        categories,
       } = query;
 
       const { page, limit, skip } = getPaginationData(query);
@@ -378,6 +379,17 @@ export class EventsService {
 
       if (createdById) {
         filter.postedById = createdById;
+      }
+
+      if (categories?.length) {
+        const _categories = categories.split(',');
+        filter.categories = {
+          some: {
+            id: {
+              in: _categories,
+            },
+          },
+        };
       }
 
       if (status) {
