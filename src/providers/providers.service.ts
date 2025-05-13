@@ -167,10 +167,14 @@ export class ProvidersService {
         take: limit,
       });
 
+      const total = await this.prisma.provider.count({
+        where: filter,
+      });
+
       return {
         items: providers,
-        total: providers.length,
-        totalPages: Math.ceil(providers.length / limit),
+        total,
+        totalPages: Math.ceil(total / limit),
         page,
         limit,
       };
