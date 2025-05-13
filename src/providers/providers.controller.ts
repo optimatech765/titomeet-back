@@ -50,9 +50,9 @@ export class ProvidersController {
   })
   async getProviders(
     @Query() query: GetProvidersQueryDto,
-    //@Request() req: any,
+    @Request() req: any,
   ) {
-    return this.providersService.getProviders(query);
+    return this.providersService.getProviders(query, req.user);
   }
 
   @Get('categories')

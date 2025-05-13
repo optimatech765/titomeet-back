@@ -133,6 +133,8 @@ export class ProvidersService {
     try {
       const { search, status } = query;
 
+      console.log({ user, status });
+
       const { skip, limit, page } = getPaginationData(query);
 
       const filter: Prisma.ProviderWhereInput = {};
