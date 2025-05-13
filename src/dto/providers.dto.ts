@@ -134,6 +134,11 @@ export class GetProvidersQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by provider status  ' })
+  @IsEnum(ProviderStatus)
+  @IsOptional()
+  status?: ProviderStatus
 }
 
 export class GetProvidersResponseDto {

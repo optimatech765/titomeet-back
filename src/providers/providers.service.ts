@@ -16,7 +16,7 @@ import {
   GetProvidersQueryDto,
   ProviderCategoryQueryDto,
 } from 'src/dto/providers.dto';
-import { ProviderStatus, User, UserRole } from '@prisma/client';
+import { Prisma, ProviderStatus, User, UserRole } from '@prisma/client';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
@@ -131,22 +131,30 @@ export class ProvidersService {
 
   async getProviders(query: GetProvidersQueryDto, user?: User) {
     try {
-      const { search } = query;
+      const { search, status } = query;
 
       const { skip, limit, page } = getPaginationData(query);
 
-      const filter: any = {
-        ...(user &&
-          user.role !== UserRole.ADMIN && {
-            status: ProviderStatus.APPROVED,
-          }),
-      };
+      const filter: Prisma.ProviderWhereInput = {};
 
       if (search) {
         filter.name = {
           contains: search,
           mode: 'insensitive',
         };
+      }
+
+      if (user) {
+        if (user.role === UserRole.ADMIN) {
+          if (status) {
+            filter.status = status;
+          }
+        } else {
+          filter['OR'] = [
+            { status: ProviderStatus.APPROVED },
+            { userId: user.id },
+          ];
+        }
       }
 
       const providers = await this.prisma.provider.findMany({
@@ -162,6 +170,7 @@ export class ProvidersService {
       return {
         items: providers,
         total: providers.length,
+        totalPages: Math.ceil(providers.length / limit),
         page,
         limit,
       };
