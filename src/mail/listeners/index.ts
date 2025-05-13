@@ -3,7 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { ForgotPasswordEvent } from '../events';
 
 import { MailService } from '../mail.service';
-import { MAIL_EVENTS } from 'src/utils/events';
+import { MAIL_EVENTS, ORDER_EVENTS } from 'src/utils/events';
 import appConfig from 'src/config';
 import { PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { generateTicketPDF } from 'src/utils/orders';
@@ -42,7 +42,7 @@ export class MailListener {
     }
   }
 
-  @OnEvent(MAIL_EVENTS.ORDER_CONFIRMATION)
+  @OnEvent(ORDER_EVENTS.ORDER_CONFIRMED)
   async sendOrderConfirmationMail(confirmationEvent: OrderConfirmationEvent) {
     try {
       this.logger.log('Sending order confirmation mail');
