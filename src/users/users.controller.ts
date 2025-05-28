@@ -1,21 +1,29 @@
-import { Body, Controller, Get, Put, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Put,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
-import { UpdateUserDto } from 'src/dto/users.dto';
+import { UpdateUserDto, UpdateUserStatusDto } from 'src/dto/users.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from '../dto/users.dto';
 
 @Controller('api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get('me')
   @UseGuards(AuthGuard)
   @ApiResponse({
     status: 200,
     description: 'User data',
-    type: UserDto
+    type: UserDto,
   })
   getAuthUser(@Request() req: IRequest) {
     return this.usersService.getUserData(req.user);
@@ -26,9 +34,23 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User data',
-    type: UserDto
+    type: UserDto,
   })
   updateUser(@Request() req: IRequest, @Body() body: UpdateUserDto) {
     return this.usersService.updateUser(req.user, body);
+  }
+
+  @Patch('me/status')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'User data',
+    type: UserDto,
+  })
+  updateUserStatus(
+    @Request() req: IRequest,
+    @Body() body: UpdateUserStatusDto,
+  ) {
+    return this.usersService.updateUserStatus(req.user, body);
   }
 }

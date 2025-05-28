@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '@optimatech88/titomeet-shared-lib';
+import { UserRole, UserStatus } from '@optimatech88/titomeet-shared-lib';
 import {
   IsDate,
   IsEnum,
@@ -83,6 +83,16 @@ export class UserDto {
   @ApiProperty({ type: [AccountDto] })
   @IsOptional()
   accounts?: AccountDto[] | null;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  profilePicture?: string | null;
+
+  @ApiProperty({ enum: UserStatus })
+  @IsEnum(UserStatus)
+  @IsNotEmpty()
+  status: UserStatus;
 }
 
 export class UpdateUserDto {
@@ -100,4 +110,16 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   username: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  profilePicture?: string;
+}
+
+export class UpdateUserStatusDto {
+  @ApiProperty({ enum: UserStatus })
+  @IsEnum(UserStatus)
+  @IsNotEmpty()
+  status: UserStatus;
 }

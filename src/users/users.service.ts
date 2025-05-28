@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
-import { UpdateUserDto } from '../dto/users.dto';
+import { UpdateUserDto, UpdateUserStatusDto } from '../dto/users.dto';
+import { throwServerError } from 'src/utils';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getUserData(user: User) {
     try {
@@ -56,6 +57,18 @@ export class UsersService {
         'Something went wrong',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async updateUserStatus(user: User, payload: UpdateUserStatusDto) {
+    try {
+      const updatedUser = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { status: payload.status },
+      });
+      return updatedUser;
+    } catch (error) {
+      return throwServerError(error);
     }
   }
 }
