@@ -243,10 +243,19 @@ export class EventsService {
       const updatedEvent = await this.prisma.event.update({
         where: { id },
         data: {
-          ...rest,
+          name: rest.name,
+          description: rest.description,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          coverPicture: rest.coverPicture,
+          badge: rest.badge,
+          capacity: rest.capacity,
           status,
+          tags: rest.tags,
+          accessType: rest.accessType,
+          visibility: rest.visibility,
           postedById: event.postedById,
           addressId: event.addressId,
           categories: {

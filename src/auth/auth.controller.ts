@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiResponse } from '@nestjs/swagger';
 import {
@@ -13,7 +13,7 @@ import {
 
 @Controller('')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   //signup
   @Post('api/auth/signup')
@@ -68,5 +68,10 @@ export class AuthController {
   })
   resetPassword(@Body() body: ResetPasswordDto) {
     return this.authService.resetPassword(body);
+  }
+
+  @Get('api/auth/seed')
+  seedData() {
+    return this.authService.seedData();
   }
 }

@@ -255,15 +255,17 @@ export class UpdateEventDto extends EventBaseDto {
   @IsOptional()
   prices: EventPriceUpdateDtoPayload[];
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], required: false })
   @IsArray()
+  @IsString({ each: true })
   @IsOptional()
   categories: string[];
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], required: false })
   @IsArray()
+  @IsString({ each: true }) // or @IsUUID("4", { each: true }) for UUIDs
   @IsOptional()
-  providers: string[];
+  providers?: string[];
 }
 
 export enum EventQueryStatus {
@@ -384,4 +386,4 @@ export class UpdateEventCategoryDto {
   active?: boolean;
 }
 
-export class GetEventOrdersQueryDto extends PaginationQueryDto {}
+export class GetEventOrdersQueryDto extends PaginationQueryDto { }
