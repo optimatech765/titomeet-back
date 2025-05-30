@@ -70,8 +70,8 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
 
-  @Get('api/auth/seed')
-  seedData() {
-    return this.authService.seedData();
-  }
+  /*   @Get('api/auth/seed')
+    seedData() {
+      return this.authService.seedData();
+    } */
 }
