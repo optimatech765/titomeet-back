@@ -236,7 +236,7 @@ export class EventsService {
       }
 
       const status =
-        event.status === EventStatus.CANCELLED
+        (event.status === EventStatus.CANCELLED || (event.status === EventStatus.DRAFT && !payload.isDraft))
           ? EventStatus.PENDING
           : event.status;
 

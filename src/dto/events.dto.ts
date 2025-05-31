@@ -266,6 +266,11 @@ export class UpdateEventDto extends EventBaseDto {
   @IsString({ each: true }) // or @IsUUID("4", { each: true }) for UUIDs
   @IsOptional()
   providers?: string[];
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  isDraft?: boolean;
 }
 
 export enum EventQueryStatus {
