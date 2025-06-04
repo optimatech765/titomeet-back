@@ -357,6 +357,7 @@ export class EventsService {
         status,
         attendeeId,
         categories,
+        interests,
       } = query;
 
       const { page, limit, skip } = getPaginationData(query);
@@ -435,6 +436,32 @@ export class EventsService {
         filter.orders = {
           some: {
             userId: attendeeId,
+          },
+        };
+      }
+
+      if (String(interests) === 'true' && user) {
+        const userInterests = await this.prisma.userInterests.findUnique({
+          where: {
+            id: user.id,
+          },
+          include: {
+            interests: {
+              select: {
+                parentId: true,
+              }
+            }
+          }
+        });
+
+
+        const parentCategories = userInterests?.interests.map((interest) => interest.parentId);
+
+        filter.categories = {
+          some: {
+            id: {
+              in: parentCategories,
+            },
           },
         };
       }

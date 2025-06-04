@@ -339,6 +339,11 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @Type(() => String)
   categories?: string;
+
+  @ApiPropertyOptional({ description: 'Include interests' })
+  @IsBoolean()
+  @IsOptional()
+  interests?: boolean;
 }
 
 export class PopulatedEventDto extends EventDto {
