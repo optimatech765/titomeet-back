@@ -144,10 +144,5 @@ export class UserInterestDto extends UserInterestDtoPayload {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  id: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
   userId: string;
 }

@@ -1,6 +1,10 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
-import { UpdateUserDto, UpdateUserStatusDto, UserInterestDto } from '../dto/users.dto';
+import {
+  UpdateUserDto,
+  UpdateUserStatusDto,
+  UserInterestDtoPayload,
+} from '../dto/users.dto';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
@@ -103,7 +107,7 @@ export class UsersService {
     }
   }
 
-  async saveInterests(user: User, payload: UserInterestDto) {
+  async saveInterests(user: User, payload: UserInterestDtoPayload) {
     try {
       const userInterests = await this.getOrCreateUserInterests(user);
 

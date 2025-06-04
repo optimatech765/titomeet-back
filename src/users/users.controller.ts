@@ -11,7 +11,12 @@ import {
 import { UsersService } from './users.service';
 import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
-import { UpdateUserDto, UpdateUserStatusDto, UserInterestDto } from 'src/dto/users.dto';
+import {
+  UpdateUserDto,
+  UpdateUserStatusDto,
+  UserInterestDto,
+  UserInterestDtoPayload,
+} from 'src/dto/users.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from '../dto/users.dto';
 
@@ -73,7 +78,10 @@ export class UsersController {
     description: 'User interests',
     type: UserInterestDto,
   })
-  updateUserInterests(@Request() req: IRequest, @Body() body: UserInterestDto) {
+  updateUserInterests(
+    @Request() req: IRequest,
+    @Body() body: UserInterestDtoPayload,
+  ) {
     return this.usersService.saveInterests(req.user, body);
   }
 }
