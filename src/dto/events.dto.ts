@@ -26,6 +26,13 @@ export class EventCategoryQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the event category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class EventCategoryDto {
@@ -389,6 +396,13 @@ export class UpdateEventCategoryDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the event category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class GetEventOrdersQueryDto extends PaginationQueryDto { }

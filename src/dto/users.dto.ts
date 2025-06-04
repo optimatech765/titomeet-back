@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsArray,
 } from 'class-validator';
 
 export class PaginationQueryDto {
@@ -30,6 +31,13 @@ export class TimeStampDto {
   @IsDate()
   @IsNotEmpty()
   updatedAt: Date;
+}
+
+export class ModelBaseDto extends TimeStampDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
 }
 
 export class AccountDto {
@@ -122,4 +130,24 @@ export class UpdateUserStatusDto {
   @IsEnum(UserStatus)
   @IsNotEmpty()
   status: UserStatus;
+}
+
+
+export class UserInterestDtoPayload {
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsNotEmpty()
+  interests: string[];
+}
+
+export class UserInterestDto extends UserInterestDtoPayload {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 }

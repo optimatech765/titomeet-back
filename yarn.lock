@@ -1556,10 +1556,10 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
-"@optimatech88/titomeet-shared-lib@^1.0.30":
-  version "1.0.30"
-  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.30.tgz#41ac40286c6fa02fc454ca5ab5a85a9b5e28950f"
-  integrity sha512-KGxMvsh3tdnnUhVBvd78fdeETaHvMgEIVRdMh+Qz7dEijMbA6nI3OlzLciAmcjT1bnmX442ANcHy/tngvL6d/g==
+"@optimatech88/titomeet-shared-lib@^1.0.32":
+  version "1.0.32"
+  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.32.tgz#1751fe91bd2526458dd8551f24d3491dc2b4585f"
+  integrity sha512-ug40/9DrhpCl2YnwndnbMlEVPIHUPcrcv+Uvx3uvbU7Jtz47loVAxFnj8fN0Oy5Pn6fob8t9tME441ioRVvXTQ==
   dependencies:
     "@faker-js/faker" "^8.4.1"
     "@keyv/redis" "^4.2.0"
@@ -6733,6 +6733,7 @@ word-wrap@^1.2.5:
   integrity sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==

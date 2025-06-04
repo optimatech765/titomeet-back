@@ -49,12 +49,21 @@ export class EventsService {
         };
       }
 
+      if (query.parentId) {
+        filter.parentId = query.parentId;
+      } else {
+        filter.parentId = null;
+      }
+
       const categories = await this.prisma.eventCategory.findMany({
         where: filter,
         skip,
         take: limit,
         orderBy: {
           name: 'asc',
+        },
+        include: {
+          children: true,
         },
       });
 
@@ -236,7 +245,8 @@ export class EventsService {
       }
 
       const status =
-        (event.status === EventStatus.CANCELLED || (event.status === EventStatus.DRAFT && !payload.isDraft))
+        event.status === EventStatus.CANCELLED ||
+          (event.status === EventStatus.DRAFT && !payload.isDraft)
           ? EventStatus.PENDING
           : event.status;
 

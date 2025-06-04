@@ -28,6 +28,13 @@ export class CreateEventCategoryDto {
   @IsNotEmpty()
   @IsString()
   description: string;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the event category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class UpdateEventStatusDto {

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
-import { UpdateUserDto, UpdateUserStatusDto } from '../dto/users.dto';
+import { UpdateUserDto, UpdateUserStatusDto, UserInterestDto } from '../dto/users.dto';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
@@ -67,6 +67,67 @@ export class UsersService {
         data: { status: payload.status },
       });
       return updatedUser;
+    } catch (error) {
+      return throwServerError(error);
+    }
+  }
+
+  async getOrCreateUserInterests(user: User) {
+    try {
+      let userInterests = await this.prisma.userInterests.findUnique({
+        where: {
+          userId: user.id,
+        },
+        include: {
+          interests: true,
+        },
+      });
+
+      if (!userInterests) {
+        userInterests = await this.prisma.userInterests.create({
+          data: {
+            id: user.id,
+            userId: user.id,
+            interests: {
+              connect: [],
+            },
+          },
+          include: {
+            interests: true,
+          },
+        });
+      }
+      return userInterests;
+    } catch (error) {
+      return throwServerError(error);
+    }
+  }
+
+  async saveInterests(user: User, payload: UserInterestDto) {
+    try {
+      const userInterests = await this.getOrCreateUserInterests(user);
+
+      const updatedUser = await this.prisma.userInterests.update({
+        where: { id: userInterests.id },
+        data: {
+          interests: {
+            connect: payload.interests.map((interest) => ({ id: interest })),
+          },
+        },
+        include: {
+          interests: true,
+        },
+      });
+      return updatedUser;
+    } catch (error) {
+      return throwServerError(error);
+    }
+  }
+
+  async getInterests(user: User) {
+    try {
+      const userInterests = await this.getOrCreateUserInterests(user);
+      return userInterests;
     } catch (error) {
       return throwServerError(error);
     }
