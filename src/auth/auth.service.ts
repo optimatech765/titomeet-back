@@ -6,6 +6,7 @@ import {
   RefreshTokenDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  UpdatePasswordPayloadDto,
 } from '../dto/auth.dto';
 import {
   JwtService,
@@ -375,6 +376,34 @@ export class AuthService {
     } catch (error) {
       this.logger.error(error);
       throwServerError(error);
+    }
+  }
+
+  async updatePassword(payload: UpdatePasswordPayloadDto, authUser: User) {
+    try {
+      const { oldPassword, newPassword } = payload;
+      const user = await this.prisma.user.findUnique({
+        where: { id: authUser.id },
+      });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+      }
+      if (
+        user.password !== createHash('sha256').update(oldPassword).digest('hex')
+      ) {
+        throw new HttpException('Invalid old password', HttpStatus.BAD_REQUEST);
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          password: createHash('sha256').update(newPassword).digest('hex'),
+        },
+      });
+      return { message: 'Mot de passe mis à jour avec succès' };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
     }
   }
 }
