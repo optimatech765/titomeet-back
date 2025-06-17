@@ -25,11 +25,17 @@ import {
   ValidateProviderDto,
 } from 'src/dto/providers.dto';
 import { throwServerError } from 'src/utils';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventValidation } from 'src/events/events';
+import { EVENT_EVENTS } from 'src/utils/events';
 
 @Injectable()
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) { }
 
   //EVENT CATEGORIES
   async createEventCategory(
@@ -101,6 +107,12 @@ export class AdminService {
           });
         }
       }
+
+      const eventConfimation = new EventValidation();
+      eventConfimation.eventId = id;
+      eventConfimation.validated =
+        updateEventStatusDto.status === EventStatus.PUBLISHED;
+      this.eventEmitter.emit(EVENT_EVENTS.EVENT_VALIDATED, eventConfimation);
 
       return updatedEvent;
     } catch (error) {

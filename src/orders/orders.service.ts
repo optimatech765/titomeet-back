@@ -1,14 +1,13 @@
 import {
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
+import { PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getOrderByReference(reference: string /* , user?: User */) {
     try {

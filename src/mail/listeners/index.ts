@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ForgotPasswordEvent } from '../events';
+import { ForgotPasswordEvent, SendNotificationByMailEvent } from '../events';
 
 import { MailService } from '../mail.service';
 import { MAIL_EVENTS, ORDER_EVENTS } from 'src/utils/events';
@@ -9,6 +9,7 @@ import { PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { generateTicketPDF } from 'src/utils/orders';
 import { Attachment } from 'nodemailer/lib/mailer';
 import { OrderConfirmationEvent } from 'src/orders/events';
+import { getMailDetails } from 'src/utils/notification';
 
 @Injectable()
 export class MailListener {
@@ -16,7 +17,7 @@ export class MailListener {
   constructor(
     private mailService: MailService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   @OnEvent(MAIL_EVENTS.FORGOT_PASSWORD)
   async sendForgotPasswordMail(event: ForgotPasswordEvent) {
@@ -109,6 +110,40 @@ export class MailListener {
       });
     } catch (error) {
       this.logger.error('Error sending order confirmation mail', error);
+    }
+  }
+
+  @OnEvent(MAIL_EVENTS.SEND_NOTIFICATION_BY_MAIL)
+  async sendNotificationByMail(event: SendNotificationByMailEvent) {
+    try {
+      this.logger.log('Sending forgot password mail');
+      const { notification } = event;
+
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: notification.notifiedToId,
+        },
+      });
+
+      if (!user) {
+        this.logger.error('User not found');
+        throw new Error('User not found');
+      }
+
+      const { subject, html } = await getMailDetails({
+        notification,
+        username: user.firstName,
+      });
+
+      this.mailService.sendMail({
+        to: user.email,
+        username: user.firstName,
+        subject,
+        html,
+      });
+
+    } catch (error) {
+      this.logger.error('Error sending forgot password mail', error);
     }
   }
 }
