@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ForgotPasswordEvent, SendNotificationByMailEvent } from '../events';
+import { ForgotPasswordEvent, SendNewsletterEvent, SendNotificationByMailEvent } from '../events';
 
 import { MailService } from '../mail.service';
 import { MAIL_EVENTS, ORDER_EVENTS } from 'src/utils/events';
@@ -10,6 +10,7 @@ import { generateTicketPDF } from 'src/utils/orders';
 import { Attachment } from 'nodemailer/lib/mailer';
 import { OrderConfirmationEvent } from 'src/orders/events';
 import { getMailDetails } from 'src/utils/notification';
+import { SendMailDto } from 'src/dto/mail.dto';
 
 @Injectable()
 export class MailListener {
@@ -144,6 +145,30 @@ export class MailListener {
 
     } catch (error) {
       this.logger.error('Error sending forgot password mail', error);
+    }
+  }
+
+  @OnEvent(MAIL_EVENTS.SEND_NEWSLETTER)
+  async sendNewsletter(event: SendNewsletterEvent) {
+    try {
+      this.logger.log('Sending newsletter');
+      const { email } = event;
+      // Send welcome email to the subscriber
+      const welcomeEmail: SendMailDto = {
+        subject: 'Bienvenue sur notre newsletter !',
+        html: `
+          <h1>Bienvenue sur notre newsletter !</h1>
+          <p>Merci de vous être inscrit à notre newsletter avec l'email: ${email}</p>
+          <p>Vous recevrez désormais les dernières actualités et offres de notre part.</p>
+          <p>Cordialement,<br>L'équipe</p>
+        `,
+        to: email,
+        username: 'Abonnement à la newsletter',
+      };
+
+      await this.mailService.sendMail(welcomeEmail);
+    } catch (error) {
+      this.logger.error('Error sending newsletter', error);
     }
   }
 }

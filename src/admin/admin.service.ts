@@ -28,6 +28,7 @@ import { throwServerError } from 'src/utils';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventValidation } from 'src/events/events';
 import { EVENT_EVENTS } from 'src/utils/events';
+import { GetNewsletterSubscriptions } from 'src/dto/mail.dto';
 
 @Injectable()
 export class AdminService {
@@ -300,6 +301,44 @@ export class AdminService {
         totalPublishedEvents,
         totalDraftEvents,
         totalRejectedEvents,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //newsletter
+  async getNewsletterSubscriptions(query: GetNewsletterSubscriptions) {
+    try {
+      const { search } = query;
+      const { skip, page, limit } = getPaginationData(query);
+
+      const where = {} as any;
+
+      if (search) {
+        where.OR = [{ email: { contains: search, mode: 'insensitive' } }];
+      }
+
+      const subscriptions = await this.prisma.newsletter.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      const total = await this.prisma.newsletter.count({
+        where,
+      });
+
+      return {
+        items: subscriptions,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
       this.logger.error(error);

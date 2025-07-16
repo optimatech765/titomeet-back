@@ -9,3 +9,7 @@ export class ForgotPasswordEvent {
 export class SendNotificationByMailEvent {
   notification: NotificationDto;
 }
+
+export class SendNewsletterEvent {
+  email: string;
+}
