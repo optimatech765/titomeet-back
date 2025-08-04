@@ -12,6 +12,7 @@ import { ProvidersService } from './providers.service';
 import {
   CreateProviderDto,
   GetProviderCategoriesResponseDto,
+  GetProviderEventsQueryDto,
   GetProvidersQueryDto,
   GetProvidersResponseDto,
   ProviderCategoryQueryDto,
@@ -22,10 +23,12 @@ import {
   OptionalAuthGuard,
 } from '@optimatech88/titomeet-shared-lib';
 import { ApiResponse } from '@nestjs/swagger';
+import { GetEventsResponseDto } from 'src/dto/events.dto';
+import { IRequest } from 'src/types';
 
 @Controller('api/providers')
 export class ProvidersController {
-  constructor(private readonly providersService: ProvidersService) {}
+  constructor(private readonly providersService: ProvidersService) { }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -75,5 +78,20 @@ export class ProvidersController {
   })
   async getProviderById(@Param('id') id: string) {
     return this.providersService.getProviderById(id);
+  }
+
+  @Get(':id/events')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get events for provider',
+    type: GetEventsResponseDto,
+  })
+  async getEventsForProvider(
+    @Param('id') id: string,
+    @Request() req: IRequest,
+    @Query() query: GetProviderEventsQueryDto,
+  ) {
+    return this.providersService.getEventsForProvider(id, req.user, query);
   }
 }

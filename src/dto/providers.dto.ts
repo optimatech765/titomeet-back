@@ -127,7 +127,7 @@ export class ProviderDto extends ProviderBaseDto {
   address: AddressDto;
 }
 
-export class CreateProviderDto extends ProviderBaseDto {}
+export class CreateProviderDto extends ProviderBaseDto { }
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for providers' })
@@ -139,6 +139,13 @@ export class GetProvidersQueryDto extends PaginationQueryDto {
   @IsEnum(ProviderStatus)
   @IsOptional()
   status?: ProviderStatus
+}
+
+export class GetProviderEventsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for events' })
+  @IsString()
+  @IsOptional()
+  search?: string;
 }
 
 export class GetProvidersResponseDto {

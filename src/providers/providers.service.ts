@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -13,16 +14,18 @@ import {
 } from '@optimatech88/titomeet-shared-lib';
 import {
   CreateProviderDto,
+  GetProviderEventsQueryDto,
   GetProvidersQueryDto,
   ProviderCategoryQueryDto,
 } from 'src/dto/providers.dto';
 import { Prisma, ProviderStatus, User, UserRole } from '@prisma/client';
 import { throwServerError } from 'src/utils';
+import { GetEventsQueryDto } from 'src/dto/events.dto';
 
 @Injectable()
 export class ProvidersService {
   private readonly logger = new Logger(ProvidersService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getProviderCategories(
     query: ProviderCategoryQueryDto,
@@ -200,6 +203,75 @@ export class ProvidersService {
       }
 
       return provider;
+    } catch (error) {
+      throwServerError(error);
+    }
+  }
+
+  async getEventsForProvider(providerId: string, user: User, query: GetProviderEventsQueryDto) {
+    try {
+      const provider = await this.prisma.provider.findUnique({
+        where: { id: providerId },
+        include: {
+          events: true,
+        },
+      });
+
+      if (!provider) {
+        throw new NotFoundException('Provider not found');
+      }
+
+      if (provider.userId !== user.id) {
+        throw new ForbiddenException('You are not authorized to access this provider');
+      }
+
+      const { skip, limit, page } = getPaginationData(query);
+
+      const filter: Prisma.EventWhereInput = {
+        providers: {
+          some: {
+            id: providerId,
+          },
+        },
+      };
+
+      const events = await this.prisma.event.findMany({
+        where: filter,
+        include: {
+          prices: true,
+          address: true,
+          postedBy: true,
+          categories: true,
+          ...(user && {
+            orders: {
+              where: {
+                userId: user.id,
+              },
+            },
+            favorites: {
+              where: {
+                userId: user.id,
+              },
+            },
+          }),
+        },
+        skip,
+        take: limit,
+      });
+
+      const total = await this.prisma.event.count({
+        where: {
+          ...filter,
+        },
+      });
+
+      return {
+        items: events,
+        total,
+        totalPages: Math.ceil(total / limit),
+        page,
+        limit,
+      };
     } catch (error) {
       throwServerError(error);
     }
