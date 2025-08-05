@@ -1,8 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
   OrderStatus,
+  PaymentMethod,
   PaymentStatus,
   PrismaService,
+  TransactionStatus,
+  User,
 } from '@optimatech88/titomeet-shared-lib';
 import axios from 'axios';
 import { FedaPay, Transaction } from 'fedapay';
@@ -11,6 +14,7 @@ import paymentConfig from 'src/config/payment';
 import { OrderConfirmationEvent } from 'src/orders/events';
 import { ORDER_EVENTS } from 'src/utils/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { getExpiresAt } from 'src/utils';
 @Injectable()
 export class FedapayService implements OnModuleInit {
   private readonly logger = new Logger(FedapayService.name);
@@ -18,7 +22,7 @@ export class FedapayService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async onModuleInit() {
     const { fedapay } = paymentConfig();
@@ -52,6 +56,8 @@ export class FedapayService implements OnModuleInit {
       lastname: string;
       email: string;
     };
+    pricingId?: string;
+    user: User;
   }): Promise<Transaction> {
     try {
       const { frontendUrl } = appConfig();
@@ -65,6 +71,25 @@ export class FedapayService implements OnModuleInit {
         mode: 'mtn_open',
         customer: payload.customer,
       });
+      if (payload.pricingId) {
+        const pricing = await this.prisma.pricing.findUnique({
+          where: { id: payload.pricingId },
+        });
+        if (!pricing) {
+          throw new Error('Pricing not found');
+        }
+        const expiresAt = getExpiresAt(pricing.duration);
+        await this.prisma.transaction.create({
+          data: {
+            amount: payload.amount,
+            paymentMethod: PaymentMethod.MOBILE_MONEY,
+            pricingId: payload.pricingId,
+            userId: payload.user.id,
+            reference: txn.id,
+            expiresAt,
+          },
+        });
+      }
       return txn;
     } catch (error) {
       this.logger.error('Error creating transaction:', error.message);
@@ -109,46 +134,75 @@ export class FedapayService implements OnModuleInit {
         const order = await this.prisma.order.findUnique({
           where: { paymentIntentId: String(txn.id) },
         });
-        if (!order) {
-          this.logger.error('Order not found');
-          throw new Error('Order not found');
+
+        const transaction = await this.prisma.transaction.findFirst({
+          where: {
+            reference: String(txn.id),
+            status: TransactionStatus.PENDING,
+          },
+        });
+
+        if (!order && !transaction) {
+          this.logger.error('Order or transaction not found');
+          throw new Error('Order or transaction not found');
         }
+
         if (txn.status === 'approved') {
-          const updatedOrder = await this.prisma.order.update({
-            where: { id: order.id },
-            data: {
-              status: OrderStatus.CONFIRMED,
-              paymentStatus: PaymentStatus.COMPLETED,
-            },
-            include: {
-              event: {
-                include: {
-                  address: true,
+          if (order) {
+            const updatedOrder = await this.prisma.order.update({
+              where: { id: order.id },
+              data: {
+                status: OrderStatus.CONFIRMED,
+                paymentStatus: PaymentStatus.COMPLETED,
+              },
+              include: {
+                event: {
+                  include: {
+                    address: true,
+                  },
+                },
+                user: true,
+                items: {
+                  include: {
+                    eventPrice: true,
+                  },
                 },
               },
-              user: true,
-              items: {
-                include: {
-                  eventPrice: true,
-                },
-              },
-            },
-          });
-          //send email to user
-          const confirmationEvent = new OrderConfirmationEvent();
-          confirmationEvent.order = updatedOrder;
-          this.eventEmitter.emit(
-            ORDER_EVENTS.ORDER_CONFIRMED,
-            confirmationEvent,
-          );
+            });
+            //send email to user
+            const confirmationEvent = new OrderConfirmationEvent();
+            confirmationEvent.order = updatedOrder;
+            this.eventEmitter.emit(
+              ORDER_EVENTS.ORDER_CONFIRMED,
+              confirmationEvent,
+            );
+          }
+
+
+          if (transaction) {
+            await this.prisma.transaction.update({
+              where: { id: transaction.id },
+              data: { status: TransactionStatus.COMPLETED },
+            });
+          }
+
         } else {
-          await this.prisma.order.update({
-            where: { id: order.id },
-            data: {
-              status: OrderStatus.CANCELLED,
-              paymentStatus: PaymentStatus.FAILED,
-            },
-          });
+          if (transaction) {
+            await this.prisma.transaction.update({
+              where: { id: transaction.id },
+              data: { status: TransactionStatus.FAILED },
+            });
+          } else {
+            if (order) {
+              await this.prisma.order.update({
+                where: { id: order.id },
+                data: {
+                  status: OrderStatus.CANCELLED,
+                  paymentStatus: PaymentStatus.FAILED,
+                },
+              });
+            }
+          }
         }
       }
       return true;
