@@ -10,6 +10,7 @@ import {
   UserRole,
   Provider,
   OrderStatus,
+  Pricing,
 } from '@optimatech88/titomeet-shared-lib';
 import {
   AdminStatsDto,
@@ -17,6 +18,7 @@ import {
   CreateProviderCategoryDto,
   EventStatsDto,
   GetUsersQueryDto,
+  PricingBaseDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import { UpdateEventCategoryDto } from 'src/dto/events.dto';
@@ -340,6 +342,34 @@ export class AdminService {
         limit,
         totalPages: Math.ceil(total / limit),
       };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  async createPricing(createPricingDto: PricingBaseDto): Promise<Pricing> {
+    try {
+      const pricing = await this.prisma.pricing.create({
+        data: createPricingDto,
+      });
+      return pricing;
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  async updatePricing(
+    id: string,
+    updatePricingDto: PricingBaseDto,
+  ): Promise<Pricing> {
+    try {
+      const pricing = await this.prisma.pricing.update({
+        where: { id },
+        data: updatePricingDto,
+      });
+      return pricing;
     } catch (error) {
       this.logger.error(error);
       return throwServerError(error);

@@ -10,6 +10,8 @@ import {
   EventStatus,
   EventAccess,
   OrderStatus,
+  TransactionStatus,
+  PricingType,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -90,6 +92,26 @@ export class EventsService {
   async createEvent(payload: CreateEventDto, user: User): Promise<Event> {
     try {
       const { isDraft, prices, providers, ...rest } = payload;
+
+      const activeSubscription = await this.prisma.transaction.findFirst({
+        where: {
+          userId: user.id,
+          status: TransactionStatus.COMPLETED,
+          pricing: {
+            type: PricingType.EVENT_CREATOR,
+          },
+          expiresAt: {
+            gte: new Date(),
+          },
+        },
+      });
+
+      if (!activeSubscription) {
+        throw new HttpException(
+          'You do not have an active subscription',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       const _prices =
         prices ??
@@ -826,6 +848,7 @@ export class EventsService {
             firstname: user.firstName,
             lastname: user.lastName,
           },
+          user
         });
 
         //this.logger.log({ txn });

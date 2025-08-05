@@ -22,6 +22,8 @@ import {
   CreateProviderCategoryDto,
   EventStatsDto,
   GetUsersQueryDto,
+  PricingBaseDto,
+  PricingDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import {
@@ -154,5 +156,27 @@ export class AdminController {
   })
   getNewsletterSubscriptions(@Query() query: GetNewsletterSubscriptions) {
     return this.adminService.getNewsletterSubscriptions(query);
+  }
+
+  @Post('pricings')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Create pricing',
+    type: PricingDto,
+  })
+  createPricing(@Body() payload: PricingBaseDto) {
+    return this.adminService.createPricing(payload);
+  }
+
+  @Put('pricings/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Update pricing',
+    type: PricingDto,
+  })
+  updatePricing(@Param('id') id: string, @Body() payload: PricingBaseDto) {
+    return this.adminService.updatePricing(id, payload);
   }
 }

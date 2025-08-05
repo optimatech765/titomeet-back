@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
+import { getPaginationData, PrismaService, User } from '@optimatech88/titomeet-shared-lib';
 import {
   UpdateUserDto,
   UpdateUserStatusDto,
   UserInterestDtoPayload,
 } from '../dto/users.dto';
 import { throwServerError } from 'src/utils';
+import { GetPricingsQueryDto } from 'src/dto/admin.dto';
 
 @Injectable()
 export class UsersService {
@@ -132,6 +133,43 @@ export class UsersService {
     try {
       const userInterests = await this.getOrCreateUserInterests(user);
       return userInterests;
+    } catch (error) {
+      return throwServerError(error);
+    }
+  }
+
+  async getPricings(query: GetPricingsQueryDto) {
+    try {
+      const { skip, page, limit } = getPaginationData(query);
+      const where = {} as any;
+
+      if (query.search) {
+        where.OR = [
+          { title: { contains: query.search, mode: 'insensitive' } },
+        ];
+      }
+
+      if (query.type) {
+        where.type = query.type;
+      }
+
+      const pricings = await this.prisma.pricing.findMany({
+        where,
+        skip,
+        take: limit,
+      });
+
+      const total = await this.prisma.pricing.count({
+        where,
+      });
+
+      return {
+        items: pricings,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       return throwServerError(error);
     }

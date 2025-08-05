@@ -5,6 +5,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import {
 } from 'src/dto/users.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from '../dto/users.dto';
+import { GetPricingsQueryDto, GetPricingsResponseDto } from 'src/dto/admin.dto';
 
 @Controller('api/users')
 export class UsersController {
@@ -83,5 +85,16 @@ export class UsersController {
     @Body() body: UserInterestDtoPayload,
   ) {
     return this.usersService.saveInterests(req.user, body);
+  }
+
+  @Get('pricings')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Pricings',
+    type: GetPricingsResponseDto,
+  })
+  getPricings(@Query() query: GetPricingsQueryDto) {
+    return this.usersService.getPricings(query);
   }
 }
