@@ -15,7 +15,7 @@ export class NotificationListener {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   @OnEvent(EVENT_EVENTS.EVENT_VALIDATED)
   async sendEventValidatedNotification(confirmationEvent: EventValidation) {
@@ -26,7 +26,11 @@ export class NotificationListener {
       const event = await this.prisma.event.findUnique({
         where: { id: eventId },
         include: {
-          providers: true,
+          providers: {
+            include: {
+              provider: true
+            }
+          },
         },
       });
 
@@ -53,10 +57,10 @@ export class NotificationListener {
         //notify providers
         event.providers.forEach(async (provider) => {
           //send email to provider
-          this.logger.log(`Sending email to provider ${provider.name}`);
+          this.logger.log(`Sending email to provider ${provider.provider.name}`);
           await this.notificationsService.sendNotification({
             notificationPayload: {
-              notifiedToId: provider.id,
+              notifiedToId: provider.providerId,
               type: NotificationType.EVENT_ASSIGNMENT,
               data: {
                 eventId,

@@ -13,7 +13,7 @@ import {
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
 import { AddressDto } from './address.dto';
-import { ProviderStatus } from '@optimatech88/titomeet-shared-lib';
+import { ProviderOnEventStatus, ProviderStatus } from '@optimatech88/titomeet-shared-lib';
 
 export class ProviderCategoryDto {
   @ApiProperty()
@@ -146,6 +146,16 @@ export class GetProviderEventsQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by event status' })
+  @IsEnum(ProviderOnEventStatus)
+  @IsOptional()
+  status?: ProviderOnEventStatus;
+
+  @ApiPropertyOptional({ description: 'Filter by provider' })
+  @IsString()
+  @IsOptional()
+  providerId?: string;
 }
 
 export class GetProvidersResponseDto {
@@ -233,4 +243,44 @@ export class ValidateProviderDto {
   @IsEnum(ProviderStatus)
   @IsNotEmpty()
   status: ProviderStatus;
+}
+
+export class ProviderStatsDto {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPending: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalApproved: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalRejected: number;
+}
+
+
+export class ProviderOnEventDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  providerId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  eventId: string;
+
+  @ApiProperty({ enum: ProviderOnEventStatus })
+  @IsEnum(ProviderOnEventStatus)
+  @IsNotEmpty()
+  status: ProviderOnEventStatus;
 }

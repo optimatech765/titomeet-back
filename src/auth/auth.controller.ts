@@ -86,8 +86,8 @@ export class AuthController {
     return this.authService.updatePassword(body, req.user);
   }
 
-  /* @Get('api/auth/seed')
+  @Get('api/auth/seed')
   seedData() {
     return this.authService.seedData();
-  } */
+  }
 }

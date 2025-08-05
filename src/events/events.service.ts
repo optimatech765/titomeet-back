@@ -132,13 +132,6 @@ export class EventsService {
               id: category,
             })),
           },
-          ...(_providers.length > 0 && {
-            providers: {
-              connect: _providers.map((provider) => ({
-                id: provider,
-              })),
-            },
-          }),
           postedById: user.id,
         },
         include: {
@@ -147,6 +140,15 @@ export class EventsService {
           postedBy: true,
         },
       });
+
+      if (_providers.length > 0) {
+        await this.prisma.providerOnEvent.createMany({
+          data: _providers.map((provider) => ({
+            providerId: provider,
+            eventId: event.id,
+          })),
+        });
+      }
 
       return event;
     } catch (error) {
@@ -165,6 +167,7 @@ export class EventsService {
         where: { id },
         include: {
           prices: true,
+          providers: true,
         },
       });
 
@@ -272,14 +275,14 @@ export class EventsService {
             connect: payload.categories.map((category) => ({
               id: category,
             })),
-          },
+          },/* 
           ...(_providers.length > 0 && {
             providers: {
               connect: _providers.map((provider) => ({
                 id: provider,
               })),
             },
-          }),
+          }), */
         },
         include: {
           prices: true,
@@ -287,6 +290,26 @@ export class EventsService {
           postedBy: true,
         },
       });
+
+      if (_providers.length > 0) {
+        const newProviders = _providers.filter(
+          (provider) => !event.providers.find((p) => p.providerId === provider),
+        );
+        const deletedProviders = event.providers
+          .filter((p) => !_providers.includes(p.providerId))
+          .map((p) => p.providerId);
+
+        await this.prisma.providerOnEvent.deleteMany({
+          where: { providerId: { in: deletedProviders } },
+        });
+
+        await this.prisma.providerOnEvent.createMany({
+          data: newProviders.map((provider) => ({
+            providerId: provider,
+            eventId: id,
+          })),
+        });
+      }
 
       return updatedEvent;
     } catch (error) {
@@ -314,6 +337,10 @@ export class EventsService {
           HttpStatus.FORBIDDEN,
         );
       }
+
+      await this.prisma.providerOnEvent.deleteMany({
+        where: { eventId: id },
+      });
 
       await this.prisma.event.delete({
         where: { id },
