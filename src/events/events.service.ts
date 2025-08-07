@@ -735,6 +735,17 @@ export class EventsService {
         );
       }
 
+      const endDate = new Date(event.endDate);
+
+      const isPassEvent = endDate < new Date();
+
+      if (isPassEvent) {
+        throw new HttpException(
+          'Event is already passed',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const totalTicketsSold = (await this.prisma.orderItem.groupBy({
         by: ['eventPriceId'],
         _count: true,
