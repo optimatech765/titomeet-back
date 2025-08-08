@@ -93,7 +93,7 @@ export class EventsService {
     try {
       const { isDraft, prices, providers, ...rest } = payload;
 
-      const activeSubscription = await this.prisma.transaction.findFirst({
+      /* const activeSubscription = await this.prisma.transaction.findFirst({
         where: {
           userId: user.id,
           status: TransactionStatus.COMPLETED,
@@ -111,7 +111,7 @@ export class EventsService {
           'You do not have an active subscription',
           HttpStatus.BAD_REQUEST,
         );
-      }
+      } */
 
       const _prices =
         prices ??
