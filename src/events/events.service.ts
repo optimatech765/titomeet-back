@@ -143,6 +143,7 @@ export class EventsService {
           ...rest,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
+          badge: payload.badge ?? '',
           status,
           ...(_prices.length > 0 && {
             prices: {
@@ -293,6 +294,7 @@ export class EventsService {
           visibility: rest.visibility,
           postedById: event.postedById,
           addressId: event.addressId,
+          ...(rest.badge && { badge: rest.badge }),
           categories: {
             connect: payload.categories.map((category) => ({
               id: category,

@@ -101,8 +101,8 @@ export class EventBaseDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  badge: string;
+  @IsOptional()
+  badge?: string;
 
   @ApiProperty()
   @IsString()
