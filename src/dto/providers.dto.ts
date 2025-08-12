@@ -82,23 +82,23 @@ export class ProviderBaseDto {
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  phoneNumber: string;
+  phoneNumber?: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  website: string;
+  website?: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  pricingDetails: string;
+  pricingDetails?: string;
 
   @ApiProperty({ type: [ProviderDoc] })
   @IsArray()
