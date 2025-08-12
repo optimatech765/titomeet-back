@@ -6,7 +6,7 @@ import { MailService } from '../mail.service';
 import { MAIL_EVENTS, ORDER_EVENTS } from 'src/utils/events';
 import appConfig from 'src/config';
 import { PrismaService } from '@optimatech88/titomeet-shared-lib';
-import { generateTicketPDF } from 'src/utils/orders';
+import { generateTicketPDF, getEventUrl } from 'src/utils/orders';
 import { Attachment } from 'nodemailer/lib/mailer';
 import { OrderConfirmationEvent } from 'src/orders/events';
 import { getMailDetails } from 'src/utils/notification';
@@ -85,6 +85,7 @@ export class MailListener {
             ticketCode: item.ticketCode,
             ticketType: item.eventPrice.name,
             userEmail: user.email,
+            url: getEventUrl(event.id),
           });
           return {
             filename: `Ticket-${item.ticketCode}.pdf`,

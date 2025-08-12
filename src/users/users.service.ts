@@ -7,6 +7,7 @@ import {
 } from '../dto/users.dto';
 import { throwServerError } from 'src/utils';
 import { GetPricingsQueryDto } from 'src/dto/admin.dto';
+import { SubscriptionPayloadDto } from 'src/dto/transaction.dto';
 
 @Injectable()
 export class UsersService {
@@ -93,9 +94,6 @@ export class UsersService {
           data: {
             id: user.id,
             userId: user.id,
-            interests: {
-              connect: [],
-            },
           },
           include: {
             interests: true,
@@ -112,15 +110,31 @@ export class UsersService {
     try {
       const userInterests = await this.getOrCreateUserInterests(user);
 
+      //deleted interests
+      const deletedInterests = userInterests.interests.filter(
+        (interest) => !payload.interests.includes(interest.id),
+      );
+
+      //new interests
+      const newInterests = payload.interests.filter(
+        (interest) => !userInterests.interests.some((i) => i.id === interest),
+      );
+
       const updatedUser = await this.prisma.userInterests.update({
         where: { id: userInterests.id },
         data: {
           interests: {
-            connect: payload.interests.map((interest) => ({ id: interest })),
+            connect: newInterests.map((interest) => ({ id: interest })),
           },
         },
         include: {
           interests: true,
+        },
+      });
+      //delete deleted interests
+      await this.prisma.userInterests.deleteMany({
+        where: {
+          id: { in: deletedInterests.map((interest) => interest.id) },
         },
       });
       return updatedUser;
@@ -170,6 +184,29 @@ export class UsersService {
         limit,
         totalPages: Math.ceil(total / limit),
       };
+    } catch (error) {
+      return throwServerError(error);
+    }
+  }
+
+  async createSubscription(user: User, payload: SubscriptionPayloadDto) {
+    try {
+      const pricing = await this.prisma.pricing.findUnique({
+        where: { id: payload.pricingId },
+      });
+
+      if (!pricing) {
+        throw new HttpException('Pricing not found', HttpStatus.NOT_FOUND);
+      }
+      const subscription = await this.prisma.transaction.create({
+        data: {
+          userId: user.id,
+          pricingId: payload.pricingId,
+          paymentMethod: payload.paymentMethod,
+          amount: pricing.amount,
+        },
+      });
+      return subscription;
     } catch (error) {
       return throwServerError(error);
     }
