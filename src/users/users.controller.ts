@@ -21,6 +21,7 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from '../dto/users.dto';
 import { GetPricingsQueryDto, GetPricingsResponseDto } from 'src/dto/admin.dto';
+import { SubscriptionPayloadDto, TransactionDto } from 'src/dto/transaction.dto';
 
 @Controller('api/users')
 export class UsersController {
@@ -96,5 +97,19 @@ export class UsersController {
   })
   getPricings(@Query() query: GetPricingsQueryDto) {
     return this.usersService.getPricings(query);
+  }
+
+  @Post('me/subscription')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Subscription',
+    type: TransactionDto,
+  })
+  createSubscription(
+    @Request() req: IRequest,
+    @Body() body: SubscriptionPayloadDto,
+  ) {
+    return this.usersService.createSubscription(req.user, body);
   }
 }
