@@ -99,7 +99,6 @@ export class MailListener {
       attachments.push(...ticketsBuffers);
 
       const isMultiple = items.length > 1;
-      this.logger.log({ email: user.email });
 
       this.mailService.sendMail({
         to: user.email,
