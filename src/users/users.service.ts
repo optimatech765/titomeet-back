@@ -1,5 +1,10 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { getPaginationData, PrismaService, User } from '@optimatech88/titomeet-shared-lib';
+import {
+  getPaginationData,
+  PrismaService,
+  TransactionStatus,
+  User,
+} from '@optimatech88/titomeet-shared-lib';
 import {
   UpdateUserDto,
   UpdateUserStatusDto,
@@ -152,15 +157,13 @@ export class UsersService {
     }
   }
 
-  async getPricings(query: GetPricingsQueryDto) {
+  async getPricings(query: GetPricingsQueryDto, user?: User) {
     try {
       const { skip, page, limit } = getPaginationData(query);
       const where = {} as any;
 
       if (query.search) {
-        where.OR = [
-          { title: { contains: query.search, mode: 'insensitive' } },
-        ];
+        where.OR = [{ title: { contains: query.search, mode: 'insensitive' } }];
       }
 
       if (query.type) {
@@ -171,6 +174,19 @@ export class UsersService {
         where,
         skip,
         take: limit,
+        include: user
+          ? {
+            transactions: {
+              where: {
+                userId: user.id,
+                status: TransactionStatus.COMPLETED,
+                expiresAt: {
+                  gte: new Date(),
+                }
+              },
+            },
+          }
+          : undefined,
       });
 
       const total = await this.prisma.pricing.count({
@@ -206,6 +222,7 @@ export class UsersService {
           amount: pricing.amount,
         },
       });
+
       return subscription;
     } catch (error) {
       return throwServerError(error);

@@ -17,6 +17,7 @@ import { AdminModule } from './admin/admin.module';
 import { FedapayModule } from './fedapay/fedapay.module';
 import { OrdersModule } from './orders/orders.module';
 import { MailModule } from './mail/mail.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -44,8 +45,9 @@ import { MailModule } from './mail/mail.module';
     FedapayModule,
     OrdersModule,
     MailModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

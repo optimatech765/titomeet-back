@@ -5,6 +5,7 @@ import {
     IsEnum,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsString,
 } from 'class-validator';
 
@@ -14,7 +15,12 @@ export class SubscriptionPayloadDto {
     @IsNotEmpty()
     pricingId: string;
 
-    @ApiProperty({ description: 'Payment method' })
+    @ApiProperty()
+    @IsString()
+    @IsOptional()
+    callbackUrl: string;
+
+    @ApiProperty({ description: 'Payment method', enum: PaymentMethod })
     @IsEnum(PaymentMethod)
     @IsNotEmpty()
     paymentMethod: PaymentMethod;
@@ -50,4 +56,16 @@ export class TransactionDto {
     @IsString()
     @IsNotEmpty()
     userId: string;
+}
+
+export class SubscriptionResponeDto {
+    @ApiProperty({ description: 'Payment URL' })
+    @IsString()
+    @IsNotEmpty()
+    url: string;
+
+    @ApiProperty({ description: 'Transaction ID' })
+    @IsString()
+    @IsNotEmpty()
+    transactionId: string;
 }

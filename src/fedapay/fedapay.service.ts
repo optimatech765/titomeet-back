@@ -85,7 +85,7 @@ export class FedapayService implements OnModuleInit {
             paymentMethod: PaymentMethod.MOBILE_MONEY,
             pricingId: payload.pricingId,
             userId: payload.user.id,
-            reference: txn.id,
+            reference: String(txn.id),
             expiresAt,
           },
         });
@@ -130,6 +130,8 @@ export class FedapayService implements OnModuleInit {
       if (payload.object === 'transaction') {
         const txnId = payload.entity.id;
         const txn = await this.verifyTxn(txnId);
+
+        //check order first because there is also a transaction for the order
         //this.logger.log({ txn });
         const order = await this.prisma.order.findUnique({
           where: { paymentIntentId: String(txn.id) },
@@ -140,6 +142,13 @@ export class FedapayService implements OnModuleInit {
             reference: String(txn.id),
             status: TransactionStatus.PENDING,
           },
+          include: {
+            pricing: {
+              select: {
+                duration: true,
+              }
+            },
+          }
         });
 
         if (!order && !transaction) {

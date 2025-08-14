@@ -8,11 +8,12 @@ import {
 import { throwServerError } from 'src/utils';
 import { GetPricingsQueryDto } from 'src/dto/admin.dto';
 import { SubscriptionPayloadDto } from 'src/dto/transaction.dto';
+import { FedapayService } from 'src/fedapay/fedapay.service';
 
 @Injectable()
 export class TransactionsService {
   private readonly logger = new Logger(TransactionsService.name);
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService, private fedapayService: FedapayService) { }
   async getPricings(query: GetPricingsQueryDto) {
     try {
       const { skip, page, limit } = getPaginationData(query);
@@ -59,15 +60,22 @@ export class TransactionsService {
       if (!pricing) {
         throw new HttpException('Pricing not found', HttpStatus.NOT_FOUND);
       }
-      const subscription = await this.prisma.transaction.create({
-        data: {
-          userId: user.id,
-          pricingId: payload.pricingId,
-          paymentMethod: payload.paymentMethod,
-          amount: pricing.amount,
+      const txn = await this.fedapayService.createTransaction({
+        amount: pricing.amount,
+        description: `Abonnement #${pricing.title}`,
+        callbackUrl: payload.callbackUrl,
+        customer: {
+          email: user.email,
+          firstname: user.firstName,
+          lastname: user.lastName,
         },
+        user,
+        pricingId: pricing.id,
       });
-      return subscription;
+
+      const paymentLink =
+        await this.fedapayService.createTransactionPaymentLink(txn.id);
+      return paymentLink;
     } catch (error) {
       return throwServerError(error);
     }

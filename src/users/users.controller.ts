@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
+import { AuthGuard, OptionalAuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
 import {
   UpdateUserDto,
@@ -89,27 +89,27 @@ export class UsersController {
   }
 
   @Get('pricings')
-  @UseGuards(AuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Pricings',
     type: GetPricingsResponseDto,
   })
-  getPricings(@Query() query: GetPricingsQueryDto) {
-    return this.usersService.getPricings(query);
+  getPricings(@Query() query: GetPricingsQueryDto, @Request() req: any) {
+    return this.usersService.getPricings(query, req.user);
   }
 
-  @Post('me/subscription')
-  @UseGuards(AuthGuard)
-  @ApiResponse({
-    status: 200,
-    description: 'Subscription',
-    type: TransactionDto,
-  })
-  createSubscription(
-    @Request() req: IRequest,
-    @Body() body: SubscriptionPayloadDto,
-  ) {
-    return this.usersService.createSubscription(req.user, body);
-  }
+  /*   @Post('me/subscription')
+    @UseGuards(AuthGuard)
+    @ApiResponse({
+      status: 200,
+      description: 'Subscription',
+      type: TransactionDto,
+    })
+    createSubscription(
+      @Request() req: IRequest,
+      @Body() body: SubscriptionPayloadDto,
+    ) {
+      return this.usersService.createSubscription(req.user, body);
+    } */
 }
