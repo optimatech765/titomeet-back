@@ -140,7 +140,7 @@ export class ProvidersService {
 
   async getProviders(query: GetProvidersQueryDto, user?: User) {
     try {
-      const { search, status, categoryId } = query;
+      const { search, status, categoryId, parentId } = query;
 
       console.log({ user, status });
 
@@ -157,6 +157,12 @@ export class ProvidersService {
 
       if (categoryId) {
         filter.categoryId = categoryId;
+      }
+
+      if (parentId) {
+        filter.category = {
+          parentId,
+        };
       }
 
       if (user) {

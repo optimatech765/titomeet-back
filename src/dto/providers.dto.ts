@@ -144,6 +144,13 @@ export class GetProvidersQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   categoryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the provider category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class GetProviderEventsQueryDto extends PaginationQueryDto {

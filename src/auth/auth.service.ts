@@ -234,7 +234,20 @@ export class AuthService {
   async seedData() {
     try {
       this.logger.log('Seeding data...');
-      this.logger.log('Seeding addresses...', mainData.users);
+      const seedList = [
+        /* 'accounts',
+        'addresses', */
+        'eventCategories',
+        'providerCategories',
+        /* 'providers',
+        'events',
+        'eventPrices',
+        'favorites',
+        'orders',
+        'orderItems',
+        'chats',
+        'chatUsers', */
+      ];
       const {
         users,
         accounts,
@@ -249,130 +262,188 @@ export class AuthService {
         chatUsers,
         eventPrices,
       } = mainData;
-      const events = eventsData as any;
-      this.logger.log('Seeding addresses...');
-      await this.prisma.address.createMany({
-        data: addresses.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding users...');
-      await this.prisma.user.createMany({
-        data: users.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-      });
-      this.logger.log('Seeding accounts...');
-      await this.prisma.account.createMany({
-        data: accounts.map((item) => ({
-          ...item,
-          expiresAt: new Date(item.expiresAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
 
-      this.logger.log('Seeding event categories...');
-      await this.prisma.eventCategory.createMany({
-        data: eventCategories.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding provider categories...');
-      await this.prisma.providerCategory.createMany({
-        data: providerCategories.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding providers...');
-      await this.prisma.provider.createMany({
-        data: providers.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding events...');
-      await this.prisma.event.createMany({
-        data: events.map((item: any) => ({
-          ...item,
-          startDate: new Date(item.startDate).toISOString(),
-          endDate: new Date(item.endDate).toISOString(),
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding event prices...');
-      await this.prisma.eventPrice.createMany({
-        data: eventPrices.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding favorites...');
-      await this.prisma.favorite.createMany({
-        data: favorites.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding orders...');
-      await this.prisma.order.createMany({
-        data: orders.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding order items...');
-      await this.prisma.orderItem.createMany({
-        data: orderItems.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding chats...');
-      await this.prisma.chat.createMany({
-        data: chats.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeding chat users...');
-      await this.prisma.chatUser.createMany({
-        data: chatUsers.map((item) => ({
-          ...item,
-          createdAt: new Date(item.createdAt).toISOString(),
-          updatedAt: new Date(item.updatedAt).toISOString(),
-        })) as any,
-        skipDuplicates: true,
-      });
-      this.logger.log('Seeded Data!!');
-      /* this.logger.log('Seeding messages...');
-      await this.prisma.message.createMany({
-        data: messages,
-      }); */
+      const events = eventsData as any;
+
+      if (seedList.includes('addresses')) {
+        this.logger.log('Seeding addresses...');
+        await this.prisma.address.createMany({
+          data: addresses.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('users')) {
+        this.logger.log('Seeding users...');
+        await this.prisma.user.createMany({
+          data: users.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+        });
+      }
+      if (seedList.includes('accounts')) {
+        this.logger.log('Seeding accounts...');
+        await this.prisma.account.createMany({
+          data: accounts.map((item) => ({
+            ...item,
+            expiresAt: new Date(item.expiresAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('eventCategories')) {
+        this.logger.log('Seeding event categories...');
+        await this.prisma.eventCategory.createMany({
+          data: eventCategories.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt || new Date()).toISOString(),
+            updatedAt: new Date(item.updatedAt || new Date()).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+
+
+      if (seedList.includes('providerCategories')) {
+        this.logger.log('Seeding providers categories...');
+        for (const parentCategory of providerCategories) {
+          // Create or update parent category
+          const parent = await this.prisma.providerCategory.upsert({
+            where: { name: parentCategory.name },
+            update: {},
+            create: {
+              name: parentCategory.name,
+              description: parentCategory.description,
+            },
+          });
+
+          const children = (parentCategory.children ?? []) as string[];
+
+          // Create child categories
+          for (const childName of children) {
+            await this.prisma.providerCategory.upsert({
+              where: { name: childName },
+              update: {},
+              create: {
+                name: childName,
+                description: ``,
+                parent: {
+                  connect: {
+                    id: parent.id,
+                  },
+                },
+              },
+            });
+          }
+        }
+        /* await this.prisma.provider.createMany({
+          data: providers.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        }); */
+      }
+
+      if (seedList.includes('providers')) {
+        this.logger.log('Seeding providers...');
+        await this.prisma.provider.createMany({
+          data: providers.map((item) => item) as any,
+          skipDuplicates: true,
+        });
+      }
+
+      if (seedList.includes('events')) {
+        this.logger.log('Seeding events...');
+        await this.prisma.event.createMany({
+          data: events.map((item: any) => ({
+            ...item,
+            startDate: new Date(item.startDate).toISOString(),
+            endDate: new Date(item.endDate).toISOString(),
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('eventPrices')) {
+        this.logger.log('Seeding event prices...');
+        await this.prisma.eventPrice.createMany({
+          data: eventPrices.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('favorites')) {
+        this.logger.log('Seeding favorites...');
+        await this.prisma.favorite.createMany({
+          data: favorites.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('orders')) {
+        this.logger.log('Seeding orders...');
+        await this.prisma.order.createMany({
+          data: orders.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('orderItems')) {
+        this.logger.log('Seeding order items...');
+        await this.prisma.orderItem.createMany({
+          data: orderItems.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('chats')) {
+        this.logger.log('Seeding chats...');
+        await this.prisma.chat.createMany({
+          data: chats.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+      }
+      if (seedList.includes('chatUsers')) {
+        this.logger.log('Seeding chat users...');
+        await this.prisma.chatUser.createMany({
+          data: chatUsers.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt).toISOString(),
+            updatedAt: new Date(item.updatedAt).toISOString(),
+          })) as any,
+          skipDuplicates: true,
+        });
+        this.logger.log('Seeded Data!!');
+        return { message: 'Data seeded successfully' };
+        /* this.logger.log('Seeding messages...');
+        await this.prisma.message.createMany({
+          data: messages,
+        }); */
+      }
     } catch (error) {
       this.logger.error(error);
       throwServerError(error);

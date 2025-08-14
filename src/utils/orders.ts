@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { toDataURL } from 'qrcode';
 interface TicketInfo {
@@ -8,19 +10,6 @@ interface TicketInfo {
   ticketCode: string;
   ticketType: string;
   userEmail: string;
-}
-
-interface TicketInfo {
-  eventName: string;
-  location: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
-  ticketCode: string;
-  ticketType: string;
-  userEmail: string;
-  url: string;
 }
 
 export const getEventUrl = (eventId: string) => {
@@ -40,57 +29,40 @@ interface TicketInfo {
   url: string;
   price?: string;
   organizerName?: string;
+  isFree?: boolean;
 }
 
 export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([700, 300]); // Increased size for better layout
+  // Horizontal ticket size (8" x 3.5")
+  const page = pdfDoc.addPage([576, 252]); // 8x3.5 inches in points (72ppi)
   const { width, height } = page.getSize();
 
   // Load fonts
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const lightFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-  // Colors
-  const primaryColor = rgb(0.2, 0.4, 0.8); // Blue
-  const secondaryColor = rgb(0.3, 0.3, 0.3); // Dark gray
-  const lightGray = rgb(0.9, 0.9, 0.9);
+  // Color scheme
+  const black = rgb(0, 0, 0);
   const white = rgb(1, 1, 1);
-  const accentColor = rgb(0.8, 0.2, 0.4); // Red accent
+  const accentColor = rgb(0.9, 0.1, 0.1); // Bright red
 
   try {
-    // Load and embed logo
-    let logoImage;
-
-    try {
-      const jpgUrl = 'https://titomeet.vercel.app/_next/image?url=%2Fimg%2Flogo.png&w=48&q=75';
-      const jpgImageBytes = await fetch(jpgUrl).then((res) => res.arrayBuffer())
-
-      logoImage = await pdfDoc.embedJpg(jpgImageBytes)
-    } catch (logoError) {
-      console.warn('Logo file not found or invalid, skipping logo');
-    }
-
-    // Generate QR Code with better options
+    // Generate QR Code
     const qrDataUrl = await toDataURL(ticket.url, {
       margin: 1,
-      width: 200,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF',
-      },
+      width: 150,
+      color: { dark: '#000000', light: '#FFFFFF' },
     });
     const qrImageBytes = Buffer.from(qrDataUrl.split(',')[1], 'base64');
     const qrImage = await pdfDoc.embedPng(qrImageBytes);
 
     // Layout constants
-    const margin = 30;
-    const qrSize = 120;
-    const logoSize = 40;
-    const contentWidth = width - qrSize - margin * 3;
+    const margin = 20;
+    const qrSize = height - margin * 2;
+    const leftSectionWidth = width - qrSize - margin * 2;
 
-    // Background with gradient effect (simulated with rectangles)
+    // White background
     page.drawRectangle({
       x: 0,
       y: 0,
@@ -99,299 +71,135 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
       color: white,
     });
 
-    // Header background
-    page.drawRectangle({
-      x: 0,
-      y: height - 80,
-      width,
-      height: 80,
-      color: primaryColor,
-    });
-
-    // Accent stripe
-    page.drawRectangle({
-      x: 0,
-      y: height - 85,
-      width,
-      height: 5,
-      color: accentColor,
-    });
-
-    // Main content background
-    page.drawRectangle({
-      x: margin,
-      y: margin,
-      width: contentWidth,
-      height: height - 120,
-      color: lightGray,
-      borderColor: rgb(0.8, 0.8, 0.8),
-      borderWidth: 1,
-    });
-
-    // QR Code background
-    page.drawRectangle({
-      x: width - qrSize - margin,
-      y: height - qrSize - margin - 20,
-      width: qrSize,
-      height: qrSize + 60,
-      color: white,
-      borderColor: primaryColor,
-      borderWidth: 2,
-    });
-
-    // Draw logo in header (if available)
-    if (logoImage) {
-      page.drawImage(logoImage, {
-        x: margin,
-        y: height - logoSize - 20,
-        width: logoSize,
-        height: logoSize,
-      });
-    }
-
-    // App name/title in header
-    page.drawText('TITOMEET', {
-      // Replace with your app name
-      x: logoImage ? margin + logoSize + 15 : margin,
-      y: height - 35,
-      size: 16,
-      font: boldFont,
-      color: white,
-    });
-
-    // Ticket type badge
-    const badgeWidth = 80;
-    page.drawRectangle({
-      x: width - badgeWidth - margin - 10,
-      y: height - 50,
-      width: badgeWidth,
-      height: 25,
-      color: accentColor,
-    });
-
-    page.drawText(ticket.ticketType.toUpperCase(), {
-      x: width - badgeWidth - margin - 5,
-      y: height - 42,
-      size: 10,
-      font: boldFont,
-      color: white,
-    });
+    // Left section (event info)
+    const leftX = margin;
+    let currentY = height - margin;
 
     // Event title
-    page.drawText('ÉVÉNEMENT', {
-      x: margin + 15,
-      y: height - 110,
-      size: 10,
-      font: regularFont,
-      color: secondaryColor,
-    });
-
-    // Split long event names
-    const eventName = ticket.eventName.toUpperCase();
-    const maxEventNameLength = 40;
-    const eventLines =
-      eventName.length > maxEventNameLength
-        ? [
-          eventName.substring(0, maxEventNameLength),
-          eventName.substring(maxEventNameLength),
-        ]
-        : [eventName];
-
-    eventLines.forEach((line, index) => {
-      page.drawText(line, {
-        x: margin + 15,
-        y: height - 125 - index * 15,
-        size: 18,
-        font: boldFont,
-        color: rgb(0, 0, 0),
-      });
-    });
-
-    // Location section
-    const locationY = height - 170;
-    page.drawText('📍 LIEU', {
-      x: margin + 15,
-      y: locationY,
-      size: 10,
-      font: regularFont,
-      color: secondaryColor,
-    });
-
-    page.drawText(ticket.location, {
-      x: margin + 15,
-      y: locationY - 15,
-      size: 14,
+    const eventTitle = ticket.eventName.toUpperCase();
+    page.drawText(eventTitle, {
+      x: leftX,
+      y: currentY,
+      size: 24,
       font: boldFont,
-      color: rgb(0, 0, 0),
+      color: black,
     });
+    currentY -= 30;
 
-    // Date and time section
-    const dateY = locationY - 45;
-    page.drawText('🗓️ DATE ET HEURE', {
-      x: margin + 15,
-      y: dateY,
-      size: 10,
-      font: regularFont,
-      color: secondaryColor,
-    });
-
-    const startDateStr = ticket.startDate.toLocaleString('fr-FR', {
+    // Date
+    const dateStr = ticket.startDate.toLocaleString('en-US', {
       weekday: 'long',
-      day: 'numeric',
       month: 'long',
+      day: 'numeric',
       year: 'numeric',
-    });
+    }).replace(/,/g, '');
 
-    page.drawText(`${startDateStr} à ${ticket.startTime}`, {
-      x: margin + 15,
-      y: dateY - 15,
+    page.drawText(dateStr, {
+      x: leftX,
+      y: currentY,
+      size: 16,
+      font: boldFont,
+      color: black,
+    });
+    currentY -= 25;
+
+    // Time
+    const timeStr = `${ticket.startTime} - ${ticket.endTime}`;
+    page.drawText(timeStr, {
+      x: leftX,
+      y: currentY,
+      size: 16,
+      font: regularFont,
+      color: black,
+    });
+    currentY -= 30;
+
+    // Address label
+    page.drawText('ADDRESS:', {
+      x: leftX,
+      y: currentY,
       size: 12,
       font: boldFont,
-      color: rgb(0, 0, 0),
+      color: black,
     });
+    currentY -= 20;
 
-    if (ticket.startDate.toDateString() !== ticket.endDate.toDateString()) {
-      const endDateStr = ticket.endDate.toLocaleString('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
+    // Location
+    page.drawText(ticket.location, {
+      x: leftX,
+      y: currentY,
+      size: 14,
+      font: regularFont,
+      color: black,
+    });
+    currentY -= 40;
 
-      page.drawText(`au ${endDateStr} à ${ticket.endTime}`, {
-        x: margin + 15,
-        y: dateY - 30,
-        size: 12,
-        font: regularFont,
-        color: secondaryColor,
-      });
-    }
-
-    // Price (if available)
-    if (ticket.price) {
-      page.drawText('💰 PRIX', {
-        x: margin + 15,
-        y: dateY - 60,
-        size: 10,
-        font: regularFont,
-        color: secondaryColor,
-      });
-
-      page.drawText(ticket.price, {
-        x: margin + 15,
-        y: dateY - 75,
-        size: 16,
+    // Price/Free indicator
+    const priceText = ticket.isFree ? 'GRATUIT' : (ticket.price || '');
+    if (priceText) {
+      const priceWidth = boldFont.widthOfTextAtSize(priceText, 20);
+      page.drawText(priceText, {
+        x: leftX,
+        y: currentY,
+        size: 20,
         font: boldFont,
         color: accentColor,
       });
+      currentY -= 30;
     }
 
-    // Draw QR Code
-    page.drawImage(qrImage, {
-      x: width - qrSize - margin + 10,
-      y: height - qrSize - margin - 10,
-      width: qrSize - 20,
-      height: qrSize - 20,
-    });
-
-    // QR Code label
-    page.drawText('SCANNER POUR', {
-      x: width - qrSize - margin + 15,
-      y: height - qrSize - margin - 25,
-      size: 8,
-      font: regularFont,
-      color: secondaryColor,
-    });
-
-    page.drawText('VÉRIFICATION', {
-      x: width - qrSize - margin + 15,
-      y: height - qrSize - margin - 35,
-      size: 8,
-      font: regularFont,
-      color: secondaryColor,
-    });
-
-    // Ticket code
-    page.drawRectangle({
-      x: width - qrSize - margin,
-      y: 60,
-      width: qrSize,
-      height: 25,
-      color: rgb(0, 0, 0),
-    });
-
-    page.drawText(`#${ticket.ticketCode}`, {
-      x: width - qrSize - margin + 10,
-      y: 68,
+    // Ticket number
+    page.drawText(`TICKET NUMBER: ${ticket.ticketCode}`, {
+      x: leftX,
+      y: margin + 20,
       size: 12,
-      font: boldFont,
+      font: regularFont,
+      color: black,
+    });
+
+    // Right section (QR code)
+    const qrX = width - qrSize - margin;
+    const qrY = margin;
+
+    // QR code with border
+    page.drawRectangle({
+      x: qrX - 5,
+      y: qrY - 5,
+      width: qrSize + 10,
+      height: qrSize + 10,
       color: white,
+      borderColor: black,
+      borderWidth: 2,
     });
 
-    // User information
-    page.drawText('TITULAIRE', {
-      x: width - qrSize - margin,
-      y: 45,
-      size: 8,
-      font: regularFont,
-      color: secondaryColor,
+    page.drawImage(qrImage, {
+      x: qrX,
+      y: qrY,
+      width: qrSize,
+      height: qrSize,
     });
 
-    page.drawText(ticket.userEmail.toLowerCase(), {
-      x: width - qrSize - margin,
-      y: 32,
-      size: 9,
-      font: regularFont,
-      color: rgb(0, 0, 0),
-    });
-
-    // Footer with organizer info (if available)
-    if (ticket.organizerName) {
-      page.drawText(`Organisé par: ${ticket.organizerName}`, {
-        x: margin,
-        y: 15,
-        size: 8,
-        font: lightFont,
-        color: secondaryColor,
-      });
-    }
-
-    // Decorative elements
-    // Corner decorations
-    const cornerSize = 20;
-    // Top-left corner
+    // Border around entire ticket
     page.drawRectangle({
-      x: margin,
-      y: height - 100,
-      width: cornerSize,
-      height: 3,
-      color: accentColor,
-    });
-    page.drawRectangle({
-      x: margin,
-      y: height - 100,
-      width: 3,
-      height: cornerSize,
-      color: accentColor,
+      x: 5,
+      y: 5,
+      width: width - 10,
+      height: height - 10,
+      borderColor: black,
+      borderWidth: 1,
     });
 
-    // Bottom-right corner
+    // Red accent bar at bottom
     page.drawRectangle({
-      x: contentWidth + margin - cornerSize,
-      y: margin + 17,
-      width: cornerSize,
-      height: 3,
-      color: accentColor,
-    });
-    page.drawRectangle({
-      x: contentWidth + margin - 3,
-      y: margin,
-      width: 3,
-      height: cornerSize,
+      x: 0,
+      y: 0,
+      width: width,
+      height: 8,
       color: accentColor,
     });
 
     const pdfBytes = await pdfDoc.save();
+    writeFileSync(join(process.cwd(), 'public', 'ticket3.pdf'), pdfBytes);
     return Buffer.from(pdfBytes);
   } catch (error) {
     console.error('Error generating PDF ticket:', error);

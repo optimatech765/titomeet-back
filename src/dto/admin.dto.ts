@@ -61,6 +61,13 @@ export class CreateProviderCategoryDto {
   @IsString()
   name: string;
 
+  @ApiPropertyOptional({
+    description: 'Parent ID of the provider category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
+
   @ApiProperty({
     description: 'Description of the provider category',
   })

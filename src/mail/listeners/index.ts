@@ -5,7 +5,7 @@ import { ForgotPasswordEvent, SendNewsletterEvent, SendNotificationByMailEvent }
 import { MailService } from '../mail.service';
 import { MAIL_EVENTS, ORDER_EVENTS } from 'src/utils/events';
 import appConfig from 'src/config';
-import { PrismaService } from '@optimatech88/titomeet-shared-lib';
+import { EventAccess, PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { generateTicketPDF, getEventUrl } from 'src/utils/orders';
 import { Attachment } from 'nodemailer/lib/mailer';
 import { OrderConfirmationEvent } from 'src/orders/events';
@@ -86,6 +86,7 @@ export class MailListener {
             ticketType: item.eventPrice.name,
             userEmail: user.email,
             url: getEventUrl(event.id),
+            isFree: event.accessType === EventAccess.FREE
           });
           return {
             filename: `Ticket-${item.ticketCode}.pdf`,

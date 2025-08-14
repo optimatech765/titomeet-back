@@ -2807,15 +2807,6 @@
     ],
     "eventCategories": [
         {
-            "id": "cm8x0h854000cmz2z2a2apb90",
-            "name": "nom",
-            "description": "description",
-            "createdAt": "2025-03-31 09:54:16.207",
-            "updatedAt": "2025-03-31 09:54:16.207",
-            "active": true,
-            "parentId": null
-        },
-        {
             "id": "cm8x0l54r000dmz2zhx8mhczq",
             "name": "Nouvelle catégorie",
             "description": "Description de ma catégorie",
@@ -2985,6 +2976,33 @@
             "updatedAt": "2025-06-12 14:43:57.998",
             "active": true,
             "parentId": null
+        },
+        {
+            "name": "Networking Professionnel & Business"
+        },
+        {
+            "name": "Événements Culturels & Artistiques"
+        },
+        {
+            "name": "Sport & Bien-être"
+        },
+        {
+            "name": "Gastronomie & Boissons"
+        },
+        {
+            "name": "Développement Personnel & Formation"
+        },
+        {
+            "name": "Fashion & Mode"
+        },
+        {
+            "name": "Vie & Loisirs"
+        },
+        {
+            "name": "Technologie & Innovation"
+        },
+        {
+            "name": "Tourisme & Découverte"
         }
     ],
     "providerCategories": [
@@ -3019,6 +3037,70 @@
             "active": true,
             "createdAt": "2025-05-14 06:46:16.453",
             "updatedAt": "2025-05-14 06:46:16.453"
+        },
+        {
+            "name": "Prestations Techniques",
+            "children": [
+                "Sonorisation & régie",
+                "Éclairage professionnel",
+                "Projection vidéo & écrans LED",
+                "Photographie & reportage vidéo",
+                "Diffusion en direct (live streaming)",
+                "Installation et location de matériel informatique",
+                "Traduction simultanée"
+            ],
+        },
+        {
+            "name": "Prestations Artistiques & Animation",
+            "children": [
+                "DJ & animateurs",
+                "Groupes musicaux",
+                "Humoristes",
+                "Danseurs & troupes artistiques",
+                "Maîtres de cérémonie (MC)",
+                "Performances culturelles (percussions, conteurs, etc.)"
+            ],
+        },
+        {
+            "name": "Prestations Logistiques",
+            "children": [
+                "Location de salles & espaces événementiels",
+                "Location de stands et structures",
+                "Décoration et aménagement",
+                "Mobilier événementiel (tables, chaises, podiums...)",
+                "Générateurs & alimentation électrique",
+                "Transport et navettes pour participants"
+            ],
+        },
+        {
+            "name": "Prestations Gastronomiques",
+            "children": [
+                "Traiteurs & restaurateurs",
+                "Food trucks",
+                "Boissons & cocktails",
+                "Pâtisseries & confiseries",
+                "Services de bar"
+            ],
+        },
+        {
+            "name": "Prestations Marketing & Communication",
+            "children": [
+                "Impression d'affiches, flyers et banderoles",
+                "Création de visuels & vidéos promotionnelles",
+                "Gestion des réseaux sociaux",
+                "Relations presse & couverture médiatique"
+            ],
+        },
+        {
+            "name": "Prestations de Services Spécialisés",
+            "children": [
+                "Hôtesses & accueil",
+                "Sécurité & gestion de foule",
+                "Services médicaux & secours",
+                "Planification & coordination d'événements",
+                "Coordination logistique",
+                "Animation team-building"
+            ]
         }
     ],
     "providers": [
