@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import path, { join } from 'path';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { toDataURL } from 'qrcode';
 interface TicketInfo {
@@ -30,6 +30,7 @@ interface TicketInfo {
   price?: string;
   organizerName?: string;
   isFree?: boolean;
+  orderId: string;
 }
 
 export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
@@ -45,6 +46,7 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
   // Color scheme
   const black = rgb(0, 0, 0);
   const white = rgb(1, 1, 1);
+  const gray = rgb(0.3, 0.3, 0.3);
   const accentColor = rgb(0.9, 0.1, 0.1); // Bright red
 
   try {
@@ -59,8 +61,15 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
 
     // Layout constants
     const margin = 20;
-    const qrSize = height - margin * 2;
+    const qrSize = 150; //height - margin * 2;
     const leftSectionWidth = width - qrSize - margin * 2;
+    const logoWidth = 100;
+    const logoHeight = 40;
+
+    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+    const logoImage = await pdfDoc.embedPng(readFileSync(logoPath));
+
+    const TICKET_NAME = `ticket-${new Date().getTime()}.pdf`;
 
     // White background
     page.drawRectangle({
@@ -75,69 +84,120 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     const leftX = margin;
     let currentY = height - margin;
 
+    page.drawImage(logoImage, {
+      x: margin,
+      y: 210,
+      width: logoWidth,
+      height: logoHeight,
+    });
+
+    currentY -= logoHeight;
+
     // Event title
     const eventTitle = ticket.eventName.toUpperCase();
     page.drawText(eventTitle, {
       x: leftX,
       y: currentY,
-      size: 24,
+      size: 14,
       font: boldFont,
       color: black,
     });
-    currentY -= 30;
 
-    // Date
-    const dateStr = ticket.startDate.toLocaleString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    }).replace(/,/g, '');
-
-    page.drawText(dateStr, {
-      x: leftX,
-      y: currentY,
-      size: 16,
-      font: boldFont,
-      color: black,
-    });
-    currentY -= 25;
-
-    // Time
-    const timeStr = `${ticket.startTime} - ${ticket.endTime}`;
-    page.drawText(timeStr, {
-      x: leftX,
-      y: currentY,
-      size: 16,
-      font: regularFont,
-      color: black,
-    });
     currentY -= 30;
 
     // Address label
-    page.drawText('ADDRESS:', {
+    page.drawText('ADRESSE:', {
       x: leftX,
       y: currentY,
-      size: 12,
+      size: 8,
       font: boldFont,
-      color: black,
+      color: gray,
     });
-    currentY -= 20;
+
+    currentY -= 15;
 
     // Location
     page.drawText(ticket.location, {
       x: leftX,
       y: currentY,
-      size: 14,
+      size: 12,
       font: regularFont,
       color: black,
     });
+
+    currentY -= 30;
+
+    // Address label
+    page.drawText('DATE ET HEURE:', {
+      x: leftX,
+      y: currentY,
+      size: 8,
+      font: boldFont,
+      color: gray,
+    });
+
+    currentY -= 15;
+
+    // Date
+    const dateStr = ticket.startDate
+      .toLocaleString('fr-FR', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+      .replace(/,/g, '');
+
+    const formattedStartDate = dateStr + ' à ' + ticket.startTime;
+
+    page.drawText(formattedStartDate, {
+      x: leftX,
+      y: currentY,
+      size: 14,
+      font: boldFont,
+      color: black,
+    });
+
+    currentY -= 15;
+
+    //
+    const isManyDays = ticket.startDate.getDate() !== ticket.endDate.getDate();
+    if (isManyDays) {
+      page.drawText('AU', {
+        x: leftX,
+        y: currentY,
+        size: 8,
+        font: boldFont,
+        color: gray,
+      });
+
+      currentY -= 15;
+
+      const endStr = ticket.endDate
+        .toLocaleString('fr-FR', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+        .replace(/,/g, '');
+
+      const formattedEndDate = endStr + ' à ' + ticket.endTime;
+
+      page.drawText(formattedEndDate, {
+        x: leftX,
+        y: currentY,
+        size: 14,
+        font: boldFont,
+        color: black,
+      });
+    }
+
     currentY -= 40;
 
     // Price/Free indicator
-    const priceText = ticket.isFree ? 'GRATUIT' : (ticket.price || '');
+    const priceText = ticket.isFree ? 'GRATUIT' : ticket.price || '';
     if (priceText) {
-      const priceWidth = boldFont.widthOfTextAtSize(priceText, 20);
       page.drawText(priceText, {
         x: leftX,
         y: currentY,
@@ -145,21 +205,14 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
         font: boldFont,
         color: accentColor,
       });
-      currentY -= 30;
+      //currentY -= 30;
     }
-
-    // Ticket number
-    page.drawText(`TICKET NUMBER: ${ticket.ticketCode}`, {
-      x: leftX,
-      y: margin + 20,
-      size: 12,
-      font: regularFont,
-      color: black,
-    });
 
     // Right section (QR code)
     const qrX = width - qrSize - margin;
-    const qrY = margin;
+    let qrY = height - qrSize - margin;
+
+    const rideSectionWidth = width - qrX - margin;
 
     // QR code with border
     page.drawRectangle({
@@ -177,6 +230,36 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
       y: qrY,
       width: qrSize,
       height: qrSize,
+    });
+
+    qrY -= 30;
+
+    const orderIdText = `#${ticket.orderId}`;
+    const orderIdTextWidth = regularFont.widthOfTextAtSize(orderIdText, 12);
+
+    page.drawText(orderIdText, {
+      x: qrX + (qrSize / 2 - orderIdTextWidth / 2),
+      y: qrY,
+      size: 12,
+      font: regularFont,
+      color: black,
+    });
+
+    qrY -= 20;
+
+    //seat number
+    const seatNumberText = `1 PLACE`;
+    const seatNumberTextWidth = regularFont.widthOfTextAtSize(
+      seatNumberText,
+      12,
+    );
+
+    page.drawText(seatNumberText, {
+      x: qrX + (qrSize / 2 - seatNumberTextWidth / 2),
+      y: qrY,
+      size: 12,
+      font: regularFont,
+      color: black,
     });
 
     // Border around entire ticket
@@ -199,7 +282,7 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     });
 
     const pdfBytes = await pdfDoc.save();
-    writeFileSync(join(process.cwd(), 'public', 'ticket3.pdf'), pdfBytes);
+    writeFileSync(join(process.cwd(), 'public', TICKET_NAME), pdfBytes);
     return Buffer.from(pdfBytes);
   } catch (error) {
     console.error('Error generating PDF ticket:', error);

@@ -218,6 +218,11 @@ export class EventDto extends EventBaseDto {
   @IsOptional()
   ticketsSold?: number;
 
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  remainingSeats: number;
+
   @ApiProperty({ type: [EventPriceSoldDto] })
   @IsArray()
   @ValidateNested({ each: true })

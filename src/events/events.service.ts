@@ -299,14 +299,14 @@ export class EventsService {
             connect: payload.categories.map((category) => ({
               id: category,
             })),
-          },/* 
+          } /* 
           ...(_providers.length > 0 && {
             providers: {
               connect: _providers.map((provider) => ({
                 id: provider,
               })),
             },
-          }), */
+          }), */,
         },
         include: {
           prices: true,
@@ -394,6 +394,36 @@ export class EventsService {
     }
   }
 
+  async calculateRemainingSeats(event: Event) {
+    const orders = await this.prisma.order.findMany({
+      where: {
+        eventId: event.id,
+        status: OrderStatus.CONFIRMED,
+      },
+      include: {
+        items: {
+          include: {
+            eventPrice: true,
+          },
+        },
+      },
+    });
+
+    const totalSeatsBooked = orders.reduce(
+      (acc, order) =>
+        acc +
+        order.items.reduce(
+          (acc, item) => acc + item.quantity * item.eventPrice.totalSeats,
+          0,
+        ),
+      0,
+    );
+
+    const remainingSeats = event.capacity - totalSeatsBooked;
+
+    return remainingSeats;
+  }
+
   async getEvents(
     query: GetEventsQueryDto,
     user?: User,
@@ -417,8 +447,8 @@ export class EventsService {
 
       if (search) {
         filter.OR = [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
+          { name: { startsWith: search, mode: 'insensitive' } },
+          //{ description: { contains: search, mode: 'insensitive' } },
           { tags: { hasSome: [search] } },
         ];
       }
@@ -500,13 +530,14 @@ export class EventsService {
             interests: {
               select: {
                 parentId: true,
-              }
-            }
-          }
+              },
+            },
+          },
         });
 
-
-        const parentCategories = userInterests?.interests.map((interest) => interest.parentId);
+        const parentCategories = userInterests?.interests.map(
+          (interest) => interest.parentId,
+        );
 
         filter.categories = {
           some: {
@@ -748,24 +779,29 @@ export class EventsService {
         );
       }
 
-      const totalTicketsSold = (await this.prisma.orderItem.groupBy({
-        by: ['eventPriceId'],
-        _count: true,
+      const eventPrices = await this.prisma.eventPrice.findMany({
         where: {
-          eventPrice: { eventId: eventId },
+          id: {
+            in: items.map((item) => item.priceId),
+          },
         },
-      })) as any as { eventPriceId: string; _count: number }[];
+      });
 
-      const soldOutTicket = items.find((item) =>
-        totalTicketsSold.find(
-          (price) =>
-            price.eventPriceId === item.priceId && item.quantity > price._count,
-        ),
-      );
+      //calculate total seats to buy
+      const totalSeatToBuy = items.reduce((acc, item) => {
+        const eventPrice = eventPrices.find(
+          (price) => price.id === item.priceId,
+        );
+        if (!eventPrice) {
+          throw new HttpException('Invalid price id', HttpStatus.BAD_REQUEST);
+        }
+        return acc + item.quantity * eventPrice.totalSeats;
+      }, 0);
 
-      if (soldOutTicket) {
+      //check the remaining seats can fit the total seats to buy
+      if (event.remainingSeats < totalSeatToBuy) {
         throw new HttpException(
-          `Le ticket ${soldOutTicket.priceId} est n'est plus disponible!`,
+          'Event seats are not enough',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -790,18 +826,6 @@ export class EventsService {
             username: email,
           },
         }));
-
-      const eventPrices = await this.prisma.eventPrice.findMany({
-        where: {
-          id: {
-            in: items.map((item) => item.priceId),
-          },
-        },
-      });
-
-      if (eventPrices.length !== items.length) {
-        throw new HttpException('Invalid price ids', HttpStatus.BAD_REQUEST);
-      }
 
       const orderItems = items.map((item) => ({
         quantity: item.quantity,
@@ -861,7 +885,7 @@ export class EventsService {
             firstname: user.firstName,
             lastname: user.lastName,
           },
-          user
+          user,
         });
 
         //this.logger.log({ txn });

@@ -86,7 +86,8 @@ export class MailListener {
             ticketType: item.eventPrice.name,
             userEmail: user.email,
             url: getEventUrl(event.id),
-            isFree: event.accessType === EventAccess.FREE
+            isFree: event.accessType === EventAccess.FREE,
+            orderId: order.id,
           });
           return {
             filename: `Ticket-${item.ticketCode}.pdf`,
@@ -98,15 +99,16 @@ export class MailListener {
       attachments.push(...ticketsBuffers);
 
       const isMultiple = items.length > 1;
+      this.logger.log({ email: user.email });
 
       this.mailService.sendMail({
         to: user.email,
         username: user.firstName,
-        subject: 'Confirmation de commande',
+        subject: 'Confirmation de réservation',
         html: ` 
         <p>Bonjour ${user.firstName},</p>
-        <p>Votre commande a été confirmée avec succès.</p>
-        <p>Voici ${isMultiple ? 'vos' : 'votre'} billet${isMultiple ? 's' : ''} :</p>
+        <p>Votre réservation de tickets a été effectuée avec succès.</p>
+        <p>Voici ${isMultiple ? 'vos' : 'votre'} billet${isMultiple ? 's' : ''} pour l'événement ${event.name} :</p>
         ${ticketsBuffers.map((ticket) => `<a href="${ticket.filename}">${ticket.filename}</a>`).join('\n')}
         `,
         attachments,

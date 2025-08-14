@@ -21,6 +21,18 @@ export class OrderListener {
         this.logger.error('Order is not confirmed');
         throw new Error('Order is not confirmed');
       }
+      //update remaining seats
+      const totalSeatsBooked = order.items.reduce(
+        (acc, item) => acc + item.quantity * item.eventPrice.totalSeats,
+        0,
+      );
+
+      const remainingSeats = event.remainingSeats - totalSeatsBooked;
+
+      await this.prisma.event.update({
+        where: { id: eventId },
+        data: { remainingSeats },
+      });
       //make user join event chat
       const chat =
         (await this.prisma.chat.findUnique({
