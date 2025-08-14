@@ -120,7 +120,7 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
       x: leftX,
       y: currentY,
       size: 12,
-      font: regularFont,
+      font: boldFont,
       color: black,
     });
 
