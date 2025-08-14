@@ -13,7 +13,7 @@ interface TicketInfo {
 }
 
 export const getEventUrl = (eventId: string) => {
-  return `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventId}`;
+  return `${process.env.FRONTEND_URL}/events/${eventId}`;
 };
 
 interface TicketInfo {
@@ -62,7 +62,6 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     // Layout constants
     const margin = 20;
     const qrSize = 150; //height - margin * 2;
-    const leftSectionWidth = width - qrSize - margin * 2;
     const logoWidth = 100;
     const logoHeight = 40;
 
@@ -211,9 +210,6 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     // Right section (QR code)
     const qrX = width - qrSize - margin;
     let qrY = height - qrSize - margin;
-
-    const rideSectionWidth = width - qrX - margin;
-
     // QR code with border
     page.drawRectangle({
       x: qrX - 5,
