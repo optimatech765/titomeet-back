@@ -27,7 +27,18 @@ export class UsersService {
           accounts: true,
         },
       });
-      return userData;
+
+      const provider = await this.prisma.provider.findFirst({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      const formattedUser = {
+        ...userData,
+        isProvider: !!provider,
+      }
+      return formattedUser;
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(

@@ -68,15 +68,21 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     const logoPath = path.join(process.cwd(), 'public', 'logo.png');
     const logoImage = await pdfDoc.embedPng(readFileSync(logoPath));
 
+    const backgroundPath = path.join(
+      process.cwd(),
+      'public',
+      'ticket-background.jpg',
+    );
+    const backgroundImage = await pdfDoc.embedJpg(readFileSync(backgroundPath));
+
     const TICKET_NAME = `ticket-${new Date().getTime()}.pdf`;
 
     // White background
-    page.drawRectangle({
+    page.drawImage(backgroundImage, {
       x: 0,
       y: 0,
       width,
       height,
-      color: white,
     });
 
     // Left section (event info)
@@ -147,7 +153,11 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
       })
       .replace(/,/g, '');
 
-    const formattedStartDate = dateStr + ' à ' + ticket.startTime;
+    const [startHours, startMinutes] = ticket.startTime.split(':');
+
+    const formattedStartTime = `${startHours}h${startMinutes}`;
+
+    const formattedStartDate = dateStr + ' à ' + formattedStartTime;
 
     page.drawText(formattedStartDate, {
       x: leftX,
@@ -181,7 +191,11 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
         })
         .replace(/,/g, '');
 
-      const formattedEndDate = endStr + ' à ' + ticket.endTime;
+      const [endHours, endMinutes] = ticket.endTime.split(':');
+
+      const formattedEndTime = `${endHours}h${endMinutes}`;
+
+      const formattedEndDate = endStr + ' à ' + formattedEndTime;
 
       page.drawText(formattedEndDate, {
         x: leftX,
@@ -247,13 +261,13 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     const seatNumberText = `1 PLACE`;
     const seatNumberTextWidth = regularFont.widthOfTextAtSize(
       seatNumberText,
-      12,
+      8,
     );
 
     page.drawText(seatNumberText, {
       x: qrX + (qrSize / 2 - seatNumberTextWidth / 2),
       y: qrY,
-      size: 12,
+      size: 10,
       font: regularFont,
       color: black,
     });
@@ -272,13 +286,13 @@ export async function generateTicketPDF(ticket: TicketInfo): Promise<Buffer> {
     page.drawRectangle({
       x: 0,
       y: 0,
-      width: width,
+      width,
       height: 8,
       color: accentColor,
     });
 
     const pdfBytes = await pdfDoc.save();
-    writeFileSync(join(process.cwd(), 'public', TICKET_NAME), pdfBytes);
+    //writeFileSync(join(process.cwd(), 'public', TICKET_NAME), pdfBytes);
     return Buffer.from(pdfBytes);
   } catch (error) {
     console.error('Error generating PDF ticket:', error);

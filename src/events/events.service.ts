@@ -439,6 +439,7 @@ export class EventsService {
         attendeeId,
         categories,
         interests,
+        location
       } = query;
 
       const { page, limit, skip } = getPaginationData(query);
@@ -511,6 +512,37 @@ export class EventsService {
             };
           }
         }
+      }
+
+      if (location) {
+        filter.address = {
+          OR: [
+            {
+              name: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+            {
+              city: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+            {
+              state: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+            {
+              country: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        };
       }
 
       if (attendeeId) {

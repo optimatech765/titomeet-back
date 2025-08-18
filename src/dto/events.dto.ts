@@ -349,6 +349,11 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsBoolean()
   @IsOptional()
   interests?: boolean;
+
+  @ApiPropertyOptional({ description: 'Location of the event' })
+  @IsString()
+  @IsOptional()
+  location?: string;
 }
 
 export class PopulatedEventDto extends EventDto {
