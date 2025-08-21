@@ -21,6 +21,8 @@ import {
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
   EventStatsDto,
+  GetFeedbacksQueryDto,
+  GetFeedbacksResponseDto,
   GetUsersQueryDto,
   PricingBaseDto,
   PricingDto,
@@ -178,5 +180,16 @@ export class AdminController {
   })
   updatePricing(@Param('id') id: string, @Body() payload: PricingBaseDto) {
     return this.adminService.updatePricing(id, payload);
+  }
+
+  @Get('feedbacks')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get feedbacks',
+    type: GetFeedbacksResponseDto,
+  })
+  getFeedbacks(@Query() query: GetFeedbacksQueryDto) {
+    return this.adminService.getFeedbacks(query);
   }
 }

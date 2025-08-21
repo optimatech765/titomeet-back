@@ -13,6 +13,8 @@ import { UsersService } from './users.service';
 import { AuthGuard, OptionalAuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
 import {
+  FeedbackBaseDto,
+  FeedbackDto,
   UpdateUserDto,
   UpdateUserStatusDto,
   UserInterestDto,
@@ -99,17 +101,15 @@ export class UsersController {
     return this.usersService.getPricings(query, req.user);
   }
 
-  /*   @Post('me/subscription')
-    @UseGuards(AuthGuard)
-    @ApiResponse({
-      status: 200,
-      description: 'Subscription',
-      type: TransactionDto,
-    })
-    createSubscription(
-      @Request() req: IRequest,
-      @Body() body: SubscriptionPayloadDto,
-    ) {
-      return this.usersService.createSubscription(req.user, body);
-    } */
+
+  @Post('feedbacks')
+  @UseGuards(OptionalAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Create feedback',
+    type: FeedbackDto,
+  })
+  createFeedback(@Request() req: IRequest, @Body() body: FeedbackBaseDto) {
+    return this.usersService.createFeedback(body, req.user);
+  }
 }

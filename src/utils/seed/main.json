@@ -3048,7 +3048,7 @@
                 "Diffusion en direct (live streaming)",
                 "Installation et location de matériel informatique",
                 "Traduction simultanée"
-            ],
+            ]
         },
         {
             "name": "Prestations Artistiques & Animation",
@@ -3059,7 +3059,7 @@
                 "Danseurs & troupes artistiques",
                 "Maîtres de cérémonie (MC)",
                 "Performances culturelles (percussions, conteurs, etc.)"
-            ],
+            ]
         },
         {
             "name": "Prestations Logistiques",
@@ -3070,7 +3070,7 @@
                 "Mobilier événementiel (tables, chaises, podiums...)",
                 "Générateurs & alimentation électrique",
                 "Transport et navettes pour participants"
-            ],
+            ]
         },
         {
             "name": "Prestations Gastronomiques",
@@ -3080,7 +3080,7 @@
                 "Boissons & cocktails",
                 "Pâtisseries & confiseries",
                 "Services de bar"
-            ],
+            ]
         },
         {
             "name": "Prestations Marketing & Communication",
@@ -3089,7 +3089,7 @@
                 "Création de visuels & vidéos promotionnelles",
                 "Gestion des réseaux sociaux",
                 "Relations presse & couverture médiatique"
-            ],
+            ]
         },
         {
             "name": "Prestations de Services Spécialisés",
@@ -4731,6 +4731,38 @@
             "eventId": "cmdrad9nk001kpd2zlqlmf228",
             "createdAt": "2025-07-31 11:03:02.298",
             "updatedAt": "2025-07-31 11:03:02.298"
+        }
+    ],
+    "feedbackCategories": [
+        {
+            "id": "interface",
+            "name": "Interface & Design",
+            "icon": "🎨"
+        },
+        {
+            "id": "features",
+            "name": "Fonctionnalités",
+            "icon": "🔌"
+        },
+        {
+            "id": "performance",
+            "name": "Performance",
+            "icon": "🚀"
+        },
+        {
+            "id": "support",
+            "name": "Support Client",
+            "icon": "💬"
+        },
+        {
+            "id": "general",
+            "name": "Expérience Générale",
+            "icon": "💡"
+        },
+        {
+            "id": "bug",
+            "name": "Signaler un Bug",
+            "icon": "🐛"
         }
     ]
 }

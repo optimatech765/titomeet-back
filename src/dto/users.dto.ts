@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole, UserStatus } from '@optimatech88/titomeet-shared-lib';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
@@ -7,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsArray,
+  ValidateNested,
 } from 'class-validator';
 
 export class PaginationQueryDto {
@@ -145,4 +147,87 @@ export class UserInterestDto extends UserInterestDtoPayload {
   @IsString()
   @IsNotEmpty()
   userId: string;
+}
+
+export class FeedbackCategoryBaseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  icon: string;
+}
+
+export class FeedbackCategoryDto extends FeedbackCategoryBaseDto {
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  createdAt: Date;
+
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
+}
+
+export class FeedbackBaseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  categoryId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  comment: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  rating: number;
+}
+
+export class FeedbackDto extends FeedbackBaseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  userId?: string;
+
+  @ApiProperty({ type: UserDto })
+  @Type(() => UserDto)
+  @IsOptional()
+  user?: UserDto;
+
+  @ApiProperty({ type: [FeedbackCategoryDto] })
+  @Type(() => FeedbackCategoryDto)
+  category: FeedbackCategoryDto;
+
+  @IsOptional()
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  createdAt: Date;
+
+  @ApiProperty()
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
 }

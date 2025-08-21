@@ -236,10 +236,10 @@ export class AuthService {
       this.logger.log('Seeding data...');
       const seedList = [
         /* 'accounts',
-        'addresses', */
+        'addresses', 
         'eventCategories',
         'providerCategories',
-        /* 'providers',
+        'providers',
         'events',
         'eventPrices',
         'favorites',
@@ -247,6 +247,7 @@ export class AuthService {
         'orderItems',
         'chats',
         'chatUsers', */
+        'feedbackCategories'
       ];
       const {
         users,

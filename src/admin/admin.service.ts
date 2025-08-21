@@ -17,6 +17,7 @@ import {
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
   EventStatsDto,
+  GetFeedbacksQueryDto,
   GetUsersQueryDto,
   PricingBaseDto,
   UpdateEventStatusDto,
@@ -370,6 +371,59 @@ export class AdminService {
         data: updatePricingDto,
       });
       return pricing;
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //feedback
+  async getFeedbacks(query: GetFeedbacksQueryDto) {
+    try {
+      const { search, categoryId, userId, email } = query;
+      const { skip, page, limit } = getPaginationData(query);
+
+      const where = {} as any;
+
+      if (search) {
+        where.OR = [
+          { comment: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } }
+        ];
+      }
+
+      if (categoryId) {
+        where.categoryId = categoryId;
+      }
+
+      if (userId) {
+        where.userId = userId;
+      }
+
+      if (email) {
+        where.email = email;
+      }
+
+      const feedbacks = await this.prisma.feedback.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      const total = await this.prisma.feedback.count({
+        where,
+      });
+
+      return {
+        items: feedbacks,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       this.logger.error(error);
       return throwServerError(error);

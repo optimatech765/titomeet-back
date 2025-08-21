@@ -8,7 +8,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { PaginationQueryDto } from './users.dto';
+import { FeedbackDto, PaginationQueryDto } from './users.dto';
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
@@ -279,6 +279,65 @@ export class GetPricingsResponseDto {
 
   @ApiProperty({
     description: 'Total number of pricings',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  total: number;
+
+  @ApiProperty({
+    description: 'Page number',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  page: number;
+
+  @ApiProperty({
+    description: 'Limit number',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({
+    description: 'Total number of pages',
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalPages: number;
+}
+
+export class GetFeedbacksQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for feedbacks' })
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @ApiPropertyOptional({ description: 'Category ID of the feedback' })
+  @IsString()
+  @IsOptional()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'User ID of the feedback' })
+  @IsString()
+  @IsOptional()
+  userId?: string;
+
+  @ApiPropertyOptional({ description: 'Email of the feedback' })
+  @IsString()
+  @IsOptional()
+  email?: string;
+}
+
+
+export class GetFeedbacksResponseDto {
+  @ApiProperty({ type: [FeedbackDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FeedbackDto)
+  items: FeedbackDto[];
+
+  @ApiProperty({
+    description: 'Total number of feedbacks',
   })
   @IsNotEmpty()
   @IsNumber()

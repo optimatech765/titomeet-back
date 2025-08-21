@@ -6,6 +6,7 @@ import {
   User,
 } from '@optimatech88/titomeet-shared-lib';
 import {
+  FeedbackBaseDto,
   UpdateUserDto,
   UpdateUserStatusDto,
   UserInterestDtoPayload,
@@ -235,6 +236,17 @@ export class UsersService {
       });
 
       return subscription;
+    } catch (error) {
+      return throwServerError(error);
+    }
+  }
+
+  async createFeedback(payload: FeedbackBaseDto, user?: User) {
+    try {
+      const feedback = await this.prisma.feedback.create({
+        data: { ...payload, userId: user?.id },
+      });
+      return feedback;
     } catch (error) {
       return throwServerError(error);
     }

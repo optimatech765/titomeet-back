@@ -27,12 +27,12 @@ export class MailService {
 
   //init nodemailer transporter
   private readonly transporter = createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    host: mailConfig().smtpHost,
+    port: Number(mailConfig().smtpPort),
+    secure: true,
     auth: {
-      user: mailConfig().senderEmail,
-      pass: mailConfig().senderPassword,
+      user: mailConfig().smtpUser,
+      pass: mailConfig().smtpPassword,
     },
   });
 
