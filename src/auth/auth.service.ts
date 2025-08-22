@@ -412,7 +412,7 @@ export class AuthService {
       if (seedList.includes('newsletters')) {
         this.logger.log('Seeding newsletters...');
         await this.prisma.newsletter.createMany({
-          data: newsletters.map((item) => ({
+          data: newsletters.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -564,7 +564,6 @@ export class AuthService {
 
       const notifications = await this.prisma.notification.findMany();
 
-
       const orders = await this.prisma.order.findMany();
 
       const orderItems = await this.prisma.orderItem.findMany();
@@ -581,34 +580,40 @@ export class AuthService {
       const usersInterests = await this.prisma.userInterests.findMany();
 
       //save to json file
-      writeFileSync('backup.json', JSON.stringify({
-        accounts,
-        addresses,
-        chats,
-        chatUsers,
-        events,
-        eventCategories,
-        eventPrices,
-        favorites,
-        feedbacks,
-        messages,
-        newsletters,
-        notifications,
-        orders,
-        orderItems,
-        pricings,
-        providers,
-        providerCategories,
-        providersOnEvents,
-        reviews,
-        transactions,
-        users,
-        usersInterests,
-      }, null, 2));
+      writeFileSync(
+        'backup.json',
+        JSON.stringify(
+          {
+            accounts,
+            addresses,
+            chats,
+            chatUsers,
+            events,
+            eventCategories,
+            eventPrices,
+            favorites,
+            feedbacks,
+            messages,
+            newsletters,
+            notifications,
+            orders,
+            orderItems,
+            pricings,
+            providers,
+            providerCategories,
+            providersOnEvents,
+            reviews,
+            transactions,
+            users,
+            usersInterests,
+          },
+          null,
+          2,
+        ),
+      );
 
       this.logger.log('Data backed up successfully');
       return { message: 'Data backed up successfully' };
-
     } catch (error) {
       this.logger.error(error);
       throwServerError(error);
