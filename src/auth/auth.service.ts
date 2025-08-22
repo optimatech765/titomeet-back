@@ -302,7 +302,7 @@ export class AuthService {
       if (seedList.includes('accounts')) {
         this.logger.log('Seeding accounts...');
         await this.prisma.account.createMany({
-          data: accounts.map((item) => ({
+          data: accounts.map((item: any) => ({
             ...item,
             expiresAt: new Date(item.expiresAt).toISOString(),
           })) as any,
@@ -312,7 +312,7 @@ export class AuthService {
       if (seedList.includes('addresses')) {
         this.logger.log('Seeding addresses...');
         await this.prisma.address.createMany({
-          data: addresses.map((item) => ({
+          data: addresses.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -323,7 +323,7 @@ export class AuthService {
       if (seedList.includes('events')) {
         this.logger.log('Seeding events...');
         await this.prisma.event.createMany({
-          data: events.map((item) => ({
+          data: events.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -334,7 +334,7 @@ export class AuthService {
       if (seedList.includes('chats')) {
         this.logger.log('Seeding chats...');
         await this.prisma.chat.createMany({
-          data: chats.map((item) => ({
+          data: chats.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -345,7 +345,7 @@ export class AuthService {
       if (seedList.includes('chatUsers')) {
         this.logger.log('Seeding chat users...');
         await this.prisma.chatUser.createMany({
-          data: chatUsers.map((item) => ({
+          data: chatUsers.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -357,7 +357,7 @@ export class AuthService {
       if (seedList.includes('eventCategories')) {
         this.logger.log('Seeding event categories...');
         await this.prisma.eventCategory.createMany({
-          data: eventCategories.map((item) => ({
+          data: eventCategories.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -368,7 +368,7 @@ export class AuthService {
       if (seedList.includes('eventPrices')) {
         this.logger.log('Seeding event prices...');
         await this.prisma.eventPrice.createMany({
-          data: eventPrices.map((item) => ({
+          data: eventPrices.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -379,7 +379,7 @@ export class AuthService {
       if (seedList.includes('favorites')) {
         this.logger.log('Seeding favorites...');
         await this.prisma.favorite.createMany({
-          data: favorites.map((item) => ({
+          data: favorites.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
@@ -401,7 +401,7 @@ export class AuthService {
       if (seedList.includes('messages')) {
         this.logger.log('Seeding messages...');
         await this.prisma.message.createMany({
-          data: messages.map((item) => ({
+          data: messages.map((item: any) => ({
             ...item,
             createdAt: new Date(item.createdAt).toISOString(),
             updatedAt: new Date(item.updatedAt).toISOString(),
