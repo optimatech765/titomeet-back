@@ -85,9 +85,14 @@ export class AuthController {
   updatePassword(@Body() body: UpdatePasswordPayloadDto, @Req() req: IRequest) {
     return this.authService.updatePassword(body, req.user);
   }
-
-  /*   @Get('api/auth/seed')
+  /* 
+    @Get('api/database/seed')
     seedData() {
       return this.authService.seedData();
+    }
+  
+    @Get('api/database/backup')
+    backupData() {
+      return this.authService.backupData();
     } */
 }

@@ -9,6 +9,7 @@ import {
   IsString,
   IsArray,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 
 export class PaginationQueryDto {
@@ -182,12 +183,12 @@ export class FeedbackBaseDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  categoryId: string;
+  category: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @ApiProperty()
   @IsString()
@@ -195,7 +196,7 @@ export class FeedbackBaseDto {
   comment: string;
 
   @ApiProperty()
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   rating: number;
 }
@@ -215,10 +216,6 @@ export class FeedbackDto extends FeedbackBaseDto {
   @Type(() => UserDto)
   @IsOptional()
   user?: UserDto;
-
-  @ApiProperty({ type: [FeedbackCategoryDto] })
-  @Type(() => FeedbackCategoryDto)
-  category: FeedbackCategoryDto;
 
   @IsOptional()
   @ApiProperty()
