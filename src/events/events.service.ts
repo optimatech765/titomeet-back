@@ -142,6 +142,7 @@ export class EventsService {
       const event = await this.prisma.event.create({
         data: {
           ...rest,
+          remainingSeats: rest.capacity,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
           badge: payload.badge ?? '',
