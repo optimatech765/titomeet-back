@@ -39,6 +39,7 @@ export class MailListener {
         <a href="${link}">Réinitialiser mon mot de passe</a>
         `,
       });
+      this.logger.log('Forgot password mail sent to ' + userEmail);
     } catch (error) {
       this.logger.error('Error sending forgot password mail', error);
     }

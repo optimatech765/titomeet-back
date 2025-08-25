@@ -28,17 +28,30 @@ export class MailService {
   //init nodemailer transporter
   private readonly transporter = createTransport({
     host: mailConfig().smtpHost,
+    name: 'Titomeet',
     port: Number(mailConfig().smtpPort),
     secure: true,
     auth: {
       user: mailConfig().smtpUser,
       pass: mailConfig().smtpPassword,
     },
+    tls: {
+      rejectUnauthorized: false, // Set to true for production, false for development/testing with self-signed certs
+    }
   });
 
   async sendMail(payload: SendMailDto) {
     try {
-      await this.transporter.sendMail(payload);
+      const isConnected = await this.transporter.verify();
+      if (!isConnected) {
+        throw new Error('Failed to connect to SMTP server');
+      }
+      await this.transporter.sendMail({
+        from: `"Titomeet" <${mailConfig().smtpUser}>`,
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html,
+      });
     } catch (error) {
       this.logger.error(error);
     }
