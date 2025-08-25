@@ -20,6 +20,7 @@ import {
   UpdateEventDto,
   EventCategoryQueryDto,
   EventQueryStatus,
+  ParticipantDto,
 } from 'src/dto/events.dto';
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
@@ -705,8 +706,8 @@ export class EventsService {
     }
   }
 
-  //get event participants paginated
-  async getEventParticipants(
+  //get event orders paginated
+  async getEventOrders(
     id: string,
     query: PaginationQuery,
   ): Promise<PaginatedData<OrderDto>> {
@@ -947,5 +948,64 @@ export class EventsService {
       this.logger.error(error);
       throwServerError(error);
     }
+  }
+
+  //get event participants paginated
+  async getEventParticipants(
+    id: string,
+    query: PaginationQuery,
+  ): Promise<PaginatedData<ParticipantDto>> {
+    const { page, limit, skip } = getPaginationData(query);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        orders: {
+          some: { eventId: id },
+        },
+      },
+      skip,
+      take: limit,
+    });
+
+    const total = await this.prisma.user.count({
+      where: {
+        orders: {
+          some: { eventId: id },
+        },
+      },
+    });
+
+    const p = users.map(async (user) => {
+      const orders = await this.prisma.order.findMany({
+        where: { userId: user.id, eventId: id, status: OrderStatus.CONFIRMED },
+        include: { items: true },
+      });
+
+      const totalOrders = orders.length;
+      const totalTickets = orders.reduce((acc, order) => {
+        return acc + order.items.reduce((acc, item) => {
+          return acc + item.quantity;
+        }, 0);
+      }, 0);
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        totalOrders,
+        totalTickets,
+      }
+    });
+
+
+    const participants = await Promise.all(p);
+
+    return {
+      items: participants,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }

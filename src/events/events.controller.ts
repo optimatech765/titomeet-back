@@ -19,6 +19,8 @@ import {
   GetEventsResponseDto,
   UpdateEventDto,
   GetEventOrdersQueryDto,
+  GetEventsParticipantsQueryDto,
+  GetEventsParticipantsResponseDto,
 } from 'src/dto/events.dto';
 import {
   CreateOrderDto,
@@ -34,7 +36,7 @@ import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @Controller('api/events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(private readonly eventsService: EventsService) { }
 
   @Get('categories')
   @UseGuards(OptionalAuthGuard)
@@ -127,6 +129,20 @@ export class EventsController {
   getEventOrders(
     @Param('id') id: string,
     @Query() query: GetEventOrdersQueryDto,
+  ) {
+    return this.eventsService.getEventOrders(id, query);
+  }
+
+  @Get(':id/participants')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event participants',
+    type: GetEventsParticipantsResponseDto,
+  })
+  getEventParticipants(
+    @Param('id') id: string,
+    @Query() query: GetEventsParticipantsQueryDto,
   ) {
     return this.eventsService.getEventParticipants(id, query);
   }

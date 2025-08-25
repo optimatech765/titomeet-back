@@ -421,3 +421,73 @@ export class UpdateEventCategoryDto {
 }
 
 export class GetEventOrdersQueryDto extends PaginationQueryDto { }
+
+
+
+export class GetEventsParticipantsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for participants' })
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+
+  @ApiPropertyOptional({ description: 'Event ID' })
+  @IsString()
+  @IsNotEmpty()
+  eventId: string;
+}
+
+export class ParticipantDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  totalOrders: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalTickets: number;
+}
+
+export class GetEventsParticipantsResponseDto {
+  @ApiProperty({ type: [ParticipantDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParticipantDto)
+  items: ParticipantDto[];
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  total: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  page: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  limit: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPages: number;
+}
