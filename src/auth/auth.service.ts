@@ -20,7 +20,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MAIL_EVENTS } from 'src/utils/events';
 import { ForgotPasswordEvent } from 'src/mail/events';
 
-//import backupFile from '../../backup.json';
+import backupFile from '../../backup.json';
 import { writeFileSync } from 'fs';
 
 @Injectable()
@@ -230,8 +230,8 @@ export class AuthService {
       return throwServerError(error);
     }
   }
-
-  /*   async seedData() {
+  /* 
+    async seedData() {
       try {
         this.logger.log('Seeding data...');
         const seedList = [
@@ -538,87 +538,87 @@ export class AuthService {
         this.logger.error(error);
         throwServerError(error);
       }
-    } */
-
-  async backupData() {
-    try {
-      this.logger.log('Backup data...');
-
-      const accounts = await this.prisma.account.findMany();
-      const addresses = await this.prisma.address.findMany();
-
-      const chats = await this.prisma.chat.findMany();
-
-      const chatUsers = await this.prisma.chatUser.findMany();
-      const events = await this.prisma.event.findMany();
-
-      const eventCategories = await this.prisma.eventCategory.findMany();
-      const eventPrices = await this.prisma.eventPrice.findMany();
-
-      const favorites = await this.prisma.favorite.findMany();
-      const feedbacks = await this.prisma.feedback.findMany();
-
-      const messages = await this.prisma.message.findMany();
-
-      const newsletters = await this.prisma.newsletter.findMany();
-
-      const notifications = await this.prisma.notification.findMany();
-
-      const orders = await this.prisma.order.findMany();
-
-      const orderItems = await this.prisma.orderItem.findMany();
-      const pricings = await this.prisma.pricing.findMany();
-
-      const providers = await this.prisma.provider.findMany();
-      const providerCategories = await this.prisma.providerCategory.findMany();
-
-      const providersOnEvents = await this.prisma.providerOnEvent.findMany();
-
-      const reviews = await this.prisma.review.findMany();
-      const transactions = await this.prisma.transaction.findMany();
-      const users = await this.prisma.user.findMany();
-      const usersInterests = await this.prisma.userInterests.findMany();
-
-      //save to json file
-      writeFileSync(
-        'backup.json',
-        JSON.stringify(
-          {
-            accounts,
-            addresses,
-            chats,
-            chatUsers,
-            events,
-            eventCategories,
-            eventPrices,
-            favorites,
-            feedbacks,
-            messages,
-            newsletters,
-            notifications,
-            orders,
-            orderItems,
-            pricings,
-            providers,
-            providerCategories,
-            providersOnEvents,
-            reviews,
-            transactions,
-            users,
-            usersInterests,
-          },
-          null,
-          2,
-        ),
-      );
-
-      this.logger.log('Data backed up successfully');
-      return { message: 'Data backed up successfully' };
-    } catch (error) {
-      this.logger.error(error);
-      throwServerError(error);
     }
-  }
+  
+    async backupData() {
+      try {
+        this.logger.log('Backup data...');
+  
+        const accounts = await this.prisma.account.findMany();
+        const addresses = await this.prisma.address.findMany();
+  
+        const chats = await this.prisma.chat.findMany();
+  
+        const chatUsers = await this.prisma.chatUser.findMany();
+        const events = await this.prisma.event.findMany();
+  
+        const eventCategories = await this.prisma.eventCategory.findMany();
+        const eventPrices = await this.prisma.eventPrice.findMany();
+  
+        const favorites = await this.prisma.favorite.findMany();
+        const feedbacks = await this.prisma.feedback.findMany();
+  
+        const messages = await this.prisma.message.findMany();
+  
+        const newsletters = await this.prisma.newsletter.findMany();
+  
+        const notifications = await this.prisma.notification.findMany();
+  
+        const orders = await this.prisma.order.findMany();
+  
+        const orderItems = await this.prisma.orderItem.findMany();
+        const pricings = await this.prisma.pricing.findMany();
+  
+        const providers = await this.prisma.provider.findMany();
+        const providerCategories = await this.prisma.providerCategory.findMany();
+  
+        const providersOnEvents = await this.prisma.providerOnEvent.findMany();
+  
+        const reviews = await this.prisma.review.findMany();
+        const transactions = await this.prisma.transaction.findMany();
+        const users = await this.prisma.user.findMany();
+        const usersInterests = await this.prisma.userInterests.findMany();
+  
+        //save to json file
+        writeFileSync(
+          'backup.json',
+          JSON.stringify(
+            {
+              accounts,
+              addresses,
+              chats,
+              chatUsers,
+              events,
+              eventCategories,
+              eventPrices,
+              favorites,
+              feedbacks,
+              messages,
+              newsletters,
+              notifications,
+              orders,
+              orderItems,
+              pricings,
+              providers,
+              providerCategories,
+              providersOnEvents,
+              reviews,
+              transactions,
+              users,
+              usersInterests,
+            },
+            null,
+            2,
+          ),
+        );
+  
+        this.logger.log('Data backed up successfully');
+        return { message: 'Data backed up successfully' };
+      } catch (error) {
+        this.logger.error(error);
+        throwServerError(error);
+      }
+    } */
 
   async updatePassword(payload: UpdatePasswordPayloadDto, authUser: User) {
     try {
