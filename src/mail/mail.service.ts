@@ -51,6 +51,7 @@ export class MailService {
         to: payload.to,
         subject: payload.subject,
         html: payload.html,
+        attachments: payload.attachments,
       });
     } catch (error) {
       this.logger.error(error);
