@@ -37,9 +37,11 @@ export class MailService {
     tls: {
       rejectUnauthorized: false,
     },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000,
-    socketTimeout: 10000,
+    connectionTimeout: 60000, // 60 seconds
+    greetingTimeout: 30000,   // 30 seconds (increased)
+    socketTimeout: 60000,     // 60 seconds
+    logger: true,             // Enable detailed logging
+    debug: true,              // Enable debug output
   });
 
   async sendMail(payload: SendMailDto) {
@@ -56,7 +58,13 @@ export class MailService {
         attachments: payload.attachments,
       });
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Email sending failed:', {
+        message: error.message,
+        code: error.code,
+        command: error.command,
+        stack: error.stack
+      });
+      throw error;
     }
   }
 
