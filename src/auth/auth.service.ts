@@ -19,9 +19,9 @@ import { throwServerError } from 'src/utils';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MAIL_EVENTS } from 'src/utils/events';
 import { ForgotPasswordEvent } from 'src/mail/events';
-
+/* 
 import backupFile from '../../backup.json';
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'fs'; */
 
 @Injectable()
 export class AuthService {
