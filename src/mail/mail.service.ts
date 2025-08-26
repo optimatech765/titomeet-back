@@ -28,16 +28,18 @@ export class MailService {
   //init nodemailer transporter
   private readonly transporter = createTransport({
     host: mailConfig().smtpHost,
-    name: 'Titomeet',
-    port: Number(mailConfig().smtpPort),
-    secure: true,
+    port: 587, // Try 587 instead of 465
+    secure: false, // false for 587, true for 465
     auth: {
       user: mailConfig().smtpUser,
       pass: mailConfig().smtpPassword,
     },
     tls: {
-      rejectUnauthorized: false, // Set to true for production, false for development/testing with self-signed certs
-    }
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
   });
 
   async sendMail(payload: SendMailDto) {
