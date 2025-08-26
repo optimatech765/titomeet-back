@@ -44,10 +44,6 @@ export class MailService {
 
   async sendMail(payload: SendMailDto) {
     try {
-      const isConnected = await this.transporter.verify();
-      if (!isConnected) {
-        throw new Error('Failed to connect to SMTP server');
-      }
       await this.transporter.sendMail({
         from: `"Titomeet" <${mailConfig().smtpUser}>`,
         to: payload.to,
