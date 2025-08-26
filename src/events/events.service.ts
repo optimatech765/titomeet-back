@@ -874,6 +874,14 @@ export class EventsService {
       );
 
       const isPaidEvent = event.accessType === EventAccess.PAID;
+      const totalQty = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+
+      if (!isPaidEvent && totalQty > 3) {
+        throw new HttpException(
+          'You cannot buy more than 3 tickets at once',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (isPaidEvent && totalAmount === 0) {
         throw new HttpException('Invalid amount', HttpStatus.BAD_REQUEST);

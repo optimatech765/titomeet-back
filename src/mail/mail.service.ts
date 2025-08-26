@@ -28,8 +28,8 @@ export class MailService {
   //init nodemailer transporter
   private readonly transporter = createTransport({
     host: mailConfig().smtpHost,
-    port: 587, // Try 587 instead of 465
-    secure: false, // false for 587, true for 465
+    port: 25,
+    secure: false,
     auth: {
       user: mailConfig().smtpUser,
       pass: mailConfig().smtpPassword,
@@ -37,11 +37,9 @@ export class MailService {
     tls: {
       rejectUnauthorized: false,
     },
-    connectionTimeout: 60000, // 60 seconds
-    greetingTimeout: 30000,   // 30 seconds (increased)
-    socketTimeout: 60000,     // 60 seconds
-    logger: true,             // Enable detailed logging
-    debug: true,              // Enable debug output
+    connectionTimeout: 60000,
+    greetingTimeout: 60000,
+    socketTimeout: 60000,
   });
 
   async sendMail(payload: SendMailDto) {
