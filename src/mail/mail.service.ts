@@ -58,7 +58,6 @@ export class MailService {
         command: error.command,
         stack: error.stack
       });
-      throw error;
     }
   }
 

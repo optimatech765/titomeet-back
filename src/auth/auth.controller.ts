@@ -86,13 +86,13 @@ export class AuthController {
     return this.authService.updatePassword(body, req.user);
   }
 
-  /*   @Get('api/database/seed')
-    seedData() {
-      return this.authService.seedData();
-    }
-  
-    @Get('api/database/backup')
-    backupData() {
-      return this.authService.backupData();
-    } */
+  @Get('api/database/seed')
+  seedData() {
+    return this.authService.seedData();
+  }
+
+  @Get('api/database/backup')
+  backupData() {
+    return this.authService.backupData();
+  }
 }
