@@ -41,13 +41,15 @@ jobs:
       - name: Determine Image Tag Based on Branch
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+            echo "IMAGE_TAG=prod" >> $GITHUB_ENV
             echo "CONTAINER_NAME=titomeet-backend" >> $GITHUB_ENV
             echo "APP_PORT=5001" >> $GITHUB_ENV
+            echo "ENV_FILE=.env" >> $GITHUB_ENV
           elif [[ "${{ github.ref_name }}" == "dev" ]]; then
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
             echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
             echo "APP_PORT=5002" >> $GITHUB_ENV
+            echo "ENV_FILE=.env.dev" >> $GITHUB_ENV
           fi
 
       - name: Debug Variables
@@ -56,6 +58,7 @@ jobs:
           echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
           echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
           echo "APP_PORT=${{ env.APP_PORT }}"
+          echo "ENV_FILE=${{ env.ENV_FILE }}"
 
       - name: Build and Push Docker Image
         run: |
@@ -81,6 +84,6 @@ jobs:
             cd ${{ env.DEPLOY_PATH }}
 
             # Run the new container with environment variables
-            docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p ${{env.APP_PORT}}:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+            docker run -d --name ${{env.CONTAINER_NAME}} --env-file ${{env.ENV_FILE}} -p ${{env.APP_PORT}}:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
             # Clean up old Docker images
             docker image prune -f
