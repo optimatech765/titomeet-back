@@ -40,18 +40,34 @@ jobs:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ env.DOCKERHUB_PASSWORD }}
 
-      - name: Determine Image Tag Based on Branch
+      - name: Determine Environment Based on Branch
+        id: determine-env
         run: |
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          # Get the base ref for pull requests or use the branch name for pushes
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="${{ github.base_ref }}"
+          else
+            BASE_REF="${{ github.ref_name }}"
+          fi
+
+          echo "Base ref: $BASE_REF"
+
+          # Handle merge scenarios - check if we're targeting main branch
+          if [[ "$BASE_REF" == "main" ]] || [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "IMAGE_TAG=prod" >> $GITHUB_ENV
             echo "CONTAINER_NAME=titomeet-backend-prod" >> $GITHUB_ENV
             echo "APP_PORT=5001" >> $GITHUB_ENV
             echo "ENV_FILE=.env" >> $GITHUB_ENV
-          elif [[ "${{ github.ref_name }}" == "dev" ]]; then
+          elif [[ "$BASE_REF" == "dev" ]] || [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             echo "IMAGE_TAG=dev" >> $GITHUB_ENV
             echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
             echo "APP_PORT=5002" >> $GITHUB_ENV
             echo "ENV_FILE=.env.dev" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=unknown" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=titomeet-backend-unknown" >> $GITHUB_ENV
+            echo "APP_PORT=5000" >> $GITHUB_ENV
+            echo "ENV_FILE=.env" >> $GITHUB_ENV
           fi
 
       - name: Debug Variables
