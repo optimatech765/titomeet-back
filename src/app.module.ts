@@ -11,6 +11,13 @@ import { UsersModule } from './users/users.module';
 import { AssetsModule } from './assets/assets.module';
 import { EventsModule } from './events/events.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { ProvidersModule } from './providers/providers.module';
+import { AdminModule } from './admin/admin.module';
+import { FedapayModule } from './fedapay/fedapay.module';
+import { OrdersModule } from './orders/orders.module';
+import { MailModule } from './mail/mail.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -32,8 +39,15 @@ import { NotificationsModule } from './notifications/notifications.module';
     AssetsModule,
     EventsModule,
     NotificationsModule,
+    AddressesModule,
+    ProvidersModule,
+    AdminModule,
+    FedapayModule,
+    OrdersModule,
+    MailModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

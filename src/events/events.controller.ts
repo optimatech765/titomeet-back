@@ -12,21 +12,42 @@ import {
 import { EventsService } from './events.service';
 import {
   CreateEventDto,
+  EventCategoryDto,
+  EventCategoryQueryDto,
   EventDto,
+  GetEventsQueryDto,
   GetEventsResponseDto,
   UpdateEventDto,
+  GetEventOrdersQueryDto,
+  GetEventsParticipantsQueryDto,
+  GetEventsParticipantsResponseDto,
 } from 'src/dto/events.dto';
+import {
+  CreateOrderDto,
+  OrderEventResponseDto,
+  GetEventOrdersResponseDto,
+} from 'src/dto/orders.dto';
 import {
   AuthGuard,
   OptionalAuthGuard,
-  PaginationQuery,
 } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
-@Controller('events')
+@Controller('api/events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(private readonly eventsService: EventsService) { }
+
+  @Get('categories')
+  @UseGuards(OptionalAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event categories',
+    type: EventCategoryDto,
+  })
+  getEventCategories(@Query() query: EventCategoryQueryDto) {
+    return this.eventsService.getEventCategories(query);
+  }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -52,13 +73,18 @@ export class EventsController {
 
   @Get()
   @UseGuards(OptionalAuthGuard)
+  @ApiQuery({
+    name: 'categories',
+    type: [String],
+    required: false,
+  })
   @ApiResponse({
     status: 200,
     description: 'Get events',
     type: GetEventsResponseDto,
   })
-  getEvents(@Query() query: PaginationQuery, @Request() req: any) {
-    return this.eventsService.getEvents(req.query, query, req.user);
+  getEvents(@Query() query: GetEventsQueryDto, @Request() req: any) {
+    return this.eventsService.getEvents(query, req.user);
   }
 
   @Get(':id')
@@ -70,5 +96,54 @@ export class EventsController {
   })
   getEventById(@Param('id') id: string, @Request() req: any) {
     return this.eventsService.getEventById(id, req.user);
+  }
+
+  @Post(':id/toggle-favorite')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Toggle favorite',
+  })
+  toggleFavorite(@Param('id') id: string, @Request() req: IRequest) {
+    return this.eventsService.toggleFavorite(id, req.user);
+  }
+
+  @Post(':id/orders')
+  @UseGuards(OptionalAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Buy event tickets',
+    type: OrderEventResponseDto,
+  })
+  orderEvent(@Body() payload: CreateOrderDto, @Request() req: any) {
+    return this.eventsService.createOrder(payload, req.user);
+  }
+
+  @Get(':id/orders')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event orders',
+    type: GetEventOrdersResponseDto,
+  })
+  getEventOrders(
+    @Param('id') id: string,
+    @Query() query: GetEventOrdersQueryDto,
+  ) {
+    return this.eventsService.getEventOrders(id, query);
+  }
+
+  @Get(':id/participants')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get event participants',
+    type: GetEventsParticipantsResponseDto,
+  })
+  getEventParticipants(
+    @Param('id') id: string,
+    @Query() query: GetEventsParticipantsQueryDto,
+  ) {
+    return this.eventsService.getEventParticipants(id, query);
   }
 }

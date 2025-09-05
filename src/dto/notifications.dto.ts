@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { NotificationType } from '@prisma/client';
 import {
   IsBoolean,
@@ -6,38 +7,65 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsDate,
 } from 'class-validator';
+import { UserDto } from './users.dto';
 
-export class NotificationDto {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
+export class NotificationPayloadDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   notifiedToId: string;
 
-  @IsString()
-  @IsOptional()
-  userId: string;
-
+  @ApiProperty()
   @IsEnum(NotificationType)
   @IsNotEmpty()
   type: NotificationType;
 
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  userId?: string | null;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  read?: boolean;
+
+  @ApiProperty()
+  @IsObject()
+  @IsOptional()
+  data?: object | null;
+}
+
+export class NotificationDto extends NotificationPayloadDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsObject()
+  @IsOptional()
+  user?: UserDto;
+
+  @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
   read: boolean;
 
-  @IsObject()
+  @ApiProperty()
+  @IsDate()
   @IsNotEmpty()
-  data: object;
+  createdAt: Date;
 
-  @IsString()
+  @ApiProperty()
+  @IsDate()
   @IsNotEmpty()
-  createdAt: string;
+  updatedAt: Date;
+}
 
-  @IsString()
-  @IsNotEmpty()
-  updatedAt: string;
+export class SendNotificationDto {
+  notificationPayload: NotificationPayloadDto;
+  sendByMail: boolean;
 }

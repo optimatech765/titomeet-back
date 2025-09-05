@@ -1,6 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
-import { User } from '@optimatech88/titomeet-shared-lib';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import { UserDto } from './users.dto';
 
 export class SignupDto {
   @ApiProperty()
@@ -28,7 +34,7 @@ export class SignupDto {
   @IsNotEmpty()
   @MinLength(8)
   password: string;
-  }
+}
 
 export class LoginDto {
   @ApiProperty()
@@ -44,13 +50,19 @@ export class LoginDto {
 
 export class AuthenticationResponseDto {
   @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   accessToken: string;
 
   @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   refreshToken: string;
 
   @ApiProperty()
-  user: User;
+  @IsObject()
+  @IsNotEmpty()
+  user: UserDto;
 }
 
 export class RefreshTokenDto {
@@ -60,3 +72,47 @@ export class RefreshTokenDto {
   refreshToken: string;
 }
 
+export class ForgotPasswordDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  token: string;
+}
+
+export class ResetPasswordResponseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}
+
+export class UpdatePasswordPayloadDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+}
+
+export class UpdatePasswordResponseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}
