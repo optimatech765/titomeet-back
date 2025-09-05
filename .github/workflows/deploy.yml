@@ -5,10 +5,12 @@ on:
     branches:
       - 'main'
       - 'dev'
+      - 'preprod'
   pull_request:
     branches:
       - 'main'
       - 'dev'
+      - 'preprod'
 
 jobs:
   build-and-deploy:
