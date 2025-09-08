@@ -7,8 +7,10 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
   UpdatePasswordPayloadDto,
+  GoogleMobileAuthDto,
 } from '../dto/auth.dto';
 import {
+  AccountType,
   JwtService,
   PrismaService,
   User,
@@ -19,6 +21,7 @@ import { throwServerError } from 'src/utils';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MAIL_EVENTS } from 'src/utils/events';
 import { ForgotPasswordEvent } from 'src/mail/events';
+import axios from 'axios';
 
 /* import backupFile from '../../backup.json';
 import { writeFileSync } from 'fs'; */
@@ -32,7 +35,7 @@ export class AuthService {
     private eventEmitter: EventEmitter2,
   ) { }
 
-  private async generateTokens(user: User) {
+  async generateTokens(user: User) {
     const payload = { userId: user.id, email: user.email };
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '1d',
@@ -645,6 +648,84 @@ export class AuthService {
     } catch (error) {
       this.logger.error(error);
       return throwServerError(error);
+    }
+  }
+
+  //authenticate mobile
+  async googleAuth(
+    payload: GoogleMobileAuthDto,
+  ): Promise<{ access_token: string; user: User }> {
+    try {
+      const { idToken } = payload;
+      const { data } = await axios.request({
+        method: 'get',
+        url: `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${idToken}`,
+        withCredentials: true,
+      });
+
+      const user = data as {
+        email: string;
+        given_name: string;
+        family_name: string;
+        picture: string;
+        sub: string;
+      };
+
+      const email = user.email;
+
+      //check if user with same email exists loggin otherwise create and send data
+
+      let existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      let tokens = existingUser
+        ? await this.generateTokens(existingUser)
+        : { accessToken: null, refreshToken: null };
+
+      if (!existingUser) {
+        //create user
+
+        existingUser = await this.prisma.user.create({
+          data: {
+            email,
+            username: email,
+            firstName: user.given_name,
+            lastName: user.family_name,
+            profilePicture: user.picture,
+            password: '-',
+          },
+        });
+        tokens = await this.generateTokens(existingUser);
+
+        await this.prisma.account.create({
+          data: {
+            type: AccountType.GOOGLE,
+            reference: user.sub,
+            userId: existingUser.id,
+            refreshToken: tokens.refreshToken,
+            expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_IN),
+          },
+        });
+
+      }
+
+      const access_token = tokens?.accessToken ?? '';
+
+      return {
+        access_token,
+        user: existingUser,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      //check if error is not thrown from async operation
+      if (error.status) {
+        throw error;
+      }
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
