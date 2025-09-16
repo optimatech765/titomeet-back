@@ -964,24 +964,23 @@ export class EventsService {
     id: string,
     query: PaginationQuery,
   ): Promise<PaginatedData<ParticipantDto>> {
+    this.logger.log(`Getting event participants for event ${id}`);
     const { page, limit, skip } = getPaginationData(query);
 
-    const users = await this.prisma.user.findMany({
-      where: {
-        orders: {
-          some: { eventId: id },
-        },
+    const usersFilter = {
+      orders: {
+        some: { eventId: id, status: OrderStatus.CONFIRMED },
       },
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: usersFilter,
       skip,
       take: limit,
     });
 
     const total = await this.prisma.user.count({
-      where: {
-        orders: {
-          some: { eventId: id },
-        },
-      },
+      where: usersFilter,
     });
 
     const p = users.map(async (user) => {
