@@ -16,10 +16,7 @@ export class OrdersController {
     description: 'Get order by id or transaction id',
     type: OrderDto,
   })
-  async getOrderByReference(
-    @Param('reference') reference: string,
-    @Request() req: IRequest,
-  ) {
+  async getOrderByReference(@Param('reference') reference: string) {
     return this.ordersService.getOrderByReference(reference);
   }
 }

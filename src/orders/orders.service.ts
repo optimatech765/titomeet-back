@@ -1,9 +1,5 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { PrismaService, User } from '@optimatech88/titomeet-shared-lib';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '@optimatech88/titomeet-shared-lib';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
