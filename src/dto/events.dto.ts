@@ -449,12 +449,6 @@ export class GetEventsParticipantsQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
-
-
-  @ApiPropertyOptional({ description: 'Event ID' })
-  @IsString()
-  @IsNotEmpty()
-  eventId: string;
 }
 
 export class ParticipantDto {

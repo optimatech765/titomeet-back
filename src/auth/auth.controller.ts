@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiResponse } from '@nestjs/swagger';
 import {
   AuthenticationResponseDto,
   ForgotPasswordDto,
+  GoogleMobileAuthDto,
   LoginDto,
   RefreshTokenDto,
   ResetPasswordDto,
@@ -14,6 +24,8 @@ import {
 } from 'src/dto/auth.dto';
 import { IRequest } from 'src/types';
 import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { Response } from 'express';
 
 @Controller('')
 export class AuthController {
@@ -84,6 +96,30 @@ export class AuthController {
   })
   updatePassword(@Body() body: UpdatePasswordPayloadDto, @Req() req: IRequest) {
     return this.authService.updatePassword(body, req.user);
+  }
+
+  @Get('auth/google/login')
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() { }
+
+  @Get('auth/google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(@Request() req: IRequest, @Res() res: Response) {
+    const token = await this.authService.generateTokens(req.user);
+    res.redirect(
+      `${process.env.FRONTEND_URL}/auth?token=${token.accessToken}&refreshToken=${token.refreshToken}`,
+    );
+  }
+
+  //google mobile auth
+  @Post('api/auth/google/login')
+  @ApiResponse({
+    status: 200,
+    description: 'Access token and user data',
+    type: AuthenticationResponseDto,
+  })
+  googleAuth(@Body() body: GoogleMobileAuthDto) {
+    return this.authService.googleAuth(body);
   }
 
   /*   @Get('api/database/seed')

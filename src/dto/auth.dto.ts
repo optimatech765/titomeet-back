@@ -116,3 +116,10 @@ export class UpdatePasswordResponseDto {
   @IsNotEmpty()
   message: string;
 }
+
+export class GoogleMobileAuthDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+}
