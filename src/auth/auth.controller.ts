@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiResponse } from '@nestjs/swagger';
 import {
@@ -9,11 +9,15 @@ import {
   ResetPasswordDto,
   ResetPasswordResponseDto,
   SignupDto,
+  UpdatePasswordPayloadDto,
+  UpdatePasswordResponseDto,
 } from 'src/dto/auth.dto';
+import { IRequest } from 'src/types';
+import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
 
 @Controller('')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   //signup
   @Post('api/auth/signup')
@@ -69,4 +73,26 @@ export class AuthController {
   resetPassword(@Body() body: ResetPasswordDto) {
     return this.authService.resetPassword(body);
   }
+
+  //update password
+  @Post('api/auth/update-password')
+  @UseGuards(AuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Update password',
+    type: UpdatePasswordResponseDto,
+  })
+  updatePassword(@Body() body: UpdatePasswordPayloadDto, @Req() req: IRequest) {
+    return this.authService.updatePassword(body, req.user);
+  }
+
+  /*   @Get('api/database/seed')
+    seedData() {
+      return this.authService.seedData();
+    }
+  
+    @Get('api/database/backup')
+    backupData() {
+      return this.authService.backupData();
+    } */
 }

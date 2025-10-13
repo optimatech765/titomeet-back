@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -13,16 +14,24 @@ import {
 } from '@optimatech88/titomeet-shared-lib';
 import {
   CreateProviderDto,
+  GetProviderEventsQueryDto,
   GetProvidersQueryDto,
   ProviderCategoryQueryDto,
 } from 'src/dto/providers.dto';
-import { Prisma, ProviderStatus, User, UserRole } from '@prisma/client';
+import {
+  Prisma,
+  ProviderOnEventStatus,
+  ProviderStatus,
+  User,
+  UserRole,
+} from '@prisma/client';
 import { throwServerError } from 'src/utils';
+import { GetEventsQueryDto } from 'src/dto/events.dto';
 
 @Injectable()
 export class ProvidersService {
   private readonly logger = new Logger(ProvidersService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getProviderCategories(
     query: ProviderCategoryQueryDto,
@@ -131,7 +140,7 @@ export class ProvidersService {
 
   async getProviders(query: GetProvidersQueryDto, user?: User) {
     try {
-      const { search, status } = query;
+      const { search, status, categoryId, parentId } = query;
 
       console.log({ user, status });
 
@@ -143,6 +152,16 @@ export class ProvidersService {
         filter.name = {
           contains: search,
           mode: 'insensitive',
+        };
+      }
+
+      if (categoryId) {
+        filter.categoryId = categoryId;
+      }
+
+      if (parentId) {
+        filter.category = {
+          parentId,
         };
       }
 
@@ -200,6 +219,154 @@ export class ProvidersService {
       }
 
       return provider;
+    } catch (error) {
+      throwServerError(error);
+    }
+  }
+
+  async getProviderStats(user: User, providerId?: string) {
+    try {
+      const provider = await this.prisma.provider.findUnique({
+        where: { id: providerId },
+      });
+
+      if (!provider) {
+        throw new NotFoundException('Provider not found');
+      }
+
+      if (provider.userId !== user.id) {
+        throw new ForbiddenException(
+          'You are not authorized to access this provider',
+        );
+      }
+
+
+      const where: Prisma.ProviderOnEventWhereInput = {
+        ...(providerId ? { providerId } : { provider: { userId: user.id } }),
+      };
+
+      const [totalPending, totalApproved, totalRejected] = await Promise.all(
+        [
+          ProviderOnEventStatus.PENDING,
+          ProviderOnEventStatus.APPROVED,
+          ProviderOnEventStatus.REJECTED,
+        ].map(async (status) => {
+          return this.prisma.providerOnEvent.count({
+            where: {
+              ...where,
+              status,
+            },
+          });
+        }),
+      );
+
+      return {
+        totalPending,
+        totalApproved,
+        totalRejected,
+      };
+    } catch (error) {
+      throwServerError(error);
+    }
+  }
+
+  async getEventsForProvider(
+    user: User,
+    query: GetProviderEventsQueryDto,
+  ) {
+    try {
+      const { providerId, status } = query;
+      const { skip, limit, page } = getPaginationData(query);
+
+      const filter: Prisma.ProviderOnEventWhereInput = {
+        ...(providerId ? { providerId } : { provider: { userId: user.id } }),
+      };
+
+      if (status) {
+        filter.status = status;
+      }
+
+      const providerEvents = await this.prisma.providerOnEvent.findMany({
+        where: filter,
+        include: {
+          event: {
+            include: {
+              prices: true,
+              address: true,
+              postedBy: true,
+              categories: true,
+              ...(user && {
+                orders: {
+                  where: {
+                    userId: user.id,
+                  },
+                },
+                favorites: {
+                  where: {
+                    userId: user.id,
+                  },
+                },
+              }),
+            },
+          },
+        },
+        skip,
+        take: limit,
+      });
+
+      const total = await this.prisma.providerOnEvent.count({
+        where: filter,
+      });
+
+      const events = providerEvents.map((providerEvent) => providerEvent.event);
+
+      return {
+        items: events,
+        total,
+        totalPages: Math.ceil(total / limit),
+        page,
+        limit,
+      };
+    } catch (error) {
+      throwServerError(error);
+    }
+  }
+
+  async updateEventRequest(
+    providerId: string,
+    eventId: string,
+    user: User,
+    status: ProviderOnEventStatus,
+  ) {
+    try {
+      const provider = await this.prisma.provider.findUnique({
+        where: { id: providerId },
+      });
+
+      if (!provider) {
+        throw new NotFoundException('Provider not found');
+      }
+
+      if (provider.userId !== user.id) {
+        throw new ForbiddenException(
+          'You are not authorized to access this provider',
+        );
+      }
+
+      const eventRequest = await this.prisma.providerOnEvent.findFirst({
+        where: { providerId, eventId },
+      });
+
+      if (!eventRequest) {
+        throw new NotFoundException('Event request not found');
+      }
+
+      await this.prisma.providerOnEvent.update({
+        where: { id: eventRequest.id },
+        data: { status },
+      });
+
+      return eventRequest;
     } catch (error) {
       throwServerError(error);
     }

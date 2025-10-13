@@ -7,29 +7,15 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsDate,
 } from 'class-validator';
 import { UserDto } from './users.dto';
 
-export class NotificationDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
+export class NotificationPayloadDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   notifiedToId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
-  userId: string;
-
-  @ApiProperty()
-  @IsObject()
-  @IsOptional()
-  user: UserDto;
 
   @ApiProperty()
   @IsEnum(NotificationType)
@@ -37,22 +23,49 @@ export class NotificationDto {
   type: NotificationType;
 
   @ApiProperty()
+  @IsString()
+  @IsOptional()
+  userId?: string | null;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  read?: boolean;
+
+  @ApiProperty()
+  @IsObject()
+  @IsOptional()
+  data?: object | null;
+}
+
+export class NotificationDto extends NotificationPayloadDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsObject()
+  @IsOptional()
+  user?: UserDto;
+
+  @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
   read: boolean;
 
   @ApiProperty()
-  @IsObject()
+  @IsDate()
   @IsNotEmpty()
-  data: object;
+  createdAt: Date;
 
   @ApiProperty()
-  @IsString()
+  @IsDate()
   @IsNotEmpty()
-  createdAt: string;
+  updatedAt: Date;
+}
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  updatedAt: string;
+export class SendNotificationDto {
+  notificationPayload: NotificationPayloadDto;
+  sendByMail: boolean;
 }

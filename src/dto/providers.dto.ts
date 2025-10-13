@@ -13,7 +13,7 @@ import {
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
 import { AddressDto } from './address.dto';
-import { ProviderStatus } from '@optimatech88/titomeet-shared-lib';
+import { ProviderOnEventStatus, ProviderStatus } from '@optimatech88/titomeet-shared-lib';
 
 export class ProviderCategoryDto {
   @ApiProperty()
@@ -82,23 +82,23 @@ export class ProviderBaseDto {
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  phoneNumber: string;
+  phoneNumber?: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  website: string;
+  website?: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  pricingDetails: string;
+  pricingDetails?: string;
 
   @ApiProperty({ type: [ProviderDoc] })
   @IsArray()
@@ -127,7 +127,7 @@ export class ProviderDto extends ProviderBaseDto {
   address: AddressDto;
 }
 
-export class CreateProviderDto extends ProviderBaseDto {}
+export class CreateProviderDto extends ProviderBaseDto { }
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for providers' })
@@ -138,7 +138,40 @@ export class GetProvidersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Filter by provider status  ' })
   @IsEnum(ProviderStatus)
   @IsOptional()
+<<<<<<< HEAD
   status?: ProviderStatus;
+=======
+  status?: ProviderStatus
+
+  @ApiPropertyOptional({ description: 'Filter by provider category' })
+  @IsString()
+  @IsOptional()
+  categoryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the provider category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
+}
+
+export class GetProviderEventsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for events' })
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by event status' })
+  @IsEnum(ProviderOnEventStatus)
+  @IsOptional()
+  status?: ProviderOnEventStatus;
+
+  @ApiPropertyOptional({ description: 'Filter by provider' })
+  @IsString()
+  @IsOptional()
+  providerId?: string;
+>>>>>>> 4664702dcd086ba5d11f02c519cac7df51ba9411
 }
 
 export class GetProvidersResponseDto {
@@ -226,4 +259,44 @@ export class ValidateProviderDto {
   @IsEnum(ProviderStatus)
   @IsNotEmpty()
   status: ProviderStatus;
+}
+
+export class ProviderStatsDto {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPending: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalApproved: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalRejected: number;
+}
+
+
+export class ProviderOnEventDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  providerId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  eventId: string;
+
+  @ApiProperty({ enum: ProviderOnEventStatus })
+  @IsEnum(ProviderOnEventStatus)
+  @IsNotEmpty()
+  status: ProviderOnEventStatus;
 }

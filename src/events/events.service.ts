@@ -10,6 +10,8 @@ import {
   EventStatus,
   EventAccess,
   OrderStatus,
+  TransactionStatus,
+  PricingType,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -18,6 +20,7 @@ import {
   UpdateEventDto,
   EventCategoryQueryDto,
   EventQueryStatus,
+  ParticipantDto,
 } from 'src/dto/events.dto';
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
@@ -33,7 +36,7 @@ export class EventsService {
     private readonly assetsService: AssetsService,
     private readonly fedapayService: FedapayService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async getEventCategories(
     query: EventCategoryQueryDto,
@@ -49,12 +52,21 @@ export class EventsService {
         };
       }
 
+      if (query.parentId) {
+        filter.parentId = query.parentId;
+      } else {
+        filter.parentId = null;
+      }
+
       const categories = await this.prisma.eventCategory.findMany({
         where: filter,
         skip,
         take: limit,
         orderBy: {
           name: 'asc',
+        },
+        include: {
+          children: true,
         },
       });
 
@@ -82,16 +94,36 @@ export class EventsService {
     try {
       const { isDraft, prices, providers, ...rest } = payload;
 
+      /* const activeSubscription = await this.prisma.transaction.findFirst({
+        where: {
+          userId: user.id,
+          status: TransactionStatus.COMPLETED,
+          pricing: {
+            type: PricingType.EVENT_CREATOR,
+          },
+          expiresAt: {
+            gte: new Date(),
+          },
+        },
+      });
+
+      if (!activeSubscription) {
+        throw new HttpException(
+          'You do not have an active subscription',
+          HttpStatus.BAD_REQUEST,
+        );
+      } */
+
       const _prices =
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-              {
-                name: 'Ticket',
-                amount: 0,
-                description: '',
-              },
-            ]
+            {
+              name: 'Ticket',
+              amount: 0,
+              description: '',
+            },
+          ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -111,8 +143,10 @@ export class EventsService {
         data: {
           ...rest,
           type: payload.type,
+          remainingSeats: rest.capacity,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
+          badge: payload.badge ?? '',
           status,
           ...(_prices.length > 0 && {
             prices: {
@@ -124,13 +158,6 @@ export class EventsService {
               id: category,
             })),
           },
-          ...(_providers.length > 0 && {
-            providers: {
-              connect: _providers.map((provider) => ({
-                id: provider,
-              })),
-            },
-          }),
           postedById: user.id,
         },
         include: {
@@ -139,6 +166,15 @@ export class EventsService {
           postedBy: true,
         },
       });
+
+      if (_providers.length > 0) {
+        await this.prisma.providerOnEvent.createMany({
+          data: _providers.map((provider) => ({
+            providerId: provider,
+            eventId: event.id,
+          })),
+        });
+      }
 
       return event;
     } catch (error) {
@@ -157,6 +193,7 @@ export class EventsService {
         where: { id },
         include: {
           prices: true,
+          providers: true,
         },
       });
 
@@ -176,12 +213,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-              {
-                name: 'Ticket',
-                amount: 0,
-                description: '',
-              },
-            ]
+            {
+              name: 'Ticket',
+              amount: 0,
+              description: '',
+            },
+          ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -237,38 +274,43 @@ export class EventsService {
       }
 
       const status =
-        event.status === EventStatus.CANCELLED
+        event.status === EventStatus.CANCELLED ||
+          (event.status === EventStatus.DRAFT && !payload.isDraft)
           ? EventStatus.PENDING
           : event.status;
 
       const updatedEvent = await this.prisma.event.update({
         where: { id },
         data: {
-          ...rest,
+          name: rest.name,
+          description: rest.description,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
+          startTime: payload.startTime,
+          endTime: payload.endTime,
+          coverPicture: rest.coverPicture,
+          badge: rest.badge,
+          capacity: rest.capacity,
           status,
+          tags: rest.tags,
+          accessType: rest.accessType,
+          visibility: rest.visibility,
           postedById: event.postedById,
-          /* ...(_prices.length > 0 && {
-            prices: {
-              connectOrCreate: _prices.map((price) => ({
-                where: { id: price.id },
-                create: price,
-              })),
-            },
-          }), */
+          addressId: event.addressId,
+          type: payload.type,
+          ...(rest.badge && { badge: rest.badge }),
           categories: {
             connect: payload.categories.map((category) => ({
               id: category,
             })),
-          },
+          } /* 
           ...(_providers.length > 0 && {
             providers: {
               connect: _providers.map((provider) => ({
                 id: provider,
               })),
             },
-          }),
+          }), */,
         },
         include: {
           prices: true,
@@ -276,6 +318,26 @@ export class EventsService {
           postedBy: true,
         },
       });
+
+      if (_providers.length > 0) {
+        const newProviders = _providers.filter(
+          (provider) => !event.providers.find((p) => p.providerId === provider),
+        );
+        const deletedProviders = event.providers
+          .filter((p) => !_providers.includes(p.providerId))
+          .map((p) => p.providerId);
+
+        await this.prisma.providerOnEvent.deleteMany({
+          where: { providerId: { in: deletedProviders } },
+        });
+
+        await this.prisma.providerOnEvent.createMany({
+          data: newProviders.map((provider) => ({
+            providerId: provider,
+            eventId: id,
+          })),
+        });
+      }
 
       return updatedEvent;
     } catch (error) {
@@ -303,6 +365,10 @@ export class EventsService {
           HttpStatus.FORBIDDEN,
         );
       }
+
+      await this.prisma.providerOnEvent.deleteMany({
+        where: { eventId: id },
+      });
 
       await this.prisma.event.delete({
         where: { id },
@@ -332,6 +398,36 @@ export class EventsService {
     }
   }
 
+  async calculateRemainingSeats(event: Event) {
+    const orders = await this.prisma.order.findMany({
+      where: {
+        eventId: event.id,
+        status: OrderStatus.CONFIRMED,
+      },
+      include: {
+        items: {
+          include: {
+            eventPrice: true,
+          },
+        },
+      },
+    });
+
+    const totalSeatsBooked = orders.reduce(
+      (acc, order) =>
+        acc +
+        order.items.reduce(
+          (acc, item) => acc + item.quantity * item.eventPrice.totalSeats,
+          0,
+        ),
+      0,
+    );
+
+    const remainingSeats = event.capacity - totalSeatsBooked;
+
+    return remainingSeats;
+  }
+
   async getEvents(
     query: GetEventsQueryDto,
     user?: User,
@@ -346,6 +442,8 @@ export class EventsService {
         status,
         attendeeId,
         categories,
+        interests,
+        location
       } = query;
 
       const { page, limit, skip } = getPaginationData(query);
@@ -354,8 +452,8 @@ export class EventsService {
 
       if (search) {
         filter.OR = [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
+          { name: { startsWith: search, mode: 'insensitive' } },
+          //{ description: { contains: search, mode: 'insensitive' } },
           { tags: { hasSome: [search] } },
         ];
       }
@@ -420,10 +518,68 @@ export class EventsService {
         }
       }
 
+      if (location) {
+        filter.address = {
+          OR: [
+            {
+              name: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+            {
+              city: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+            {
+              state: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+            {
+              country: {
+                contains: location,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        };
+      }
+
       if (attendeeId) {
         filter.orders = {
           some: {
             userId: attendeeId,
+          },
+        };
+      }
+
+      if (String(interests) === 'true' && user) {
+        const userInterests = await this.prisma.userInterests.findUnique({
+          where: {
+            id: user.id,
+          },
+          include: {
+            interests: {
+              select: {
+                parentId: true,
+              },
+            },
+          },
+        });
+
+        const parentCategories = userInterests?.interests.map(
+          (interest) => interest.parentId,
+        );
+
+        filter.categories = {
+          some: {
+            id: {
+              in: parentCategories,
+            },
           },
         };
       }
@@ -553,8 +709,8 @@ export class EventsService {
     }
   }
 
-  //get event participants paginated
-  async getEventParticipants(
+  //get event orders paginated
+  async getEventOrders(
     id: string,
     query: PaginationQuery,
   ): Promise<PaginatedData<OrderDto>> {
@@ -648,24 +804,40 @@ export class EventsService {
         );
       }
 
-      const totalTicketsSold = (await this.prisma.orderItem.groupBy({
-        by: ['eventPriceId'],
-        _count: true,
-        where: {
-          eventPrice: { eventId: eventId },
-        },
-      })) as any as { eventPriceId: string; _count: number }[];
+      const endDate = new Date(event.endDate);
 
-      const soldOutTicket = items.find((item) =>
-        totalTicketsSold.find(
-          (price) =>
-            price.eventPriceId === item.priceId && item.quantity > price._count,
-        ),
-      );
+      const isPassEvent = endDate < new Date();
 
-      if (soldOutTicket) {
+      if (isPassEvent) {
         throw new HttpException(
-          `Le ticket ${soldOutTicket.priceId} est n'est plus disponible!`,
+          'Event is already passed',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const eventPrices = await this.prisma.eventPrice.findMany({
+        where: {
+          id: {
+            in: items.map((item) => item.priceId),
+          },
+        },
+      });
+
+      //calculate total seats to buy
+      const totalSeatToBuy = items.reduce((acc, item) => {
+        const eventPrice = eventPrices.find(
+          (price) => price.id === item.priceId,
+        );
+        if (!eventPrice) {
+          throw new HttpException('Invalid price id', HttpStatus.BAD_REQUEST);
+        }
+        return acc + item.quantity * eventPrice.totalSeats;
+      }, 0);
+
+      //check the remaining seats can fit the total seats to buy
+      if (event.remainingSeats < totalSeatToBuy) {
+        throw new HttpException(
+          'Event seats are not enough',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -691,18 +863,6 @@ export class EventsService {
           },
         }));
 
-      const eventPrices = await this.prisma.eventPrice.findMany({
-        where: {
-          id: {
-            in: items.map((item) => item.priceId),
-          },
-        },
-      });
-
-      if (eventPrices.length !== items.length) {
-        throw new HttpException('Invalid price ids', HttpStatus.BAD_REQUEST);
-      }
-
       const orderItems = items.map((item) => ({
         quantity: item.quantity,
         unitPrice:
@@ -716,6 +876,14 @@ export class EventsService {
       );
 
       const isPaidEvent = event.accessType === EventAccess.PAID;
+      const totalQty = orderItems.reduce((acc, item) => acc + item.quantity, 0);
+
+      if (!isPaidEvent && totalQty > 3) {
+        throw new HttpException(
+          'You cannot buy more than 3 tickets at once',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       if (isPaidEvent && totalAmount === 0) {
         throw new HttpException('Invalid amount', HttpStatus.BAD_REQUEST);
@@ -761,6 +929,7 @@ export class EventsService {
             firstname: user.firstName,
             lastname: user.lastName,
           },
+          user,
         });
 
         //this.logger.log({ txn });
@@ -790,5 +959,64 @@ export class EventsService {
       this.logger.error(error);
       throwServerError(error);
     }
+  }
+
+  //get event participants paginated
+  async getEventParticipants(
+    id: string,
+    query: PaginationQuery,
+  ): Promise<PaginatedData<ParticipantDto>> {
+    const { page, limit, skip } = getPaginationData(query);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        orders: {
+          some: { eventId: id },
+        },
+      },
+      skip,
+      take: limit,
+    });
+
+    const total = await this.prisma.user.count({
+      where: {
+        orders: {
+          some: { eventId: id },
+        },
+      },
+    });
+
+    const p = users.map(async (user) => {
+      const orders = await this.prisma.order.findMany({
+        where: { userId: user.id, eventId: id, status: OrderStatus.CONFIRMED },
+        include: { items: true },
+      });
+
+      const totalOrders = orders.length;
+      const totalTickets = orders.reduce((acc, order) => {
+        return acc + order.items.reduce((acc, item) => {
+          return acc + item.quantity;
+        }, 0);
+      }, 0);
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        totalOrders,
+        totalTickets,
+      }
+    });
+
+
+    const participants = await Promise.all(p);
+
+    return {
+      items: participants,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }

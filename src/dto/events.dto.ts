@@ -26,6 +26,13 @@ export class EventCategoryQueryDto extends PaginationQueryDto {
   @IsString()
   @IsOptional()
   search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the event category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class EventCategoryDto {
@@ -99,8 +106,8 @@ export class EventBaseDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  badge: string;
+  @IsOptional()
+  badge?: string;
 
   @ApiProperty()
   @IsString()
@@ -231,6 +238,11 @@ export class EventDto extends EventBaseDto {
   @IsOptional()
   ticketsSold?: number;
 
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  remainingSeats: number;
+
   @ApiProperty({ type: [EventPriceSoldDto] })
   @IsArray()
   @ValidateNested({ each: true })
@@ -275,15 +287,22 @@ export class UpdateEventDto extends EventBaseDto {
   @IsOptional()
   prices: EventPriceUpdateDtoPayload[];
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], required: false })
   @IsArray()
+  @IsString({ each: true })
   @IsOptional()
   categories: string[];
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], required: false })
   @IsArray()
+  @IsString({ each: true }) // or @IsUUID("4", { each: true }) for UUIDs
   @IsOptional()
-  providers: string[];
+  providers?: string[];
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  isDraft?: boolean;
 }
 
 export enum EventQueryStatus {
@@ -345,6 +364,16 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @Type(() => String)
   categories?: string;
+
+  @ApiPropertyOptional({ description: 'Include interests' })
+  @IsBoolean()
+  @IsOptional()
+  interests?: boolean;
+
+  @ApiPropertyOptional({ description: 'Location of the event' })
+  @IsString()
+  @IsOptional()
+  location?: string;
 }
 
 export class PopulatedEventDto extends EventDto {
@@ -402,6 +431,83 @@ export class UpdateEventCategoryDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Parent ID of the event category',
+  })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
-export class GetEventOrdersQueryDto extends PaginationQueryDto {}
+export class GetEventOrdersQueryDto extends PaginationQueryDto { }
+
+
+
+export class GetEventsParticipantsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search term for participants' })
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+
+  @ApiPropertyOptional({ description: 'Event ID' })
+  @IsString()
+  @IsNotEmpty()
+  eventId: string;
+}
+
+export class ParticipantDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  totalOrders: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalTickets: number;
+}
+
+export class GetEventsParticipantsResponseDto {
+  @ApiProperty({ type: [ParticipantDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParticipantDto)
+  items: ParticipantDto[];
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  total: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  page: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  limit: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPages: number;
+}

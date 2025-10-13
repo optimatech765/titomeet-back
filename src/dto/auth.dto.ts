@@ -97,3 +97,22 @@ export class ResetPasswordResponseDto {
   @IsNotEmpty()
   message: string;
 }
+
+export class UpdatePasswordPayloadDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  oldPassword: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+}
+
+export class UpdatePasswordResponseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}

@@ -12,6 +12,7 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { OrderStatus, PaymentStatus } from '@optimatech88/titomeet-shared-lib';
 import { UserDto } from './users.dto';
+import { EventDto } from './events.dto';
 
 export class OrderItemPayloadDto {
   @ApiProperty()
@@ -56,6 +57,34 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   callbackUrl: string;
+}
+
+
+export class OrderItemDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  orderId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  eventPriceId: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  unitPrice: number;
 }
 
 export class OrderDto {
@@ -103,34 +132,20 @@ export class OrderDto {
   @IsObject()
   @IsOptional()
   user: UserDto | null;
+
+  @ApiProperty({ type: EventDto })
+  @IsObject()
+  @IsOptional()
+  event?: EventDto | null;
+
+  @ApiProperty({ type: [OrderItemDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  @IsOptional()
+  items: OrderItemDto[];
 }
 
-export class OrderItemDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  orderId: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  eventPriceId: string;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  quantity: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  unitPrice: number;
-}
 
 export class TransactionDto {
   @ApiProperty()
@@ -186,6 +201,35 @@ export class OrderEventResponseDto {
 }
 
 export class GetEventOrdersResponseDto {
+  @ApiProperty({ type: [OrderDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderDto)
+  items: OrderDto[];
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  total: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  page: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  limit: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  totalPages: number;
+}
+
+
+export class GetOrdersResponseDto {
   @ApiProperty({ type: [OrderDto] })
   @IsArray()
   @ValidateNested({ each: true })

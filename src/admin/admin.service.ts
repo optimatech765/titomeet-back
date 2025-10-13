@@ -10,13 +10,16 @@ import {
   UserRole,
   Provider,
   OrderStatus,
+  Pricing,
 } from '@optimatech88/titomeet-shared-lib';
 import {
   AdminStatsDto,
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
   EventStatsDto,
+  GetFeedbacksQueryDto,
   GetUsersQueryDto,
+  PricingBaseDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import { UpdateEventCategoryDto } from 'src/dto/events.dto';
@@ -25,11 +28,18 @@ import {
   ValidateProviderDto,
 } from 'src/dto/providers.dto';
 import { throwServerError } from 'src/utils';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventValidation } from 'src/events/events';
+import { EVENT_EVENTS } from 'src/utils/events';
+import { GetNewsletterSubscriptions } from 'src/dto/mail.dto';
 
 @Injectable()
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) { }
 
   //EVENT CATEGORIES
   async createEventCategory(
@@ -101,6 +111,12 @@ export class AdminService {
           });
         }
       }
+
+      const eventConfimation = new EventValidation();
+      eventConfimation.eventId = id;
+      eventConfimation.validated =
+        updateEventStatusDto.status === EventStatus.PUBLISHED;
+      this.eventEmitter.emit(EVENT_EVENTS.EVENT_VALIDATED, eventConfimation);
 
       return updatedEvent;
     } catch (error) {
@@ -288,6 +304,125 @@ export class AdminService {
         totalPublishedEvents,
         totalDraftEvents,
         totalRejectedEvents,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //newsletter
+  async getNewsletterSubscriptions(query: GetNewsletterSubscriptions) {
+    try {
+      const { search } = query;
+      const { skip, page, limit } = getPaginationData(query);
+
+      const where = {} as any;
+
+      if (search) {
+        where.OR = [{ email: { contains: search, mode: 'insensitive' } }];
+      }
+
+      const subscriptions = await this.prisma.newsletter.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      const total = await this.prisma.newsletter.count({
+        where,
+      });
+
+      return {
+        items: subscriptions,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  async createPricing(createPricingDto: PricingBaseDto): Promise<Pricing> {
+    try {
+      const pricing = await this.prisma.pricing.create({
+        data: createPricingDto,
+      });
+      return pricing;
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  async updatePricing(
+    id: string,
+    updatePricingDto: PricingBaseDto,
+  ): Promise<Pricing> {
+    try {
+      const pricing = await this.prisma.pricing.update({
+        where: { id },
+        data: updatePricingDto,
+      });
+      return pricing;
+    } catch (error) {
+      this.logger.error(error);
+      return throwServerError(error);
+    }
+  }
+
+  //feedback
+  async getFeedbacks(query: GetFeedbacksQueryDto) {
+    try {
+      const { search, categoryId, userId, email } = query;
+      const { skip, page, limit } = getPaginationData(query);
+
+      const where = {} as any;
+
+      if (search) {
+        where.OR = [
+          { comment: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } }
+        ];
+      }
+
+      if (categoryId) {
+        where.categoryId = categoryId;
+      }
+
+      if (userId) {
+        where.userId = userId;
+      }
+
+      if (email) {
+        where.email = email;
+      }
+
+      const feedbacks = await this.prisma.feedback.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      const total = await this.prisma.feedback.count({
+        where,
+      });
+
+      return {
+        items: feedbacks,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
       this.logger.error(error);

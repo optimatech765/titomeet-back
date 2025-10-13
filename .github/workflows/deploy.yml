@@ -2,13 +2,15 @@ name: Node.js CI/CD with Docker
 
 on:
   push:
-    branches: 
-      - "main"
-      - "dev"
+    branches:
+      - 'main'
+      - 'dev'
+      - 'preprod'
   pull_request:
-    branches: 
-      - "main"
-      - "dev"
+    branches:
+      - 'main'
+      - 'dev'
+      - 'preprod'
 
 jobs:
   build-and-deploy:
@@ -27,60 +29,80 @@ jobs:
       APP_PORT: ${{ vars.APP_PORT }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ env.DOCKERHUB_USERNAME }}
-        password: ${{ env.DOCKERHUB_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_PASSWORD }}
 
-    - name: Determine Image Tag Based on Branch
-      run: |
-        if [[ "${{ github.ref_name }}" == "main" ]]; then
-          echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-          echo "CONTAINER_NAME=titomeet-backend" >> $GITHUB_ENV
-          echo "APP_PORT=5000" >> $GITHUB_ENV
-        elif [[ "${{ github.ref_name }}" == "dev" ]]; then
-          echo "IMAGE_TAG=dev" >> $GITHUB_ENV
-          echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
-          echo "APP_PORT=5001" >> $GITHUB_ENV
-        fi
+      - name: Determine Environment Based on Branch
+        id: determine-env
+        run: |
+          # Get the base ref for pull requests or use the branch name for pushes
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="${{ github.base_ref }}"
+          else
+            BASE_REF="${{ github.ref_name }}"
+          fi
 
-    - name: Debug Variables
-      run: |
-        echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
-        echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
-        echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
-        echo "APP_PORT=${{ env.APP_PORT }}"
+          echo "Base ref: $BASE_REF"
 
-    - name: Build and Push Docker Image
-      run: |
-        docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG .
-        docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+          # Handle merge scenarios - check if we're targeting main branch
+          if [[ "$BASE_REF" == "main" ]] || [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "IMAGE_TAG=prod" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=titomeet-backend-prod" >> $GITHUB_ENV
+            echo "APP_PORT=5001" >> $GITHUB_ENV
+            echo "ENV_FILE=.env" >> $GITHUB_ENV
+          elif [[ "$BASE_REF" == "dev" ]] || [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "IMAGE_TAG=dev" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=titomeet-backend-dev" >> $GITHUB_ENV
+            echo "APP_PORT=5002" >> $GITHUB_ENV
+            echo "ENV_FILE=.env.dev" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=unknown" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=titomeet-backend-unknown" >> $GITHUB_ENV
+            echo "APP_PORT=5000" >> $GITHUB_ENV
+            echo "ENV_FILE=.env" >> $GITHUB_ENV
+          fi
 
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v0.1.1
-      with:
-        host: ${{ env.VPS_HOST }}
-        username: ${{ env.VPS_USER }}
-        key: ${{ env.VPS_PRIVATE_KEY }}
-        script: |
+      - name: Debug Variables
+        run: |
+          echo "DOCKERHUB_USERNAME=${{ env.DOCKERHUB_USERNAME }}"
+          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
+          echo "CONTAINER_NAME=${{ env.CONTAINER_NAME }}"
+          echo "APP_PORT=${{ env.APP_PORT }}"
+          echo "ENV_FILE=${{ env.ENV_FILE }}"
+          echo "IMAGE_TAG=${{ env.IMAGE_TAG }}"
 
-          # Pull latest image from Docker Hub
-          docker pull ${{ env.DOCKERHUB_USERNAME }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
-          
-          # Stop and remove old container if exists
-          docker stop ${{ env.CONTAINER_NAME }} || true
-          docker rm ${{ env.CONTAINER_NAME }} || true
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG .
+          docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
 
-          # Navigate to the deploy path
-          cd ${{ env.DEPLOY_PATH }}
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.1
+        with:
+          host: ${{ env.VPS_HOST }}
+          username: ${{ env.VPS_USER }}
+          key: ${{ env.VPS_PRIVATE_KEY }}
+          script: |
 
-          # Run the new container with environment variables
-          docker run -d --name ${{env.CONTAINER_NAME}} --env-file .env -p ${{env.APP_PORT}}:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
-          # Clean up old Docker images
-          docker image prune -f
+            # Pull latest image from Docker Hub
+            docker pull ${{ env.DOCKERHUB_USERNAME }}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+
+            # Stop and remove old container if exists
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
+
+            # Navigate to the deploy path
+            cd ${{ env.DEPLOY_PATH }}
+
+            # Run the new container with environment variables
+            docker run -d --name ${{env.CONTAINER_NAME}} --env-file ${{env.ENV_FILE}} -p ${{env.APP_PORT}}:5000 ${{env.DOCKERHUB_USERNAME}}/${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+            # Clean up old Docker images
+            docker image prune -f

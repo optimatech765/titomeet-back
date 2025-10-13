@@ -21,7 +21,11 @@ import {
   CreateEventCategoryDto,
   CreateProviderCategoryDto,
   EventStatsDto,
+  GetFeedbacksQueryDto,
+  GetFeedbacksResponseDto,
   GetUsersQueryDto,
+  PricingBaseDto,
+  PricingDto,
   UpdateEventStatusDto,
 } from 'src/dto/admin.dto';
 import {
@@ -31,10 +35,11 @@ import {
   ValidateProviderDto,
 } from 'src/dto/providers.dto';
 import { UserDto } from 'src/dto/users.dto';
+import { GetNewsletterSubscriptions, NewsLetterDto } from 'src/dto/mail.dto';
 
 @Controller('api/admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService) { }
 
   @Get('stats')
   @UseGuards(AdminAuthGuard)
@@ -142,5 +147,49 @@ export class AdminController {
   })
   getUsers(@Query() query: GetUsersQueryDto) {
     return this.adminService.getUsers(query);
+  }
+
+  @Get('newsletter/subscriptions')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get newsletter subscriptions',
+    type: NewsLetterDto,
+  })
+  getNewsletterSubscriptions(@Query() query: GetNewsletterSubscriptions) {
+    return this.adminService.getNewsletterSubscriptions(query);
+  }
+
+  @Post('pricings')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Create pricing',
+    type: PricingDto,
+  })
+  createPricing(@Body() payload: PricingBaseDto) {
+    return this.adminService.createPricing(payload);
+  }
+
+  @Put('pricings/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Update pricing',
+    type: PricingDto,
+  })
+  updatePricing(@Param('id') id: string, @Body() payload: PricingBaseDto) {
+    return this.adminService.updatePricing(id, payload);
+  }
+
+  @Get('feedbacks')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Get feedbacks',
+    type: GetFeedbacksResponseDto,
+  })
+  getFeedbacks(@Query() query: GetFeedbacksQueryDto) {
+    return this.adminService.getFeedbacks(query);
   }
 }
