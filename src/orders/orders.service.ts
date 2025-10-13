@@ -10,7 +10,7 @@ import { throwServerError } from 'src/utils';
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async getOrderByReference(reference: string /* , user?: User */) {
+  async getOrderByReference(reference: string) {
     try {
       const order = await this.prisma.order.findFirst({
         where: {
