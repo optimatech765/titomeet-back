@@ -110,6 +110,7 @@ export class EventsService {
       const event = await this.prisma.event.create({
         data: {
           ...rest,
+          type: payload.type,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
           status,

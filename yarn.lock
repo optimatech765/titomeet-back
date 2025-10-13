@@ -1550,10 +1550,10 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
-"@optimatech88/titomeet-shared-lib@^1.0.23":
-  version "1.0.23"
-  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.23.tgz#fcde7973ea45a24f93a4990fc31c5ac054645778"
-  integrity sha512-aG/Ck1NcmJaPMPSfVq0OzRduNc0Fu5MFwxpRiF8/RV0ufNz5JUXid6SbLmC7P+MEI0Sfvq+O0PWcDgtwTyjkyw==
+"@optimatech88/titomeet-shared-lib@^1.0.50":
+  version "1.0.50"
+  resolved "https://registry.yarnpkg.com/@optimatech88/titomeet-shared-lib/-/titomeet-shared-lib-1.0.50.tgz#d3f33426763eff34227a5cdab89d84fe17bcc42b"
+  integrity sha512-MO6iW27NaAHrhdnURFISUYHSgfgrDsBt4jPcEqIzSSl3nKIHJCdIJJ3GCnuuFY3q+xlB3loS9LdMORprNR+NBA==
   dependencies:
     "@faker-js/faker" "^8.4.1"
     "@keyv/redis" "^4.2.0"
@@ -1561,7 +1561,7 @@
     "@nestjs/config" "^3.2.3"
     "@nestjs/core" "^10.4.1"
     "@nestjs/jwt" "^10.2.0"
-    "@prisma/client" "^6.3.1"
+    "@prisma/client" "^6.13.0"
     cacheable "^1.8.8"
     express "^4.19.2"
     nestjs-seeder "^0.3.2"
@@ -1590,10 +1590,10 @@
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.1.1.tgz#1ec17e2edbec25c8306d424ecfbf13c7de1aaa31"
   integrity sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==
 
-"@prisma/client@^6.3.1":
-  version "6.4.1"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.4.1.tgz#2666796c862e71eb2a6f39e30b192236893e07d3"
-  integrity sha512-A7Mwx44+GVZVexT5e2GF/WcKkEkNNKbgr059xpr5mn+oUm2ZW1svhe+0TRNBwCdzhfIZ+q23jEgsNPvKD9u+6g==
+"@prisma/client@^6.13.0":
+  version "6.17.1"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.17.1.tgz#308f3bf7d050316578aa7fd6cd9deca671561f04"
+  integrity sha512-zL58jbLzYamjnNnmNA51IOZdbk5ci03KviXCuB0Tydc9btH2kDWsi1pQm2VecviRTM7jGia0OPPkgpGnT3nKvw==
 
 "@prisma/debug@6.4.1":
   version "6.4.1"

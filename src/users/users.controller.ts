@@ -15,7 +15,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User data',
-    type: UserDto
+    type: UserDto,
   })
   getAuthUser(@Request() req: IRequest) {
     return this.usersService.getUserData(req.user);
@@ -26,7 +26,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User data',
-    type: UserDto
+    type: UserDto,
   })
   updateUser(@Request() req: IRequest, @Body() body: UpdateUserDto) {
     return this.usersService.updateUser(req.user, body);

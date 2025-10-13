@@ -115,19 +115,16 @@ export class AddressesService {
                 mode: 'insensitive',
               },
             },
-
           ],
         }),
       } as any;
 
       if (search) {
-        
       }
 
       const total = await this.prisma.address.count({
         where: {
           ...params,
-          
         },
       });
 
@@ -139,7 +136,6 @@ export class AddressesService {
           : await this.prisma.address.findMany({
               where: {
                 ...params,
-                
               },
               skip,
               take: limit,

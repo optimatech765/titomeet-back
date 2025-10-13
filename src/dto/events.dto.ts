@@ -81,6 +81,11 @@ export class EventPriceDto extends EventPriceDtoPayload {
   eventId: string;
 }
 
+export enum EventType {
+  IN_PERSON = 'IN_PERSON',
+  ONLINE = 'ONLINE',
+}
+
 export class EventBaseDto {
   @ApiProperty()
   @IsString()
@@ -146,6 +151,21 @@ export class EventBaseDto {
   @IsString()
   @IsNotEmpty()
   endTime: string;
+
+  @ApiProperty({ enum: EventType })
+  @IsEnum(EventType)
+  @IsNotEmpty()
+  type: EventType;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  onlineLink?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  onlinePassword?: string;
 }
 
 export class EventPriceSoldDto {
