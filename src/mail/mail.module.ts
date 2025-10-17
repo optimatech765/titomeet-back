@@ -8,4 +8,4 @@ import { MailListener } from './listeners';
   providers: [MailService, MailListener],
   exports: [MailService],
 })
-export class MailModule { }
+export class MailModule {}

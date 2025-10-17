@@ -11,7 +11,6 @@ export const throwServerError = (error: any) => {
   );
 };
 
-
 export const getExpiresAt = (duration: PricingDuration): Date => {
   switch (duration) {
     case PricingDuration.WEEKLY:

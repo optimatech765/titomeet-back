@@ -8,7 +8,7 @@ import { OrderConfirmationEvent } from 'src/orders/events';
 @Injectable()
 export class OrderListener {
   private logger = new Logger('OrderListener');
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   @OnEvent(ORDER_EVENTS.ORDER_CONFIRMED)
   async sendOrderConfirmationMail(confirmationEvent: OrderConfirmationEvent) {

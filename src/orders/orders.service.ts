@@ -1,14 +1,15 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { getPaginationData, PrismaService, User } from '@optimatech88/titomeet-shared-lib';
+  getPaginationData,
+  PrismaService,
+  User,
+} from '@optimatech88/titomeet-shared-lib';
 import { GetEventOrdersQueryDto } from 'src/dto/events.dto';
 import { throwServerError } from 'src/utils';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getOrderByReference(reference: string /* , user?: User */) {
     try {
@@ -44,7 +45,7 @@ export class OrdersService {
       const { page, limit } = getPaginationData(query);
       const where = {
         userId: user.id,
-      }
+      };
       const orders = await this.prisma.order.findMany({
         where,
         include: {
@@ -55,7 +56,7 @@ export class OrdersService {
               unitPrice: true,
             },
           },
-          event: true
+          event: true,
         },
         skip: (page - 1) * limit,
         take: limit,

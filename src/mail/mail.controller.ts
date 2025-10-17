@@ -6,23 +6,23 @@ import { NewsLetterDto } from '../dto/mail.dto';
 @ApiTags('Mail')
 @Controller('api/mail')
 export class MailController {
-    constructor(private readonly mailService: MailService) { }
+  constructor(private readonly mailService: MailService) {}
 
-    @Post('newsletter/subscribe')
-    @ApiOperation({ summary: 'Subscribe to newsletter' })
-    @ApiResponse({
-        status: 201,
-        description: 'Successfully subscribed to newsletter'
-    })
-    @ApiResponse({
-        status: 400,
-        description: 'Bad request - invalid email'
-    })
-    @ApiResponse({
-        status: 409,
-        description: 'Email already subscribed'
-    })
-    async subscribeToNewsletter(@Body() newsletterDto: NewsLetterDto) {
-        return this.mailService.subscribeToNewsletter(newsletterDto);
-    }
-} 
+  @Post('newsletter/subscribe')
+  @ApiOperation({ summary: 'Subscribe to newsletter' })
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully subscribed to newsletter',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - invalid email',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Email already subscribed',
+  })
+  async subscribeToNewsletter(@Body() newsletterDto: NewsLetterDto) {
+    return this.mailService.subscribeToNewsletter(newsletterDto);
+  }
+}

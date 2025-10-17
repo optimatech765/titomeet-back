@@ -6,4 +6,4 @@ import { OrderListener } from './listeners';
   controllers: [OrdersController],
   providers: [OrdersService, OrderListener],
 })
-export class OrdersModule { }
+export class OrdersModule {}

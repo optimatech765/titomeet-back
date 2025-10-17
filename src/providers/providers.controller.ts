@@ -32,7 +32,7 @@ import { IRequest } from 'src/types';
 
 @Controller('api/providers')
 export class ProvidersController {
-  constructor(private readonly providersService: ProvidersService) { }
+  constructor(private readonly providersService: ProvidersService) {}
 
   @Post()
   @UseGuards(AuthGuard)

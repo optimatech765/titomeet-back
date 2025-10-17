@@ -10,7 +10,6 @@ export const ORDER_EVENTS = {
   ORDER_CONFIRMED: 'ORDER_CONFIRMED',
 };
 
-
 export const EVENT_EVENTS = {
   EVENT_VALIDATED: 'EVENT_VALIDATED',
 };

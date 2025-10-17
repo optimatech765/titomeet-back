@@ -18,7 +18,7 @@ import { SubscriptionPayloadDto } from 'src/dto/transaction.dto';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async getUserData(user: User) {
     try {
@@ -38,7 +38,7 @@ export class UsersService {
       const formattedUser = {
         ...userData,
         isProvider: !!provider,
-      }
+      };
       return formattedUser;
     } catch (error) {
       this.logger.error(error);
@@ -188,16 +188,16 @@ export class UsersService {
         take: limit,
         include: user
           ? {
-            transactions: {
-              where: {
-                userId: user.id,
-                status: TransactionStatus.COMPLETED,
-                expiresAt: {
-                  gte: new Date(),
-                }
+              transactions: {
+                where: {
+                  userId: user.id,
+                  status: TransactionStatus.COMPLETED,
+                  expiresAt: {
+                    gte: new Date(),
+                  },
+                },
               },
-            },
-          }
+            }
           : undefined,
       });
 

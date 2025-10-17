@@ -13,7 +13,10 @@ import {
 import { PaginationQueryDto } from './users.dto';
 import { Type } from 'class-transformer';
 import { AddressDto } from './address.dto';
-import { ProviderOnEventStatus, ProviderStatus } from '@optimatech88/titomeet-shared-lib';
+import {
+  ProviderOnEventStatus,
+  ProviderStatus,
+} from '@optimatech88/titomeet-shared-lib';
 
 export class ProviderCategoryDto {
   @ApiProperty()
@@ -127,7 +130,7 @@ export class ProviderDto extends ProviderBaseDto {
   address: AddressDto;
 }
 
-export class CreateProviderDto extends ProviderBaseDto { }
+export class CreateProviderDto extends ProviderBaseDto {}
 
 export class GetProvidersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for providers' })
@@ -138,7 +141,7 @@ export class GetProvidersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Filter by provider status  ' })
   @IsEnum(ProviderStatus)
   @IsOptional()
-  status?: ProviderStatus
+  status?: ProviderStatus;
 
   @ApiPropertyOptional({ description: 'Filter by provider category' })
   @IsString()
@@ -273,7 +276,6 @@ export class ProviderStatsDto {
   @IsNotEmpty()
   totalRejected: number;
 }
-
 
 export class ProviderOnEventDto {
   @ApiProperty()

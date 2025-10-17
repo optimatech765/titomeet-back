@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { ForgotPasswordEvent, SendNewsletterEvent, SendNotificationByMailEvent } from '../events';
+import {
+  ForgotPasswordEvent,
+  SendNewsletterEvent,
+  SendNotificationByMailEvent,
+} from '../events';
 
 import { MailService } from '../mail.service';
 import { MAIL_EVENTS, ORDER_EVENTS } from 'src/utils/events';
@@ -18,7 +22,7 @@ export class MailListener {
   constructor(
     private mailService: MailService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   @OnEvent(MAIL_EVENTS.FORGOT_PASSWORD)
   async sendForgotPasswordMail(event: ForgotPasswordEvent) {
@@ -146,7 +150,6 @@ export class MailListener {
         subject,
         html,
       });
-
     } catch (error) {
       this.logger.error('Error sending forgot password mail', error);
     }

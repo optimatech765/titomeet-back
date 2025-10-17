@@ -92,6 +92,123 @@ export class AddressesService {
     }
   }
 
+  /**
+   * Fetch addresses from Google Places API and store in DB if not existing
+   */
+  async getGoogleAddresses(query: string): Promise<Address[]> {
+    try {
+      const apiKey = appConfig().googleMapsApiKey;
+      this.logger.log(`Using Google Maps API key ${apiKey}`);
+
+      // 1️⃣ Fetch predictions from Google Places Autocomplete
+      const { data: predictionsData } = await axios.get(
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json',
+        {
+          params: {
+            input: query,
+            key: apiKey,
+            language: 'fr',
+            components: 'country:BJ', // filter to Benin
+          },
+        },
+      );
+
+      if (predictionsData.status !== 'OK') {
+        this.logger.warn(
+          `Google Places API returned status ${predictionsData.status}`,
+        );
+        return [];
+      }
+
+      const predictions = predictionsData.predictions;
+
+      // 2️⃣ Get detailed information for each place
+      const detailedAddresses = await Promise.all(
+        predictions.map(async (prediction: any) => {
+          const placeId = prediction.place_id;
+          const { data: detailsData } = await axios.get(
+            'https://maps.googleapis.com/maps/api/place/details/json',
+            {
+              params: {
+                place_id: placeId,
+                key: apiKey,
+                language: 'fr',
+              },
+            },
+          );
+
+          const result = detailsData.result;
+          if (!result) return null;
+
+          const components = this.extractAddressComponents(
+            result.address_components,
+          );
+          return {
+            name: result.formatted_address,
+            line2: result.name,
+            city: components.city,
+            country: components.country,
+            state: components.state,
+            postalCode: components.postalCode,
+            countryCode: components.countryCode,
+            latitude: result.geometry?.location?.lat ?? null,
+            longitude: result.geometry?.location?.lng ?? null,
+            type: result.types?.[0] ?? 'unknown',
+          };
+        }),
+      );
+
+      const results = detailedAddresses.filter(Boolean);
+
+      // 3️⃣ Save new addresses to DB
+      const addressNames = results.map((r) => r.name);
+      const existingAddresses = await this.prisma.address.findMany({
+        where: { name: { in: addressNames } },
+      });
+
+      const existingNames = existingAddresses.map((a) => a.name);
+
+      const resultsToSave = results.filter(
+        (r) => !existingNames.includes(r.name),
+      );
+
+      this.logger.log(`Saving ${resultsToSave.length} new addresses...`);
+
+      if (resultsToSave.length > 0) {
+        await this.prisma.address.createMany({ data: resultsToSave });
+      }
+
+      const savedAddresses = await this.prisma.address.findMany({
+        where: { name: { in: resultsToSave.map((r) => r.name) } },
+      });
+
+      return savedAddresses;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Failed to fetch Google addresses',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Helper to extract structured fields from Google’s address_components array
+   */
+  private extractAddressComponents(components: any[]) {
+    const get = (type: string) =>
+      components.find((c) => c.types.includes(type))?.long_name ?? '';
+
+    return {
+      city: get('locality') || get('administrative_area_level_2'),
+      state: get('administrative_area_level_1'),
+      country: get('country'),
+      countryCode:
+        components.find((c) => c.types.includes('country'))?.short_name ?? '',
+      postalCode: get('postal_code'),
+    };
+  }
+
   //get address list
   async find(query: any): Promise<PaginatedData<Address>> {
     try {
@@ -115,19 +232,16 @@ export class AddressesService {
                 mode: 'insensitive',
               },
             },
-
           ],
         }),
       } as any;
 
       if (search) {
-        
       }
 
       const total = await this.prisma.address.count({
         where: {
           ...params,
-          
         },
       });
 
@@ -135,11 +249,10 @@ export class AddressesService {
 
       const addresses =
         page === 1 && total < 2 && search
-          ? await this.getGeoapifyAddresses(search)
+          ? await this.getGoogleAddresses(search)
           : await this.prisma.address.findMany({
               where: {
                 ...params,
-                
               },
               skip,
               take: limit,

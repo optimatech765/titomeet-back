@@ -39,7 +39,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   //EVENT CATEGORIES
   async createEventCategory(
@@ -388,7 +388,7 @@ export class AdminService {
       if (search) {
         where.OR = [
           { comment: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } }
+          { email: { contains: search, mode: 'insensitive' } },
         ];
       }
 

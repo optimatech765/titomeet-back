@@ -184,7 +184,6 @@ export class GetUsersResponseDto {
   totalPages: number;
 }
 
-
 export class PricingBaseDto {
   @ApiProperty({
     description: 'Title of the pricing',
@@ -269,7 +268,6 @@ export class GetPricingsQueryDto extends PaginationQueryDto {
   active?: boolean;
 }
 
-
 export class GetPricingsResponseDto {
   @ApiProperty({ type: [PricingDto] })
   @IsArray()
@@ -327,7 +325,6 @@ export class GetFeedbacksQueryDto extends PaginationQueryDto {
   @IsOptional()
   email?: string;
 }
-
 
 export class GetFeedbacksResponseDto {
   @ApiProperty({ type: [FeedbackDto] })
