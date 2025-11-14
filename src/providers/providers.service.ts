@@ -31,7 +31,7 @@ import { GetEventsQueryDto } from 'src/dto/events.dto';
 @Injectable()
 export class ProvidersService {
   private readonly logger = new Logger(ProvidersService.name);
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getProviderCategories(
     query: ProviderCategoryQueryDto,
@@ -240,7 +240,6 @@ export class ProvidersService {
         );
       }
 
-
       const where: Prisma.ProviderOnEventWhereInput = {
         ...(providerId ? { providerId } : { provider: { userId: user.id } }),
       };
@@ -270,10 +269,7 @@ export class ProvidersService {
     }
   }
 
-  async getEventsForProvider(
-    user: User,
-    query: GetProviderEventsQueryDto,
-  ) {
+  async getEventsForProvider(user: User, query: GetProviderEventsQueryDto) {
     try {
       const { providerId, status } = query;
       const { skip, limit, page } = getPaginationData(query);

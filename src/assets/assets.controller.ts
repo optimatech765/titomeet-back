@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import {
   DeleteAssetsDto,
@@ -8,6 +17,7 @@ import {
 } from 'src/dto/assets.dto';
 import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { ApiResponse } from '@nestjs/swagger';
+import { Response } from 'express';
 
 @Controller('api/assets')
 export class AssetsController {
@@ -33,5 +43,10 @@ export class AssetsController {
   })
   deleteAssets(@Body() payload: DeleteAssetsDto) {
     return this.assetsService.deleteAssets(payload);
+  }
+
+  @Get('proxy')
+  getImage(@Query('url') imageUrl: string, @Res() res: Response) {
+    return this.assetsService.getImage(imageUrl, res);
   }
 }

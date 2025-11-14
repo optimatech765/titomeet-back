@@ -10,7 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard, OptionalAuthGuard } from '@optimatech88/titomeet-shared-lib';
+import {
+  AuthGuard,
+  OptionalAuthGuard,
+} from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
 import {
   FeedbackBaseDto,
@@ -23,11 +26,14 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { UserDto } from '../dto/users.dto';
 import { GetPricingsQueryDto, GetPricingsResponseDto } from 'src/dto/admin.dto';
-import { SubscriptionPayloadDto, TransactionDto } from 'src/dto/transaction.dto';
+import {
+  SubscriptionPayloadDto,
+  TransactionDto,
+} from 'src/dto/transaction.dto';
 
 @Controller('api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
   @UseGuards(AuthGuard)
@@ -100,7 +106,6 @@ export class UsersController {
   getPricings(@Query() query: GetPricingsQueryDto, @Request() req: any) {
     return this.usersService.getPricings(query, req.user);
   }
-
 
   @Post('feedbacks')
   @UseGuards(OptionalAuthGuard)

@@ -39,7 +39,7 @@ import { GetNewsletterSubscriptions, NewsLetterDto } from 'src/dto/mail.dto';
 
 @Controller('api/admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) { }
+  constructor(private readonly adminService: AdminService) {}
 
   @Get('stats')
   @UseGuards(AdminAuthGuard)

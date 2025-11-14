@@ -4,6 +4,6 @@ import { FedapayService } from 'src/fedapay/fedapay.service';
 import { TransactionsController } from './transactions.controller';
 @Module({
   controllers: [TransactionsController],
-  providers: [TransactionsService, FedapayService]
+  providers: [TransactionsService, FedapayService],
 })
-export class TransactionsModule { }
+export class TransactionsModule {}

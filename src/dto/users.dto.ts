@@ -135,7 +135,6 @@ export class UpdateUserStatusDto {
   status: UserStatus;
 }
 
-
 export class UserInterestDtoPayload {
   @ApiProperty({ type: [String] })
   @IsArray()

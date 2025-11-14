@@ -1,4 +1,4 @@
-import { NotificationDto } from "src/dto/notifications.dto";
+import { NotificationDto } from 'src/dto/notifications.dto';
 
 export class ForgotPasswordEvent {
   email: string;

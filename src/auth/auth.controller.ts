@@ -29,7 +29,7 @@ import { Response } from 'express';
 
 @Controller('')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   //signup
   @Post('api/auth/signup')
@@ -100,7 +100,7 @@ export class AuthController {
 
   @Get('auth/google/login')
   @UseGuards(GoogleAuthGuard)
-  googleLogin() { }
+  googleLogin() {}
 
   @Get('auth/google/callback')
   @UseGuards(GoogleAuthGuard)

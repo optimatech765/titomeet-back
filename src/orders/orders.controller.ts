@@ -18,7 +18,7 @@ import { GetEventOrdersQueryDto } from 'src/dto/events.dto';
 
 @Controller('api/orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) { }
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Get('me')
   @UseGuards(AuthGuard)

@@ -36,7 +36,7 @@ export class EventsService {
     private readonly assetsService: AssetsService,
     private readonly fedapayService: FedapayService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async getEventCategories(
     query: EventCategoryQueryDto,
@@ -118,12 +118,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-            {
-              name: 'Ticket',
-              amount: 0,
-              description: '',
-            },
-          ]
+              {
+                name: 'Ticket',
+                amount: 0,
+                description: '',
+              },
+            ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -212,12 +212,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-            {
-              name: 'Ticket',
-              amount: 0,
-              description: '',
-            },
-          ]
+              {
+                name: 'Ticket',
+                amount: 0,
+                description: '',
+              },
+            ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -274,7 +274,7 @@ export class EventsService {
 
       const status =
         event.status === EventStatus.CANCELLED ||
-          (event.status === EventStatus.DRAFT && !payload.isDraft)
+        (event.status === EventStatus.DRAFT && !payload.isDraft)
           ? EventStatus.PENDING
           : event.status;
 
@@ -441,7 +441,7 @@ export class EventsService {
         attendeeId,
         categories,
         interests,
-        location
+        location,
       } = query;
 
       const { page, limit, skip } = getPaginationData(query);
@@ -971,7 +971,7 @@ export class EventsService {
       orders: {
         some: { eventId: id, status: OrderStatus.CONFIRMED },
       },
-    }
+    };
 
     const users = await this.prisma.user.findMany({
       where: usersFilter,
@@ -991,9 +991,12 @@ export class EventsService {
 
       const totalOrders = orders.length;
       const totalTickets = orders.reduce((acc, order) => {
-        return acc + order.items.reduce((acc, item) => {
-          return acc + item.quantity;
-        }, 0);
+        return (
+          acc +
+          order.items.reduce((acc, item) => {
+            return acc + item.quantity;
+          }, 0)
+        );
       }, 0);
 
       return {
@@ -1002,9 +1005,8 @@ export class EventsService {
         lastName: user.lastName,
         totalOrders,
         totalTickets,
-      }
+      };
     });
-
 
     const participants = await Promise.all(p);
 

@@ -1,5 +1,9 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { getPaginationData, PrismaService, User } from '@optimatech88/titomeet-shared-lib';
+import {
+  getPaginationData,
+  PrismaService,
+  User,
+} from '@optimatech88/titomeet-shared-lib';
 import {
   UpdateUserDto,
   UpdateUserStatusDto,
@@ -13,16 +17,17 @@ import { FedapayService } from 'src/fedapay/fedapay.service';
 @Injectable()
 export class TransactionsService {
   private readonly logger = new Logger(TransactionsService.name);
-  constructor(private prisma: PrismaService, private fedapayService: FedapayService) { }
+  constructor(
+    private prisma: PrismaService,
+    private fedapayService: FedapayService,
+  ) {}
   async getPricings(query: GetPricingsQueryDto) {
     try {
       const { skip, page, limit } = getPaginationData(query);
       const where = {} as any;
 
       if (query.search) {
-        where.OR = [
-          { title: { contains: query.search, mode: 'insensitive' } },
-        ];
+        where.OR = [{ title: { contains: query.search, mode: 'insensitive' } }];
       }
 
       if (query.type) {

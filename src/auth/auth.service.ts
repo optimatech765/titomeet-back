@@ -33,7 +33,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async generateTokens(user: User) {
     const payload = { userId: user.id, email: user.email };
@@ -707,7 +707,6 @@ export class AuthService {
             expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_IN),
           },
         });
-
       }
 
       const access_token = tokens?.accessToken ?? '';

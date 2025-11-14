@@ -42,7 +42,10 @@ export class NewsLetterDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ enum: NewsLetterActionDto, description: "SUBSCRIBE or UNSUBSCRIBE" })
+  @ApiProperty({
+    enum: NewsLetterActionDto,
+    description: 'SUBSCRIBE or UNSUBSCRIBE',
+  })
   @IsEnum(NewsLetterActionDto)
   @IsNotEmpty()
   action: NewsLetterActionDto;
