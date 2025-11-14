@@ -23,7 +23,7 @@ import {
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
 import { FedapayService } from 'src/fedapay/fedapay.service';
-import { OrderConfirmationEvent } from 'src/orders/events';
+import { OrderConfirmationEvent, PopulatedOrder } from 'src/orders/events';
 import { ORDER_EVENTS } from 'src/utils/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
@@ -944,7 +944,7 @@ export class EventsService {
       } else {
         //send email to user
         const confirmationEvent = new OrderConfirmationEvent();
-        confirmationEvent.order = order;
+        confirmationEvent.order = order as PopulatedOrder;
         this.eventEmitter.emit(ORDER_EVENTS.ORDER_CONFIRMED, confirmationEvent);
       }
 

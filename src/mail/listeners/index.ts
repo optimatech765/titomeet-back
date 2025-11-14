@@ -15,6 +15,8 @@ import { Attachment } from 'nodemailer/lib/mailer';
 import { OrderConfirmationEvent } from 'src/orders/events';
 import { getMailDetails } from 'src/utils/notification';
 import { SendMailDto } from 'src/dto/mail.dto';
+import { AssetsService } from 'src/assets/assets.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class MailListener {
@@ -22,6 +24,7 @@ export class MailListener {
   constructor(
     private mailService: MailService,
     private readonly prisma: PrismaService,
+    private readonly assetsService: AssetsService,
   ) { }
 
   @OnEvent(MAIL_EVENTS.FORGOT_PASSWORD)
@@ -61,49 +64,84 @@ export class MailListener {
       const { event, user, items } = order;
       const attachments = [] as Attachment[];
       const tickets = [] as any;
+
+      // Group tickets by order item
       items.forEach((item) => {
         const itemTickets = Array.from({ length: item.quantity }).map(
           (_, i) => ({
-            ...item,
+            orderItemId: item.id,
             quantity: 1,
             ticketCode: `${item.eventPrice.name}-${i + 1}`,
+            eventPrice: item.eventPrice,
           }),
         );
         tickets.push(...itemTickets);
       });
 
-      //this.logger.log({ tickets });
-
+      // Generate PDFs and upload to AWS
       const ticketsBufferPromises = tickets.map(
-        async (item: {
-          id: any;
+        async (ticket: {
+          orderItemId: string;
           eventPrice: { name: any };
           ticketCode: string;
         }) => {
           const pdfBytes = await generateTicketPDF({
             eventName: event.name,
-            location: event.address.name,
+            location: event.address?.name || event.location || 'Location TBD',
             startDate: new Date(event.startDate),
             endDate: new Date(event.endDate),
             startTime: event.startTime,
             endTime: event.endTime,
-            ticketCode: item.ticketCode,
-            ticketType: item.eventPrice.name,
+            ticketCode: ticket.ticketCode,
+            ticketType: ticket.eventPrice.name,
             userEmail: user.email,
             url: getEventUrl(event.id),
             isFree: event.accessType === EventAccess.FREE,
             orderId: order.id,
           });
 
+          // Upload to AWS
+          const fileName = `tickets/${order.id}/${randomUUID()}-${ticket.ticketCode}.pdf`;
+          const uploadResult = await this.assetsService.uploadFile(
+            Buffer.from(pdfBytes),
+            fileName,
+          );
+
           return {
-            filename: `Ticket-${item.ticketCode}.pdf`,
+            orderItemId: ticket.orderItemId,
+            filename: `Ticket-${ticket.ticketCode}.pdf`,
             content: pdfBytes,
+            ticketUrl: uploadResult.downloadUrl,
           };
         },
       );
 
       const ticketsBuffers = await Promise.all(ticketsBufferPromises);
       attachments.push(...ticketsBuffers);
+
+      // Group ticket URLs by order item and update database
+      const ticketUrlsByItem = new Map<string, string[]>();
+      ticketsBuffers.forEach((ticket) => {
+        if (!ticketUrlsByItem.has(ticket.orderItemId)) {
+          ticketUrlsByItem.set(ticket.orderItemId, []);
+        }
+        ticketUrlsByItem.get(ticket.orderItemId)?.push(ticket.ticketUrl);
+      });
+
+      // Update each order item with ticket URLs
+      const updatePromises = Array.from(ticketUrlsByItem.entries()).map(
+        async ([orderItemId, ticketUrls]) => {
+          await this.prisma.orderItem.update({
+            where: { id: orderItemId },
+            data: {
+              tickets: ticketUrls,
+            },
+          });
+        },
+      );
+
+      await Promise.all(updatePromises);
+      this.logger.log('Ticket URLs saved to database');
 
       const isMultiple = items.length > 1;
 
@@ -115,10 +153,12 @@ export class MailListener {
         <p>Bonjour ${user.firstName},</p>
         <p>Votre réservation de tickets a été effectuée avec succès.</p>
         <p>Voici ${isMultiple ? 'vos' : 'votre'} billet${isMultiple ? 's' : ''} pour l'événement ${event.name} :</p>
-        ${ticketsBuffers.map((ticket) => `<a href="${ticket.filename}">${ticket.filename}</a>`).join('\n')}
+        ${ticketsBuffers.map((ticket) => `<a href="${ticket.ticketUrl}">${ticket.filename}</a>`).join('\n')}
         `,
         attachments,
       });
+
+      this.logger.log('Order confirmation mail sent to ' + user.email);
     } catch (error) {
       this.logger.error('Error sending order confirmation mail', error);
     }
