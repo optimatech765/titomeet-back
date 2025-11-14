@@ -134,7 +134,7 @@ export class EventsController {
   }
 
   @Get(':id/participants')
-  @UseGuards(OptionalAuthGuard)
+  @UseGuards(AuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Get event participants',
