@@ -22,7 +22,7 @@ export class MailListener {
   constructor(
     private mailService: MailService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   @OnEvent(MAIL_EVENTS.FORGOT_PASSWORD)
   async sendForgotPasswordMail(event: ForgotPasswordEvent) {
@@ -94,12 +94,14 @@ export class MailListener {
             isFree: event.accessType === EventAccess.FREE,
             orderId: order.id,
           });
+
           return {
             filename: `Ticket-${item.ticketCode}.pdf`,
             content: pdfBytes,
           };
         },
       );
+
       const ticketsBuffers = await Promise.all(ticketsBufferPromises);
       attachments.push(...ticketsBuffers);
 

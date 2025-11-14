@@ -10,8 +10,6 @@ import {
   EventStatus,
   EventAccess,
   OrderStatus,
-  TransactionStatus,
-  PricingType,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -36,7 +34,7 @@ export class EventsService {
     private readonly assetsService: AssetsService,
     private readonly fedapayService: FedapayService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async getEventCategories(
     query: EventCategoryQueryDto,
@@ -118,12 +116,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-              {
-                name: 'Ticket',
-                amount: 0,
-                description: '',
-              },
-            ]
+            {
+              name: 'Ticket',
+              amount: 0,
+              description: '',
+            },
+          ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -212,12 +210,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-              {
-                name: 'Ticket',
-                amount: 0,
-                description: '',
-              },
-            ]
+            {
+              name: 'Ticket',
+              amount: 0,
+              description: '',
+            },
+          ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -274,7 +272,7 @@ export class EventsService {
 
       const status =
         event.status === EventStatus.CANCELLED ||
-        (event.status === EventStatus.DRAFT && !payload.isDraft)
+          (event.status === EventStatus.DRAFT && !payload.isDraft)
           ? EventStatus.PENDING
           : event.status;
 

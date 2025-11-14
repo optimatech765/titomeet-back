@@ -5,7 +5,11 @@ import {
   Logger,
   Res,
 } from '@nestjs/common';
-import { DeleteObjectsCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import awsConfig from 'src/config/aws';
 import { randomUUID } from 'crypto';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
@@ -127,6 +131,31 @@ export class AssetsService {
       console.error(error);
       throw new HttpException(
         { error: 'fetch failed' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  //return download url
+  async uploadFile(
+    buffer: Buffer,
+    fileName: string,
+  ): Promise<{ success: boolean; downloadUrl: string | null }> {
+    try {
+      const command = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileName,
+        Body: buffer,
+      });
+      await this.s3Client.send(command);
+      return {
+        success: true,
+        downloadUrl: `https://${this.bucketName}.${this.bucketPublicUrl}/${fileName}`,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
