@@ -22,7 +22,7 @@ export class FedapayService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     const { fedapay } = paymentConfig();
@@ -146,9 +146,9 @@ export class FedapayService implements OnModuleInit {
             pricing: {
               select: {
                 duration: true,
-              }
+              },
             },
-          }
+          },
         });
 
         if (!order && !transaction) {
@@ -187,14 +187,12 @@ export class FedapayService implements OnModuleInit {
             );
           }
 
-
           if (transaction) {
             await this.prisma.transaction.update({
               where: { id: transaction.id },
               data: { status: TransactionStatus.COMPLETED },
             });
           }
-
         } else {
           if (transaction) {
             await this.prisma.transaction.update({

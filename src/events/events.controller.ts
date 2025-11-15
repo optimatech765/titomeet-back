@@ -36,7 +36,7 @@ import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @Controller('api/events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) { }
+  constructor(private readonly eventsService: EventsService) {}
 
   @Get('categories')
   @UseGuards(OptionalAuthGuard)
@@ -134,7 +134,7 @@ export class EventsController {
   }
 
   @Get(':id/participants')
-  @UseGuards(OptionalAuthGuard)
+  @UseGuards(AuthGuard)
   @ApiResponse({
     status: 200,
     description: 'Get event participants',

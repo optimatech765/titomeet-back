@@ -13,7 +13,7 @@ export interface PopulatedOrderItem extends OrderItem {
 
 export interface PopulatedOrder extends Order {
   event: Event & {
-    address: Address;
+    address: Address | null;
   };
   user: User;
   items: PopulatedOrderItem[];

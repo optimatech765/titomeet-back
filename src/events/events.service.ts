@@ -10,8 +10,6 @@ import {
   EventStatus,
   EventAccess,
   OrderStatus,
-  TransactionStatus,
-  PricingType,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -25,7 +23,7 @@ import {
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
 import { FedapayService } from 'src/fedapay/fedapay.service';
-import { OrderConfirmationEvent } from 'src/orders/events';
+import { OrderConfirmationEvent, PopulatedOrder } from 'src/orders/events';
 import { ORDER_EVENTS } from 'src/utils/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
@@ -443,7 +441,7 @@ export class EventsService {
         attendeeId,
         categories,
         interests,
-        location
+        location,
       } = query;
 
       const { page, limit, skip } = getPaginationData(query);
@@ -948,7 +946,7 @@ export class EventsService {
       } else {
         //send email to user
         const confirmationEvent = new OrderConfirmationEvent();
-        confirmationEvent.order = order;
+        confirmationEvent.order = order as PopulatedOrder;
         this.eventEmitter.emit(ORDER_EVENTS.ORDER_CONFIRMED, confirmationEvent);
       }
 
@@ -973,7 +971,7 @@ export class EventsService {
       orders: {
         some: { eventId: id, status: OrderStatus.CONFIRMED },
       },
-    }
+    };
 
     const users = await this.prisma.user.findMany({
       where: usersFilter,
@@ -993,9 +991,12 @@ export class EventsService {
 
       const totalOrders = orders.length;
       const totalTickets = orders.reduce((acc, order) => {
-        return acc + order.items.reduce((acc, item) => {
-          return acc + item.quantity;
-        }, 0);
+        return (
+          acc +
+          order.items.reduce((acc, item) => {
+            return acc + item.quantity;
+          }, 0)
+        );
       }, 0);
 
       return {
@@ -1004,9 +1005,8 @@ export class EventsService {
         lastName: user.lastName,
         totalOrders,
         totalTickets,
-      }
+      };
     });
-
 
     const participants = await Promise.all(p);
 

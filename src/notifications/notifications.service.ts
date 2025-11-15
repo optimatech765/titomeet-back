@@ -21,7 +21,7 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async findAll(
     query: PaginationQueryDto,

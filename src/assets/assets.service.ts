@@ -1,10 +1,21 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { DeleteObjectsCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  Res,
+} from '@nestjs/common';
+import {
+  DeleteObjectsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import awsConfig from 'src/config/aws';
 import { randomUUID } from 'crypto';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { GetPresignedUrlDto, DeleteAssetsDto } from 'src/dto/assets.dto';
 import { MAX_UPLOAD_SIZE } from 'src/utils/constants';
+import { Response } from 'express';
 
 @Injectable()
 export class AssetsService {
@@ -86,6 +97,61 @@ export class AssetsService {
       await this.s3Client.send(command);
 
       return { success: true };
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getImage(imageUrl: string, @Res() res: Response) {
+    if (!imageUrl) {
+      throw new HttpException({ error: 'url missing' }, HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const response = await fetch(imageUrl);
+
+      if (!response.ok) {
+        throw new HttpException(
+          { error: 'failed to fetch' },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      const buffer = await response.arrayBuffer();
+      const contentType = response.headers.get('content-type') ?? 'image/png';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.send(Buffer.from(buffer));
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        { error: 'fetch failed' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  //return download url
+  async uploadFile(
+    buffer: Buffer,
+    fileName: string,
+  ): Promise<{ success: boolean; downloadUrl: string | null }> {
+    try {
+      const command = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileName,
+        Body: buffer,
+      });
+      await this.s3Client.send(command);
+      return {
+        success: true,
+        downloadUrl: `https://${this.bucketName}.${this.bucketPublicUrl}/${fileName}`,
+      };
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(

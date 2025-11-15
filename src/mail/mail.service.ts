@@ -23,7 +23,7 @@ export class MailService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   //init nodemailer transporter
   private readonly transporter = createTransport({
@@ -56,7 +56,7 @@ export class MailService {
         message: error.message,
         code: error.code,
         command: error.command,
-        stack: error.stack
+        stack: error.stack,
       });
     }
   }

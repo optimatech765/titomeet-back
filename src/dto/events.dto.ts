@@ -3,6 +3,7 @@ import {
   EventAccess,
   EventStatus,
   EventVisibility,
+  TicketHandler,
 } from '@optimatech88/titomeet-shared-lib';
 import { Type } from 'class-transformer';
 import {
@@ -114,10 +115,10 @@ export class EventBaseDto {
   @IsNotEmpty()
   coverPicture: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
-  addressId: string;
+  @IsOptional()
+  addressId?: string;
 
   @ApiProperty()
   @IsNumber()
@@ -173,6 +174,31 @@ export class EventBaseDto {
   @IsString()
   @IsOptional()
   onlinePassword?: string;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  lng?: number;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  lat?: number;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  ticketUrl?: string;
+
+  @ApiPropertyOptional({ enum: TicketHandler })
+  @IsEnum(TicketHandler)
+  @IsOptional()
+  ticketHandler?: TicketHandler;
 }
 
 export class EventPriceSoldDto {
@@ -441,8 +467,6 @@ export class UpdateEventCategoryDto {
 }
 
 export class GetEventOrdersQueryDto extends PaginationQueryDto { }
-
-
 
 export class GetEventsParticipantsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for participants' })

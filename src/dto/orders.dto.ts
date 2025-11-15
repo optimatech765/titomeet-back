@@ -59,7 +59,6 @@ export class CreateOrderDto {
   callbackUrl: string;
 }
 
-
 export class OrderItemDto {
   @ApiProperty()
   @IsString()
@@ -146,7 +145,6 @@ export class OrderDto {
   items: OrderItemDto[];
 }
 
-
 export class TransactionDto {
   @ApiProperty()
   @IsNumber()
@@ -227,7 +225,6 @@ export class GetEventOrdersResponseDto {
   @IsNotEmpty()
   totalPages: number;
 }
-
 
 export class GetOrdersResponseDto {
   @ApiProperty({ type: [OrderDto] })
