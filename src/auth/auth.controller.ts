@@ -6,10 +6,13 @@ import {
   Req,
   Request,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import {
   AuthenticationResponseDto,
   ForgotPasswordDto,
@@ -23,13 +26,13 @@ import {
   UpdatePasswordResponseDto,
 } from 'src/dto/auth.dto';
 import { IRequest } from 'src/types';
-import { AuthGuard } from '@optimatech88/titomeet-shared-lib';
+import { AuthGuard, AdminAuthGuard } from '@optimatech88/titomeet-shared-lib';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { Response } from 'express';
 
 @Controller('')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   //signup
   @Post('api/auth/signup')
@@ -100,7 +103,7 @@ export class AuthController {
 
   @Get('auth/google/login')
   @UseGuards(GoogleAuthGuard)
-  googleLogin() {}
+  googleLogin() { }
 
   @Get('auth/google/callback')
   @UseGuards(GoogleAuthGuard)
@@ -122,13 +125,45 @@ export class AuthController {
     return this.authService.googleAuth(body);
   }
 
-  /*   @Get('api/database/seed')
-    seedData() {
-      return this.authService.seedData();
-    }
-  
-    @Get('api/database/backup')
-    backupData() {
-      return this.authService.backupData();
-    } */
+  @Post('api/database/seed')
+  @UseGuards(AdminAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'JSON file containing seed data',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Seed data from JSON file',
+  })
+  async seedData(@UploadedFile() file: { buffer?: Buffer }) {
+    const fileBuffer = file?.buffer;
+    return this.authService.seedData(fileBuffer);
+  }
+
+  @Get('api/database/backup')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Download database backup as JSON file',
+  })
+  async backupData(@Res() res: Response) {
+    const backupData = await this.authService.backupData();
+    console.log(backupData);
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const filename = `backup-${new Date().toISOString().split('T')[0]}.json`;
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(jsonString);
+  }
 }

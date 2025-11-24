@@ -10,8 +10,6 @@ import {
   EventStatus,
   EventAccess,
   OrderStatus,
-  TransactionStatus,
-  PricingType,
 } from '@optimatech88/titomeet-shared-lib';
 import { AssetsService } from 'src/assets/assets.service';
 import {
@@ -25,7 +23,7 @@ import {
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
 import { FedapayService } from 'src/fedapay/fedapay.service';
-import { OrderConfirmationEvent } from 'src/orders/events';
+import { OrderConfirmationEvent, PopulatedOrder } from 'src/orders/events';
 import { ORDER_EVENTS } from 'src/utils/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
@@ -36,7 +34,7 @@ export class EventsService {
     private readonly assetsService: AssetsService,
     private readonly fedapayService: FedapayService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async getEventCategories(
     query: EventCategoryQueryDto,
@@ -118,12 +116,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-              {
-                name: 'Ticket',
-                amount: 0,
-                description: '',
-              },
-            ]
+            {
+              name: 'Ticket',
+              amount: 0,
+              description: '',
+            },
+          ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -142,6 +140,7 @@ export class EventsService {
       const event = await this.prisma.event.create({
         data: {
           ...rest,
+          type: payload.type,
           remainingSeats: rest.capacity,
           startDate: new Date(payload.startDate),
           endDate: new Date(payload.endDate),
@@ -212,12 +211,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-              {
-                name: 'Ticket',
-                amount: 0,
-                description: '',
-              },
-            ]
+            {
+              name: 'Ticket',
+              amount: 0,
+              description: '',
+            },
+          ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -272,9 +271,22 @@ export class EventsService {
         }
       }
 
+      //handle price deletion
+      const pricesDelete = event.prices.filter(
+        (price) => !_prices.find((p) => p.id === price.id),
+      );
+      if (pricesDelete.length > 0) {
+        await this.prisma.eventPrice.deleteMany({
+          where: { id: { in: pricesDelete.map((p) => p.id) } },
+        });
+        this.logger.log(
+          `Deleting ${pricesDelete.length} prices for event ${id}`,
+        );
+      }
+
       const status =
         event.status === EventStatus.CANCELLED ||
-        (event.status === EventStatus.DRAFT && !payload.isDraft)
+          (event.status === EventStatus.DRAFT && !payload.isDraft)
           ? EventStatus.PENDING
           : event.status;
 
@@ -296,6 +308,13 @@ export class EventsService {
           visibility: rest.visibility,
           postedById: event.postedById,
           addressId: event.addressId,
+          type: payload.type,
+          ticketHandler: payload.ticketHandler,
+          ticketUrl: payload.ticketUrl,
+          onlineLink: payload.onlineLink,
+          lat: payload.lat,
+          lng: payload.lng,
+          location: payload.location,
           ...(rest.badge && { badge: rest.badge }),
           categories: {
             connect: payload.categories.map((category) => ({
@@ -942,16 +961,17 @@ export class EventsService {
         const paymentLink =
           await this.fedapayService.createTransactionPaymentLink(txn.id);
 
-        return paymentLink;
+        return { paymentLink, order };
       } else {
         //send email to user
         const confirmationEvent = new OrderConfirmationEvent();
-        confirmationEvent.order = order;
+        confirmationEvent.order = order as PopulatedOrder;
         this.eventEmitter.emit(ORDER_EVENTS.ORDER_CONFIRMED, confirmationEvent);
       }
 
       return {
         message: 'Order created successfully',
+        order,
       };
     } catch (error) {
       this.logger.error(error);

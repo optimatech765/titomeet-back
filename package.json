@@ -22,7 +22,8 @@
     "studio": "prisma studio",
     "deploy-db:prod": "prisma migrate deploy",
     "deploy-db:dev": "prisma migrate dev",
-    "seed": "ts-node src/utils/seed.ts"
+    "seed": "ts-node src/utils/seed.ts",
+    "sync-schema": "node scripts/sync-shared-schema.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",
@@ -36,7 +37,7 @@
     "@nestjs/schedule": "^5.0.1",
     "@nestjs/swagger": "^11.0.3",
     "@nestjs/throttler": "^6.4.0",
-    "@optimatech88/titomeet-shared-lib": "^1.0.49",
+    "@optimatech88/titomeet-shared-lib": "^1.0.52",
     "axios": "^1.8.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -94,8 +95,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "prisma": {
-    "schema": "node_modules/@optimatech88/titomeet-shared-lib/prisma/schema.prisma"
   }
 }

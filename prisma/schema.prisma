@@ -1,0 +1,466 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String         @id @default(cuid())
+  username              String         @unique
+  email                 String         @unique
+  firstName             String
+  lastName              String
+  password              String?
+  role                  UserRole       @default(USER)
+  profilePicture        String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  emailVerified         Boolean        @default(false)
+  status                UserStatus     @default(ACTIVE)
+  accounts              Account[]
+  chatUsers             ChatUser[]
+  events                Event[]
+  favorites             Favorite[]
+  messages              Message[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationSender")
+  orders                Order[]
+  providers             Provider[]
+  reviews               Review[]
+
+  userInterests UserInterests?
+  transactions  Transaction[]
+  feedbacks     Feedback[]
+}
+
+enum AccountType {
+  GOOGLE
+  EMAIL_PASSWORD
+}
+
+model Account {
+  id           String      @id @default(cuid())
+  refreshToken String      @unique
+  expiresAt    DateTime
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+  type         AccountType @default(EMAIL_PASSWORD)
+  reference    String?
+}
+
+model Address {
+  id          String     @id @default(uuid())
+  name        String
+  line2       String?
+  city        String?
+  state       String?
+  country     String
+  postalCode  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  countryCode String?
+  latitude    Float?
+  longitude   Float?
+  type        String     @default("suburb")
+  events      Event[]
+  Provider    Provider[]
+}
+
+model EventCategory {
+  id            String          @id @default(cuid())
+  name          String          @unique
+  description   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  active        Boolean         @default(true)
+  events        Event[]         @relation("EventToEventCategory")
+  userInterests UserInterests[]
+
+  parentId String?
+  parent   EventCategory? @relation("EventCategoryParent", fields: [parentId], references: [id])
+
+  children EventCategory[] @relation("EventCategoryParent")
+}
+
+enum TicketHandler {
+  TITOMEET
+  OTHER
+}
+
+model Event {
+  id             String            @id @default(cuid())
+  name           String
+  description    String
+  startDate      DateTime
+  endDate        DateTime
+  startTime      String
+  endTime        String
+  capacity       Int
+  coverPicture   String
+  badge          String
+  tags           String[]
+  accessType     EventAccess       @default(FREE)
+  visibility     EventVisibility   @default(PUBLIC)
+  status         EventStatus       @default(DRAFT)
+  addressId      String?
+  postedById     String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  chat           Chat?
+  address        Address?          @relation(fields: [addressId], references: [id])
+  postedBy       User              @relation(fields: [postedById], references: [id])
+  prices         EventPrice[]
+  favorites      Favorite[]
+  orders         Order[]
+  categories     EventCategory[]   @relation("EventToEventCategory")
+  providers      ProviderOnEvent[]
+  remainingSeats Int               @default(0)
+  type           EventType         @default(IN_PERSON)
+  onlineLink     String?
+  onlinePassword String?
+  ticketHandler  TicketHandler     @default(TITOMEET)
+  ticketUrl      String?
+  lng            Float?
+  lat            Float?
+  location       String?
+}
+
+enum EventType {
+  IN_PERSON
+  ONLINE
+}
+
+model EventPrice {
+  id          String      @id @default(uuid())
+  name        String
+  amount      Float
+  description String?
+  eventId     String
+  totalSeats  Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  event       Event       @relation(fields: [eventId], references: [id])
+  orderItems  OrderItem[]
+}
+
+model Chat {
+  id        String     @id @default(cuid())
+  name      String
+  eventId   String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  event     Event      @relation(fields: [eventId], references: [id])
+  users     ChatUser[]
+  messages  Message[]
+}
+
+model ChatUser {
+  id        String   @id @default(cuid())
+  chatId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatId    String
+  senderId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     Json?
+  text      String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  sender    User     @relation(fields: [senderId], references: [id])
+}
+
+model Notification {
+  id           String           @id @default(cuid())
+  notifiedToId String
+  userId       String?
+  type         NotificationType
+  read         Boolean          @default(false)
+  data         Json?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  notifiedTo   User             @relation("NotificationRecipient", fields: [notifiedToId], references: [id])
+  user         User?            @relation("NotificationSender", fields: [userId], references: [id])
+}
+
+model ProviderCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  providers   Provider[]
+
+  parentId String?
+  parent   ProviderCategory? @relation("ProviderCategoryParent", fields: [parentId], references: [id])
+
+  children ProviderCategory[] @relation("ProviderCategoryParent")
+}
+
+model Provider {
+  id             String            @id @default(cuid())
+  name           String
+  description    String?
+  image          String?
+  userId         String
+  status         ProviderStatus    @default(PENDING)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  addressId      String?
+  categoryId     String
+  docs           Json?
+  email          String?
+  phoneNumber    String?
+  pricingDetails String?
+  rating         Float?
+  website        String?
+  address        Address?          @relation(fields: [addressId], references: [id])
+  category       ProviderCategory  @relation(fields: [categoryId], references: [id])
+  user           User              @relation(fields: [userId], references: [id])
+  reviews        Review[]
+  events         ProviderOnEvent[]
+}
+
+enum ProviderOnEventStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ProviderOnEvent {
+  id         String   @id @default(cuid())
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id])
+  eventId    String
+  event      Event    @relation(fields: [eventId], references: [id])
+
+  status ProviderOnEventStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Float
+  comment    String?
+  providerId String
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  provider   Provider @relation(fields: [providerId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  event     Event    @relation(fields: [eventId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  userId          String
+  eventId         String
+  email           String
+  status          OrderStatus   @default(PENDING)
+  totalAmount     Float
+  paymentIntentId String?       @unique
+  paymentStatus   PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  event           Event         @relation(fields: [eventId], references: [id])
+  user            User          @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id           String     @id @default(cuid())
+  orderId      String
+  eventPriceId String
+  quantity     Int
+  unitPrice    Float
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  eventPrice   EventPrice @relation(fields: [eventPriceId], references: [id])
+  order        Order      @relation(fields: [orderId], references: [id])
+  tickets      String[]
+}
+
+model UserInterests {
+  id String @id @default(cuid())
+
+  interests EventCategory[]
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+enum EventAccess {
+  FREE
+  PAID
+}
+
+enum EventVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  PENDING
+  CANCELLED
+}
+
+enum MediaType {
+  image
+  video
+  audio
+  pdf
+}
+
+enum NotificationType {
+  NEW_MESSAGE
+  EVENT_REMINDER
+  EVENT_PARTICIPATION_CONFIRMATION
+  EVENT_VALIDATION
+  EVENT_REJECTION
+  EVENT_ASSIGNMENT
+  EVENT_ASSIGNMENT_APPROVAL
+  EVENT_ASSIGNMENT_REJECTION
+}
+
+enum ProviderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Newsletter {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  unsubscribedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PricingType {
+  EVENT_CREATOR
+  PROVIDER
+}
+
+enum PricingDuration {
+  WEEKLY
+  BI_WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Pricing {
+  id       String @id @default(cuid())
+  title    String
+  subtitle String
+
+  priceSuffix String?
+
+  features String[]
+
+  type     PricingType     @default(EVENT_CREATOR)
+  duration PricingDuration @default(MONTHLY)
+  amount   Float
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+  active       Boolean       @default(true)
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Transaction {
+  id String @id @default(cuid())
+
+  amount        Float
+  paymentMethod PaymentMethod @default(MOBILE_MONEY)
+
+  pricingId String?
+  pricing   Pricing? @relation(fields: [pricingId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  status TransactionStatus @default(PENDING)
+
+  reference String?
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Feedback {
+  id       String  @id @default(cuid())
+  category String
+  rating   Int
+  comment  String
+  email    String?
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

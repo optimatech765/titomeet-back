@@ -184,6 +184,11 @@ export class FreeEventOrderResponseDto {
   @IsString()
   @IsNotEmpty()
   message: string;
+
+  @ApiProperty({ type: OrderDto })
+  @IsObject()
+  @IsOptional()
+  order: OrderDto | null;
 }
 
 export class OrderEventResponseDto {

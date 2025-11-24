@@ -1,28 +1,30 @@
-# Use the official Node.js image as the base image
 FROM node:20-alpine
 
-# Create and set the working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install dependencies using yarn
-RUN yarn install --frozen-lockfile
+# Install dependencies without triggering Prisma errors
+RUN yarn install --ignore-scripts
 
-# Copy the rest of the application code to the working directory
+# Copy the rest of the app
 COPY . .
 
-# Build the NestJS application
+# Sync shared Prisma schema
+RUN yarn sync-schema
+
+# Run Prisma generate
+RUN yarn prisma generate
+
+# Build the app
 RUN yarn build
 
-# Expose the port that the NestJS application will run on
+# Expose and configure
 EXPOSE 5000
 
-
-# Copy the entry script and give execution permissions
+# Copy entrypoint and set perms
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Command to run the entry script
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["yarn", "start:prod"]

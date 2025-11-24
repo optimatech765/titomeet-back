@@ -1,15 +1,11 @@
 #!/bin/sh
 set -e
 
-# Load environment variables
-export $(grep -v '^#' .env | xargs)
+# Sync Prisma schema (just in case)
+yarn sync-schema
 
-# Run Prisma migrations
+# Run migrations
 yarn deploy-db:prod
 
 # Start the app
-exec "$@"
-
-
-# Start the NestJS application
 yarn start:prod
