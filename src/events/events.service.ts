@@ -34,7 +34,7 @@ export class EventsService {
     private readonly assetsService: AssetsService,
     private readonly fedapayService: FedapayService,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async getEventCategories(
     query: EventCategoryQueryDto,
@@ -116,12 +116,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-            {
-              name: 'Ticket',
-              amount: 0,
-              description: '',
-            },
-          ]
+              {
+                name: 'Ticket',
+                amount: 0,
+                description: '',
+              },
+            ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -131,11 +131,12 @@ export class EventsService {
       const _providers = providers ?? [];
       const allow = false;
 
-      const status = allow
+      const status = EventStatus.PUBLISHED;
+      /* const status = allow
         ? EventStatus.PUBLISHED
         : isDraft
           ? EventStatus.DRAFT
-          : EventStatus.PENDING;
+          : EventStatus.PENDING; */
 
       const event = await this.prisma.event.create({
         data: {
@@ -211,12 +212,12 @@ export class EventsService {
         prices ??
         (rest.accessType === EventAccess.FREE
           ? [
-            {
-              name: 'Ticket',
-              amount: 0,
-              description: '',
-            },
-          ]
+              {
+                name: 'Ticket',
+                amount: 0,
+                description: '',
+              },
+            ]
           : []);
 
       if (_prices.length === 0 && rest.accessType === EventAccess.PAID) {
@@ -286,7 +287,7 @@ export class EventsService {
 
       const status =
         event.status === EventStatus.CANCELLED ||
-          (event.status === EventStatus.DRAFT && !payload.isDraft)
+        (event.status === EventStatus.DRAFT && !payload.isDraft)
           ? EventStatus.PENDING
           : event.status;
 
