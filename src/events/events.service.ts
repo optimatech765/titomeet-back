@@ -410,7 +410,7 @@ export class EventsService {
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(
-        'Something went wrong',
+        "Une erreur s'est produite lors de la suppression",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

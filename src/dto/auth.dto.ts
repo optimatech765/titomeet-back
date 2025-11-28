@@ -5,6 +5,7 @@ import {
   IsObject,
   IsString,
   MinLength,
+  IsOptional,
 } from 'class-validator';
 import { UserDto } from './users.dto';
 
@@ -28,6 +29,12 @@ export class SignupDto {
   @IsString()
   @IsEmail()
   email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  @MinLength(8)
+  phone?: string;
 
   @ApiProperty()
   @IsString()

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -29,6 +30,7 @@ import {
 } from 'src/dto/orders.dto';
 import {
   AuthGuard,
+  AdminAuthGuard,
   OptionalAuthGuard,
 } from '@optimatech88/titomeet-shared-lib';
 import { IRequest } from 'src/types';
@@ -145,5 +147,11 @@ export class EventsController {
     @Query() query: GetEventsParticipantsQueryDto,
   ) {
     return this.eventsService.getEventParticipants(id, query);
+  }
+
+  @Delete(':id')
+  @UseGuards(AdminAuthGuard)
+  remove(@Param('id') id: string, @Request() req: IRequest) {
+    return this.eventsService.deleteEvent(id, req.user);
   }
 }
