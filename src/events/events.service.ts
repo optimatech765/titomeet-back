@@ -369,6 +369,8 @@ export class EventsService {
   }
 
   async deleteEvent(id: string, user: User) {
+    this.logger.log(`Suppression event ${id}`);
+
     try {
       const event = await this.prisma.event.findUnique({
         where: { id },
@@ -378,17 +380,47 @@ export class EventsService {
         throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
       }
 
-      if (user.id !== event.postedById) {
+      /* if (user.id !== event.postedById) {
         throw new HttpException(
           'You are not allowed to delete this event',
           HttpStatus.FORBIDDEN,
         );
-      }
+      } */
 
       await this.prisma.providerOnEvent.deleteMany({
         where: { eventId: id },
       });
 
+      //Delete all Chat, ChatUser and Message
+      const chats = await this.prisma.chat.findMany({
+        where: { eventId: id },
+        select: { id: true },
+      });
+
+      const tabChatId = chats.map((chat) => chat.id);
+
+      await this.prisma.message.deleteMany({
+        where: {
+          chatId: { in: tabChatId },
+        },
+      });
+
+      await this.prisma.chatUser.deleteMany({
+        where: {
+          chatId: { in: tabChatId },
+        },
+      });
+
+      await this.prisma.chat.deleteMany({
+        where: { eventId: id },
+      });
+
+      //Delete EventPrice
+      await this.prisma.eventPrice.deleteMany({
+        where: { eventId: id },
+      });
+
+      //Delete event
       await this.prisma.event.delete({
         where: { id },
       });
@@ -667,7 +699,13 @@ export class EventsService {
   async getEventById(
     id: string,
     user?: User,
-  ): Promise<Event & { ticketsSold: number; ticketsSoldByEventPrice: any }> {
+  ): Promise<
+    Event & {
+      ticketsSold: number;
+      ticketsSoldByEventPrice: any;
+      totalMontantTicket: number;
+    }
+  > {
     try {
       const event = await this.prisma.event.findUnique({
         where: { id },
@@ -692,7 +730,7 @@ export class EventsService {
         },
       });
 
-      const ticketsSold = await this.prisma.orderItem.count({
+      /* const ticketsSold = await this.prisma.orderItem.count({
         where: {
           eventPrice: {
             eventId: id,
@@ -701,7 +739,25 @@ export class EventsService {
             status: OrderStatus.CONFIRMED,
           },
         },
+      }); */
+
+      const orders = await this.prisma.order.findMany({
+        where: { eventId: id, status: OrderStatus.CONFIRMED },
+        select: { id: true },
       });
+
+      const tabOrderId = orders.map((order) => order.id);
+
+      const ticketsSoldOp = await this.prisma.orderItem.aggregate({
+        _sum: {
+          quantity: true,
+        },
+        where: {
+          orderId: { in: tabOrderId },
+        },
+      });
+
+      const ticketsSold = ticketsSoldOp._sum.quantity || 0;
 
       //count tickets sold by eventPrice
       const ticketsSoldByEventPrice = await this.prisma.orderItem.groupBy({
@@ -711,8 +767,25 @@ export class EventsService {
           eventPrice: {
             eventId: id,
           },
+          order: {
+            id: { in: tabOrderId },
+            status: 'CONFIRMED',
+          },
         },
       });
+
+      //Total montant ticket vendu
+      const totalMontantTicketOp = await this.prisma.order.aggregate({
+        _sum: {
+          totalAmount: true,
+        },
+        where: {
+          eventId: id,
+          status: 'CONFIRMED',
+        },
+      });
+
+      const totalMontantTicket = totalMontantTicketOp._sum.totalAmount || 0;
 
       if (!event) {
         throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
@@ -722,6 +795,7 @@ export class EventsService {
         ...event,
         ticketsSold,
         ticketsSoldByEventPrice,
+        totalMontantTicket,
       };
     } catch (error) {
       this.logger.error(error);
