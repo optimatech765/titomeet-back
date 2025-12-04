@@ -49,6 +49,35 @@ export class UsersService {
     }
   }
 
+  async getUserById(id: string) {
+    try {
+      const userData = await this.prisma.user.findUnique({
+        where: { id: id },
+        include: {
+          accounts: true,
+        },
+      });
+
+      const provider = await this.prisma.provider.findFirst({
+        where: {
+          userId: id,
+        },
+      });
+
+      const formattedUser = {
+        ...userData,
+        isProvider: !!provider,
+      };
+      return formattedUser;
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(
+        'Something went wrong',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async updateUser(user: User, payload: UpdateUserDto) {
     try {
       if (payload.username !== user.username) {

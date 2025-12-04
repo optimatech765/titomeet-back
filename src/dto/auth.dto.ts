@@ -33,7 +33,7 @@ export class SignupDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  @MinLength(8)
+  @MinLength(8, { message: 'Minimum 8 chiffres pour le téléphone ' })
   phone?: string;
 
   @ApiProperty()

@@ -10,6 +10,7 @@ import {
   IsArray,
   ValidateNested,
   IsNumber,
+  MinLength,
 } from 'class-validator';
 
 export class PaginationQueryDto {
@@ -85,6 +86,12 @@ export class UserDto {
   @IsString()
   @IsNotEmpty()
   lastName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  @MinLength(8, { message: 'Minimum 8 chiffres pour le téléphone ' })
+  phone?: string | null;
 
   @ApiProperty({ enum: UserRole })
   @IsEnum(UserRole)

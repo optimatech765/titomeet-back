@@ -19,6 +19,7 @@ import {
   EventCategoryQueryDto,
   EventQueryStatus,
   ParticipantDto,
+  EventQueryVisibility,
 } from 'src/dto/events.dto';
 import { CreateOrderDto, OrderDto } from 'src/dto/orders.dto';
 import { throwServerError } from 'src/utils';
@@ -458,6 +459,7 @@ export class EventsService {
         endDate,
         createdById,
         status,
+        visibility,
         attendeeId,
         categories,
         interests,
@@ -534,6 +536,9 @@ export class EventsService {
             };
           }
         }
+      }
+      if (visibility) {
+        filter.visibility = visibility;
       }
 
       if (location) {

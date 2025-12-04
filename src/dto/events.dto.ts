@@ -340,6 +340,11 @@ export enum EventQueryStatus {
   FAVORITE = 'FAVORITE',
 }
 
+export enum EventQueryVisibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+}
+
 export class GetEventsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for events' })
   @IsString()
@@ -379,6 +384,11 @@ export class GetEventsQueryDto extends PaginationQueryDto {
   @IsEnum(EventQueryStatus)
   @IsOptional()
   status?: EventQueryStatus;
+
+  @ApiPropertyOptional({ description: 'Visibility of the event' })
+  @IsEnum(EventQueryVisibility)
+  @IsOptional()
+  visibility?: EventQueryVisibility;
 
   @ApiPropertyOptional({ description: 'User ID of the attendee' })
   @IsString()
@@ -466,7 +476,7 @@ export class UpdateEventCategoryDto {
   parentId?: string;
 }
 
-export class GetEventOrdersQueryDto extends PaginationQueryDto { }
+export class GetEventOrdersQueryDto extends PaginationQueryDto {}
 
 export class GetEventsParticipantsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search term for participants' })

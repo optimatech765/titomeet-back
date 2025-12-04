@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Put,
@@ -11,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  AdminAuthGuard,
   AuthGuard,
   OptionalAuthGuard,
 } from '@optimatech88/titomeet-shared-lib';
@@ -44,6 +46,17 @@ export class UsersController {
   })
   getAuthUser(@Request() req: IRequest) {
     return this.usersService.getUserData(req.user);
+  }
+
+  @Get(':id')
+  @UseGuards(AdminAuthGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'User data',
+    type: UserDto,
+  })
+  getUserById(@Param('id') id: string) {
+    return this.usersService.getUserById(id);
   }
 
   @Put('me')
