@@ -774,7 +774,7 @@ export class EventsService {
         },
       });
 
-      //Total montant ticket vendu pour cet évènement
+      //Total montant des tickets vendus pour cet évènement
       const totalMontantTicketOp = await this.prisma.order.aggregate({
         _sum: {
           totalAmount: true,
